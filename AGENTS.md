@@ -1,0 +1,249 @@
+# AGENTS.md — 43logistics.vn rebuild
+
+> Canonical instructions for every AI agent in this workspace (Claude Code, Codex, Cursor, Copilot). `CLAUDE.md` imports this file.
+> Read it first, recover project state (§6), then load only the context files the task needs (§5).
+
+## 1. What we are building
+
+A rebuild of **https://43logistics.vn**, the marketing + lead-generation site of **43 Logistics**. The company is an international parcel/cargo forwarder based in Đà Nẵng, with an office in TP.HCM. The old site is WordPress + Elementor, and it is being replaced, not upgraded.
+
+The site exists to do three things, in this order:
+
+1. **Turn visitors into contacts.** The channel priority is Zalo, then phone, then WhatsApp/Messenger, then the quote form. (The old web form produced only 12 leads in about 3 years; customers talk on Zalo.)
+2. **Rank and convert paid traffic** for route keywords: "gửi hàng đi Singapore / Hàn Quốc / Nhật Bản / Đài Loan / Malaysia / Thái Lan / Mỹ" and "gửi hàng Singapore về Việt Nam".
+3. **Look trustworthy** with real prices, real transit times, real photos, legal info and policies.
+
+Languages: **Vietnamese (default, no URL prefix)** and **English (`/en/…`)**, built so more locales can be added.
+
+## 2. Workspace layout — two repos (ADR 0003)
+
+| Path | What | Git |
+| --- | --- | --- |
+| `./` (this folder) | **Context workspace:** `AGENTS.md`, `CLAUDE.md`, `docs/`, `specs/`, `lessons/`, `data/`, `.claude/skills/` (`.agents/skills` is a symlink to it) | Not initialised yet. Run `git init` and add a remote before using the skills' commit/PR steps |
+| `43logistics.vn/` | **App repo:** all runtime code (Next.js). `github.com/Dienvm/43logistics.vn`, declared as a submodule in `.gitmodules` | Own repo, branch `main` |
+| `wordpress-site/` | Legacy SQL dump + 1.4 GB full backup. **Read-only input** | Never committed (`.gitignore`). It contains password hashes and customer leads: grep it for specific facts only, and never copy rows into docs, prompts or either repo |
+| `refer-docs/` | The original context-repo template these rules were adapted from | Reference only, not project guidance |
+
+Ownership tag used in specs and proposals: `owner_repo: context | app | both`.
+
+Artifact types (never mix them):
+
+- `docs/context/` holds what we know. It is always current and edited in place.
+- `docs/adr/` holds what we decided.
+- `docs/proposals/` holds what we are still exploring.
+- `specs/` holds what we committed to build (each spec is tied to a roadmap ID).
+- `lessons/` holds what changes how we work.
+- Runtime code exists only in `43logistics.vn/`.
+
+## 3. Tech stack (ADR 0001 as amended by ADR 0002)
+
+The **Target** column is what new code is written for. The **In the app today** column is the honest state of `43logistics.vn/` on 2026-10-20. If a task needs a target feature that isn't installed yet (`proxy.ts`, Cache Components, `updateTag`, `@theme`), do the closing task first. Don't hack around the gap or close it opportunistically inside an unrelated task.
+
+| Layer | Target | In the app today | Closed by |
+| --- | --- | --- | --- |
+| Framework | **Next.js 16** (App Router, Turbopack), `proxy.ts`, `cacheComponents: true`, async `params`/`searchParams`/`cookies()`/`headers()` | `next ^15.3.3`, `middleware.ts`, `next.config.mjs` | F-01 |
+| UI runtime | **React 19.2**: Server Components by default, `"use client"` only for interactivity | `react ^19.1` | F-01 |
+| Components | **shadcn/ui** (Radix) in `components/ui`, restyled only via tokens | ~50 default-style shadcn components, mostly unused | F-02 |
+| Styling | **Tailwind CSS v4**, `@theme` generated into `app/theme.css` from `data/design-tokens.json` | Tailwind 3.4 + `tailwind.config.ts` + `tailwindcss-animate` | F-02 |
+| Motion | CSS first. **`motion`** (Framer Motion) only inside client islands via `LazyMotion` + `m` | `framer-motion ^11` | F-02 |
+| Mutations | **Server Actions** + Zod, returning `ActionState<T>` (`types/server-action-types.ts`, extended with `fieldErrors`) | `actions/db/*` demo actions | F-01 |
+| Database | **Supabase Postgres via Drizzle, server only** (`db/client.ts` with `server-only`) | `drizzle-orm 0.33`, `db/db.ts`, todo/profile schema | F-04 |
+| Files | **Supabase Storage** buckets `media` (public), `og` (public), `private` (signed URLs) | — | A-04 |
+| Auth | **Clerk, staff only** (admin/editor/sales). `ClerkProvider` only in `/admin`; no public sign-up | Global `ClerkProvider`, public `/signup`, `/todo` protected | F-00, F-05 |
+| Product analytics | **PostHog**, loaded only after analytics consent, proxied via `/ingest`, anonymous visitors never identified | `posthog-js` initialised on module load (before consent) | F-00, S-13 |
+| Ads & conversions | **GTM** (Consent Mode v2, basic) carrying only the ad platforms confirmed in Q-13, plus their server-side APIs | — | S-13, T-01 |
+| Client state | **Zustand** for UI state only (mobile nav, calculator inputs, consent, banners) | — | S-01, S-07 |
+| Client server-state | **TanStack Query**, only in admin screens (and the calculator if it ever needs live data) | — | A-01 |
+| i18n | **next-intl**, `localePrefix: 'as-needed'`, VI default | — | F-03 |
+| Validation | **Zod**, schemas shared by Server Actions and forms | `zod ^3` | — |
+| Lint/format | **Biome 2** (`biome check`, `next`/`react` domains) + `tsc --noEmit`; narrow ESLint only for Next rules Biome lacks | Biome 1.9 + an unused Prettier config | F-01 |
+| Tests | **Vitest** (unit) + **Playwright** (e2e, redirects, SEO checks) | none | F-01 |
+| Package manager | **pnpm**, Node ≥ 20.9 | `pnpm-lock.yaml`, but the husky hook calls `npm` | F-00 |
+| Hosting | Vercel (assumed, Q-15). Supabase in `ap-southeast-1` | — | L-02 |
+
+AI tooling: Cursor, Claude Code and Codex read this file; an agent that opens only the app finds `43logistics.vn/AGENTS.md`. **V0** output is a draft: give it only tokens and non-sensitive copy, review any dependency it adds, replace its placeholder or fabricated copy with `messages/*` keys or DB data, map colours, radii and spacing to tokens, and land it through a normal spec/PR. **Perplexity** research is never a source for business facts (rule 1).
+
+## 4. Golden rules
+
+1. **Never invent business facts.** Prices, transit times, addresses, phone numbers, hours, legal name, stats and testimonials come only from the database or `docs/context/01-business.md`. Only values whose status there is **Confirmed** (or `is_verified = true` in the DB) may be published; legacy values are seed data, not facts. If something is unknown, render nothing or a clearly marked placeholder, and add it to `docs/context/11-open-questions.md`.
+2. **Prices and transit times have exactly one source of truth**: the tables `route_rates` and `routes`. Rate tables, the calculator, the mega-menu "từ X đ/kg", JSON-LD `Offer` and OG images all read from there. Never hard-code a price in a component or in copy.
+3. **No text inside images.** Headlines, prices and country names are HTML (for SEO, translation and responsiveness). The only exception is OG images generated by `next/og` from DB data (`05-seo-and-tracking.md`).
+4. **Every public page must have**:
+   - exactly one `<h1>`;
+   - `generateMetadata` (title, description, canonical, `alternates.languages`);
+   - JSON-LD for its page type;
+   - breadcrumbs (except home);
+   - a visible primary CTA (Zalo).
+5. **Server first.** Fetch data in Server Components via `server/queries/*` (cached with `"use cache"` + `cacheTag`). Mutate via Server Actions in `server/actions/*`, then call `updateTag()`/`revalidateTag(tag, 'max')`.
+6. **Drizzle only on the server.** Never import `@/db` from a Client Component (`db/client.ts` imports `server-only`). Never expose `SUPABASE_SERVICE_ROLE_KEY` or `DATABASE_URL` to the client.
+7. **Authorization is explicit.** Every admin Server Action and route handler calls `requireRole([...])` (Clerk `auth()` + role claim). RLS is enabled on all tables as defense in depth (deny-by-default for `anon`/`authenticated`).
+8. **Performance budget (mobile, 4G)**: LCP < 2.5 s, INP < 200 ms, CLS < 0.1, JS on route pages < 120 KB gz.
+   - Measure the JS budget as first-party JS loaded on the initial route render, with consent **rejected** (framework included). Report third-party tags loaded after consent separately, and keep them deferred.
+   - No carousel above the fold.
+   - No Google Maps iframe in the global layout.
+   - `next/image` everywhere.
+   - No Clerk, TanStack Query or `motion` on public pages unless a measured island needs it.
+9. **Motion**: animate only `transform`/`opacity`, never the LCP element. Everything respects `prefers-reduced-motion` (CSS + `useReducedMotion`).
+10. **Accessibility**: WCAG 2.2 AA.
+    - Use only token colours (contrast is pre-checked).
+    - Label every input and keep a visible focus ring.
+    - Tap targets ≥ 44 px.
+    - shadcn/Radix primitives keep their ARIA behaviour; don't strip it when restyling.
+11. **Vietnamese typography**:
+    - Body line-height ≥ 1.6.
+    - No `uppercase` on buttons or menus (uppercase with diacritics hurts legibility).
+    - Load fonts with `subsets: ['latin', 'vietnamese']`.
+12. **Track every contact.** Zalo/phone/WhatsApp/Messenger links go through `/go/[channel]`, which logs `contact_events` and then returns a 302. Also push the matching event (once, from `lib/tracking`) to `dataLayer` and, after consent, to PostHog.
+13. **Keep old URLs alive.** Every URL in `data/redirect-map.csv` must resolve as specified (200 / 301 / 410), in one hop.
+14. **Personal data (Personal Data Protection Law 91/2025/QH15, in force 01/01/2026, and Decree 13/2023 as applicable)**:
+    - Forms have a consent checkbox and a privacy policy link.
+    - No analytics or ad tags, cookies or requests before consent (Consent Mode basic). `43l_attr` holds ad click IDs, so it needs consent too.
+    - No raw IP stored (hash only).
+    - Customer screenshots are used only with consent and with personal data blurred.
+15. **Secrets never enter git or prompts.** `.env*` stays untracked (only `.env.example` is committed). Don't print `.env` values, the WordPress dump or lead data into chat, docs or commits.
+
+## 5. Context map (load on demand)
+
+| When the task is about… | Read |
+| --- | --- |
+| Company facts, contacts, audience, voice | `docs/context/01-business.md` |
+| What was wrong with the old site / what to keep | `docs/context/02-legacy-audit.md` |
+| Sitemap, URLs, navigation, page contents | `docs/context/03-information-architecture.md` |
+| Colours, fonts, spacing, components, motion | `docs/context/04-design-system.md` + `data/design-tokens.json` |
+| Metadata, JSON-LD, sitemap, robots, hreflang, tracking, consent, ads LPs | `docs/context/05-seo-and-tracking.md` |
+| Folder structure, rendering/caching, proxy, auth, state, env | `docs/context/06-architecture.md` |
+| Tables, Drizzle schema, RLS, storage | `docs/context/07-data-model.md` |
+| Locales, slugs, translation workflow | `docs/context/08-i18n.md` |
+| Importing WordPress content, media, redirects | `docs/context/09-migration.md` + `data/*.csv` + `data/seed/*` |
+| What to build next, acceptance criteria | `docs/context/10-roadmap.md` |
+| Unknowns that block content | `docs/context/11-open-questions.md` |
+| VI ↔ EN terminology | `docs/context/12-glossary.md` |
+| Original page text (raw material, unverified) | `docs/context/legacy-copy/*.md` |
+| Why the stack / workflow is what it is | `docs/adr/*.md` |
+| Work in flight | `specs/INDEX.md`, `docs/proposals/`, `lessons/INDEX.md` |
+
+## 6. Workflow (Claude- and Codex-compatible)
+
+### Recover state before acting
+
+At the start of any project task, or when asked for status or "what next", read:
+
+- `docs/context/10-roadmap.md`: the first unchecked task whose dependencies are done.
+- `specs/INDEX.md` and `lessons/INDEX.md` (tables only).
+- `docs/context/11-open-questions.md`, when the task touches content or facts.
+- `git -C 43logistics.vn status --short`, plus `git status --short` at the root once it is a repo.
+
+Then name the next concrete action, its blockers and its owning repo. If the state makes the next step clear, do it. Don't answer "there is no task".
+
+### Operating sequence
+
+1. **Precedence:** system/developer instructions, then the user's explicit instructions in this session, then this file, then skill instructions, then ADRs and `docs/context/*`, then specs and lessons, then local code patterns. If a user instruction would break a golden rule (§4), such as publishing an unconfirmed fact or committing a secret, say so before acting.
+2. **Classify the intent:** question, status, planning, proposal, decision, spec, implementation, review, fix or doc change.
+3. **Use the matching skill:** if a skill is named or clearly matches, read its `SKILL.md` and follow its steps in order. Don't skip a step because the next one feels more urgent.
+4. **Inspect the real files** (docs, app code, `package.json`) instead of relying on memory.
+5. **Respect existing changes:** check `git status` before edits, treat existing changes as the user's, and never revert them unasked.
+6. **Ask only when blocked** by owner-only facts (rule 1), credentials, destructive actions or a genuinely risky ambiguity.
+7. **Carry the work through:** unless the user asked only to discuss, review or plan, finish the edit, verification and a concise summary.
+8. **Verify narrowly:** run the narrowest meaningful check (one test file, `pnpm typecheck`, a doc grep). If you didn't verify, say why.
+
+### Lifecycle
+
+```
+roadmap task (10-roadmap.md)
+  └─ /feature-bug  → specs/<type>-<slug>.md (draft → approved by the user)
+       └─ /implement → app branch + PR (in_implementation)
+            └─ /code-review → /fix-implement (as needed) → /lesson (if a follow-up exists)
+                 └─ /mark-implemented <spec> <merged PR> → implemented + roadmap [x]
+
+open idea → /proposal (docs/proposals, draft) → /doc-review → /adr (decision) → /supersede (old doc)
+repo health → /context-audit · /doc-review --audit
+```
+
+### Skills (`.claude/skills/*/SKILL.md`, shared with Codex via `.agents/skills`)
+
+| Skill | Use when |
+| --- | --- |
+| `/proposal <title>` | Exploring an option that isn't decided yet |
+| `/doc-review <file>` / `--audit` | Reviewing one doc / scanning the doc set for risks |
+| `/adr <title>` | Recording a settled decision (context + decision + consequences) |
+| `/supersede <old> <new>` | Retiring a proposal or ADR |
+| `/context-audit` | Checking that the docs, data, skills and app agree with each other |
+| `/feature-bug [feature\|bug] <title>` | Turning a roadmap task or bug into an implementation spec |
+| `/implement <spec>` | Implementing an approved spec in `43logistics.vn/` |
+| `/code-review <spec\|path\|staged>` | Reviewing code against its spec and the golden rules |
+| `/fix-implement <spec>` | Fixing code that doesn't meet its spec |
+| `/mark-implemented <spec> <pr>` | The only way to set `status: implemented` |
+| `/lesson <slug>` | Recording a learning that has a concrete follow-up |
+
+### Second opinion from Codex
+
+Skills that ask for a critique run Codex non-interactively and read-only:
+
+```bash
+codex exec -s read-only --skip-git-repo-check -C "$PWD" -o /tmp/43l-codex-<topic>.md "<prompt>"
+```
+
+Check availability first with `command -v codex`; if it's missing, skip the step and say so. Present Codex's critique to the user and apply only the points they accept.
+
+### Git
+
+- App repo: branch from `main` (`feat/<roadmap-id>-<slug>`, `fix/<slug>`) and use Conventional Commits (`feat(route-page): …`). Open PRs with `gh`. Never push to `main` directly.
+- Stage explicit paths. Never `git add .` / `-A`, because they can pick up `.env*` and dumps.
+- Commit or push only when the user asks or a skill they invoked says to.
+
+## 7. Commands (run inside `43logistics.vn/`, or with `pnpm -C 43logistics.vn <script>`)
+
+| Command | Status | Purpose |
+| --- | --- | --- |
+| `pnpm dev` | exists | `next dev` (Turbopack after F-01) |
+| `pnpm build && pnpm start` | exists | Production build |
+| `pnpm lint` | exists (`biome lint .`), becomes `biome check .` in F-01 | Lint + format check |
+| `pnpm lint:fix` / `pnpm format:write` | exists | Biome autofix / format |
+| `pnpm typecheck` | F-01 (today: `pnpm type-check`) | `tsc --noEmit` |
+| `pnpm db:generate` / `pnpm db:migrate` | exists | drizzle-kit (migrations in `db/migrations/`) |
+| `pnpm test` | F-01 | Vitest |
+| `pnpm test:e2e` | F-01 | Playwright (incl. redirect + SEO checks) |
+| `pnpm tokens` | F-02 | Build `app/theme.css` from `data/design-tokens.json` |
+| `pnpm i18n:check` | F-03 | VI/EN message-key parity |
+| `pnpm db:seed` | F-04 | `tsx scripts/seed.ts` (legacy routes, settings) |
+| `pnpm check:redirects` | F-07 | Verify every row of `data/redirect-map.csv` against a running server |
+
+Keep this table true. When a task adds or renames a script, update its row in the same change.
+
+## 8. Conventions (app repo)
+
+- TypeScript `strict`, no `any`. The path alias `@/` maps to the **app root** (no `src/`).
+- Folders:
+  - `app/`
+  - `components/{ui,blocks,layout,admin}`: `ui` holds shadcn primitives with no data fetching.
+  - `server/{queries,actions,services}`
+  - `db/{client.ts,schema/,migrations/}`
+  - `lib/{seo,i18n,format,tracking,validation}`
+  - `hooks/`, `stores/`, `types/`, `messages/`, `data/`, `scripts/`, `tests/{unit,e2e}`
+- File names are `kebab-case.tsx`, components `PascalCase`, one component per file. Server Actions end with `Action` (`submitLeadAction`).
+- UI chrome copy lives in `messages/{vi,en}.json`; page content lives in the database.
+- Dates are stored in UTC and displayed in `Asia/Ho_Chi_Minh`. Money is stored as integer VND (`bigint`) and formatted with `Intl.NumberFormat('vi-VN')`, e.g. `75.000 đ`.
+- Don't add the template's `<ai_context>` comment headers to new files; delete them from files you rewrite.
+- Commit style: Conventional Commits.
+
+## 9. Definition of done (every app PR)
+
+- [ ] `pnpm lint && pnpm typecheck && pnpm test` pass; no new console errors.
+- [ ] Works at 360 px, 768 px and 1280 px; keyboard-navigable; reduced-motion checked.
+- [ ] New public page: metadata + canonical + hreflang + JSON-LD validated (Rich Results Test or a schema validator).
+- [ ] No hard-coded business facts; strings in `messages/*` for both VI and EN.
+- [ ] Lighthouse mobile on the changed page: ≥ 90 performance, 100 SEO, ≥ 95 accessibility.
+- [ ] Context updated in the same change set if a decision or fact changed:
+  - roadmap checkbox via `/mark-implemented`;
+  - an ADR in `docs/adr/` for stack or architecture changes;
+  - the §3 table when a gap closes.
+
+## 10. Do not
+
+- Do not copy text from `legacy-copy/` into production without rewriting and fact-checking it.
+- Do not link to competitor domains (the old site linked to `3a.net.vn`).
+- Do not claim "24/7", "hàng nghìn khách hàng", insurance terms or delivery guarantees unless `01-business.md` confirms them.
+- Do not list goods as "accepted" (medicine, cosmetics without labels, food) without per-country rules in the database approved by operations.
+- Do not add analytics/tag systems beyond the two lanes in ADR 0002 (GTM for ads, PostHog for product) without a new ADR and an update to `05-seo-and-tracking.md`.
+- Do not add runtime code, package manifests or app CI to the context workspace. Do not add context docs to the app repo.
+- Do not follow `refer-docs/`: it describes a different project (Foresent robot) and is kept only as the template these rules came from.

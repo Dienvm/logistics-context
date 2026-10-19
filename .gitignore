@@ -1,0 +1,14 @@
+# Legacy WordPress dump + backup: contains password hashes and customer leads. Never commit.
+wordpress-site/
+*.sql
+*.sql.gz
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# OS / tool noise
+.DS_Store
+.claude/scheduled_tasks.lock
+.claude/settings.local.json

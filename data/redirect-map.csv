@@ -1,0 +1,64 @@
+old_url,new_url_vi,new_url_en,status_code,notes
+https://43logistics.vn/,https://43logistics.vn/,https://43logistics.vn/en/,200,Home - giữ nguyên URL; thêm bản EN
+https://43logistics.vn/home1/,https://43logistics.vn/,https://43logistics.vn/en/,301,Slug cũ của front page
+https://43logistics.vn/dich-vu/,https://43logistics.vn/dich-vu/,https://43logistics.vn/en/services/,200,Giữ URL; viết lại thành hub dịch vụ thật (đang là trang demo Lorem ipsum)
+https://43logistics.vn/dich-vu/gui-hang-di-singapore/,https://43logistics.vn/gui-hang-di-singapore/,https://43logistics.vn/en/shipping-to-singapore/,301,Chuẩn hoá route page về root /gui-hang-di-{nuoc}/
+https://43logistics.vn/dich-vu/gui-hang-di-malaysia/,https://43logistics.vn/gui-hang-di-malaysia/,https://43logistics.vn/en/shipping-to-malaysia/,301,Chuẩn hoá route page về root
+https://43logistics.vn/dich-vu/gui-hang-di-han-quoc/,https://43logistics.vn/gui-hang-di-han-quoc/,https://43logistics.vn/en/shipping-to-korea/,301,Chuẩn hoá route page về root
+https://43logistics.vn/dich-vu/gui-hang-di-dai-loan/,https://43logistics.vn/gui-hang-di-dai-loan/,https://43logistics.vn/en/shipping-to-taiwan/,301,Chuẩn hoá route page về root; viết lại nội dung (hiện trùng trang Nhật và có link sang 3a.net.vn)
+https://43logistics.vn/gui-hang-di-nhat-ban-2-chieu/,https://43logistics.vn/gui-hang-di-nhat-ban/,https://43logistics.vn/en/shipping-to-japan/,301,Bỏ hậu tố -2-chieu; nếu có tuyến Nhật→VN thì làm trang nhập riêng (NEEDS CONFIRMATION)
+https://43logistics.vn/gui-hang-di-thai-lan/,https://43logistics.vn/gui-hang-di-thai-lan/,https://43logistics.vn/en/shipping-to-thailand/,200,Giữ nguyên URL
+https://43logistics.vn/gui-hang-di-my/,https://43logistics.vn/gui-hang-di-my/,https://43logistics.vn/en/shipping-to-usa/,200,Giữ nguyên URL
+https://43logistics.vn/dich-vu/gui-hang-di-thai-lan/,https://43logistics.vn/gui-hang-di-thai-lan/,https://43logistics.vn/en/shipping-to-thailand/,301,URL sai đang được link từ tile trang chủ
+https://43logistics.vn/dich-vu/gui-hang-di-my/,https://43logistics.vn/gui-hang-di-my/,https://43logistics.vn/en/shipping-to-usa/,301,URL sai đang được link từ tile trang chủ
+https://43logistics.vn/nhap-hang/,https://43logistics.vn/nhap-hang/,https://43logistics.vn/en/ship-to-vietnam/,200,"Giữ URL; xây thành hub hàng nhập (hiện trống, trùng slug với Elementor landing page 858 - xoá bản landing)"
+https://43logistics.vn/van-chuyen-hang-singapore/,https://43logistics.vn/gui-hang-tu-singapore-ve-viet-nam/,https://43logistics.vn/en/singapore-to-vietnam-shipping/,301,"Slug mới khớp từ khoá ""gửi hàng singapore về việt nam"""
+https://43logistics.vn/van-chuyen-hang-malaysia/,https://43logistics.vn/nhap-hang/,https://43logistics.vn/en/ship-to-vietnam/,301,Trang trống. Nếu doanh nghiệp có tuyến Malaysia→VN: tạo /gui-hang-tu-malaysia-ve-viet-nam/ và trỏ về đó (NEEDS CONFIRMATION)
+https://43logistics.vn/van-chuyen-hang-thai-lan/,https://43logistics.vn/nhap-hang/,https://43logistics.vn/en/ship-to-vietnam/,301,Trang trống. Nếu có tuyến Thái Lan→VN: tạo /gui-hang-tu-thai-lan-ve-viet-nam/ (NEEDS CONFIRMATION)
+https://43logistics.vn/gioi-thieu/,https://43logistics.vn/gioi-thieu/,https://43logistics.vn/en/about/,200,Giữ URL; viết lại nội dung thật
+https://43logistics.vn/lien-he/,https://43logistics.vn/lien-he/,https://43logistics.vn/en/contact/,200,Giữ URL
+https://43logistics.vn/tu-van-kinh-nghiem/,https://43logistics.vn/kinh-nghiem/,https://43logistics.vn/en/guides/,301,Trang trống → blog hub mới
+https://43logistics.vn/tieu-de/,,,410,Trang Lorem ipsum - xoá vĩnh viễn
+https://43logistics.vn/top-5-luu-y-gui-hang-sang-singapore/,https://43logistics.vn/kinh-nghiem/top-5-luu-y-gui-hang-sang-singapore/,https://43logistics.vn/en/guides/singapore-shipping-tips/,301,Blog vào prefix /kinh-nghiem/; bản EN chỉ tạo khi đã dịch
+https://43logistics.vn/mon-hang-khong-duoc-gui-sang-han-quoc/,https://43logistics.vn/kinh-nghiem/mon-hang-khong-duoc-gui-sang-han-quoc/,https://43logistics.vn/en/guides/items-you-cannot-ship-to-korea/,301,Blog vào prefix /kinh-nghiem/
+https://43logistics.vn/van-chuyen-hang-di-singapore-phuong-thuc-va-loi-ich/,https://43logistics.vn/kinh-nghiem/top-5-luu-y-gui-hang-sang-singapore/,,301,Bài thin 543 từ - gộp vào bài Singapore 2025
+https://43logistics.vn/category/gui-hang/,https://43logistics.vn/kinh-nghiem/,https://43logistics.vn/en/guides/,301,Category archive → blog hub
+https://43logistics.vn/category/gui-hang/gui-hang-sang-singapore/,https://43logistics.vn/kinh-nghiem/,https://43logistics.vn/en/guides/,301,Có thể đổi thành /kinh-nghiem/?tuyen=singapore nếu làm filter
+https://43logistics.vn/category/gui-hang/gui-hang-di-han-quoc-gui-hang/,https://43logistics.vn/kinh-nghiem/,https://43logistics.vn/en/guides/,301,Category archive → blog hub
+https://43logistics.vn/category/uncategorized/,https://43logistics.vn/kinh-nghiem/,https://43logistics.vn/en/guides/,301,Category mặc định
+https://43logistics.vn/category/tu-van/,https://43logistics.vn/kinh-nghiem/,https://43logistics.vn/en/guides/,301,Category rỗng
+https://43logistics.vn/category/uncategorized/gui-hang-di-han-quoc/,https://43logistics.vn/kinh-nghiem/,https://43logistics.vn/en/guides/,301,Category rỗng trùng tên
+https://43logistics.vn/tag/gui-hang-sang-singapore/,https://43logistics.vn/kinh-nghiem/,,301,Tag (đang noindex) - không tạo lại tag archive
+https://43logistics.vn/tag/gui-hang-sang-singapore-gia-re/,https://43logistics.vn/kinh-nghiem/,,301,Tag (noindex)
+https://43logistics.vn/tag/gui-hang-sang-singapore-nhanh/,https://43logistics.vn/kinh-nghiem/,,301,Tag (noindex)
+https://43logistics.vn/tag/gui-hang-sang-singapore-tien-loi/,https://43logistics.vn/kinh-nghiem/,,301,Tag (noindex)
+https://43logistics.vn/tag/gui-hang-sang-han-nhanh-chong/,https://43logistics.vn/kinh-nghiem/,,301,Tag (noindex)
+https://43logistics.vn/tag/gui-hang-sang-han-tien-loi/,https://43logistics.vn/kinh-nghiem/,,301,Tag (noindex)
+https://43logistics.vn/tag/gui-hang-sang-han-tiet-kiem/,https://43logistics.vn/kinh-nghiem/,,301,Tag (noindex)
+https://43logistics.vn/tag/tu-van/,https://43logistics.vn/kinh-nghiem/,,301,Tag rỗng
+https://43logistics.vn/author/admin/,https://43logistics.vn/kinh-nghiem/,,301,Author archive (noindex) - lộ username admin
+https://43logistics.vn/2023/10/,https://43logistics.vn/kinh-nghiem/,,301,Date archive
+https://43logistics.vn/2023/10/19/,https://43logistics.vn/kinh-nghiem/,,301,Date archive (link ngày đăng bài)
+https://43logistics.vn/2023/10/25/,https://43logistics.vn/kinh-nghiem/,,301,Date archive (link ngày trên trang Singapore)
+https://43logistics.vn/2023/10/30/,https://43logistics.vn/kinh-nghiem/,,301,Date archive (link ngày trên trang Mỹ)
+https://43logistics.vn/2025/11/,https://43logistics.vn/kinh-nghiem/,,301,Date archive
+https://43logistics.vn/portfolio/portfolio-1/,,,410,CPT portfolio từ theme 2016 - kiểm tra có public không (NEEDS CONFIRMATION)
+https://43logistics.vn/portfolio/portfolio-1-2/,,,410,CPT portfolio 2016
+https://43logistics.vn/portfolio/portfolio-1-3/,,,410,CPT portfolio 2016
+https://43logistics.vn/portfolio/portfolio-1-4/,,,410,CPT portfolio 2016
+https://43logistics.vn/portfolio/portfolio-1-5/,,,410,CPT portfolio 2016
+https://43logistics.vn/feed/,https://43logistics.vn/kinh-nghiem/rss.xml,https://43logistics.vn/en/guides/rss.xml,301,RSS bài viết
+https://43logistics.vn/comments/feed/,https://43logistics.vn/kinh-nghiem/rss.xml,,301,Bỏ comment feed
+https://43logistics.vn/sitemap_index.xml,https://43logistics.vn/sitemap.xml,,301,Sitemap Rank Math
+https://43logistics.vn/post-sitemap.xml,https://43logistics.vn/sitemap.xml,,301,Sitemap con AIOSEO
+https://43logistics.vn/page-sitemap.xml,https://43logistics.vn/sitemap.xml,,301,Sitemap con AIOSEO
+https://43logistics.vn/category-sitemap.xml,https://43logistics.vn/sitemap.xml,,301,Sitemap con AIOSEO
+https://43logistics.vn/post_tag-sitemap.xml,https://43logistics.vn/sitemap.xml,,301,Sitemap con AIOSEO
+https://43logistics.vn/sitemap.rss,https://43logistics.vn/sitemap.xml,,301,Đang khai báo trong robots.txt
+https://43logistics.vn/sitemap.xml,https://43logistics.vn/sitemap.xml,,200,"Next.js sinh động (app/sitemap.ts), gồm cả URL /en/ + hreflang"
+https://43logistics.vn/wp-content/uploads/*,https://43logistics.vn/wp-content/uploads/*,,200,WILDCARD REWRITE (không phải redirect): Next.js rewrites() proxy cùng path tới Supabase Storage bucket media/uploads/* - giữ URL ảnh cho Google Images và link ngoài
+https://43logistics.vn/?page_id=*  /?p=*,(theo ID → URL mới),,301,"WILDCARD: map ID WordPress cũ (580, 705, 834, 836, 837, 838, 851, 866, 3596, 694, 3570, 3587…) sang URL mới"
+https://43logistics.vn/?attachment_id=*  và attachment slug,https://43logistics.vn/,,301,WILDCARD: Rank Math hiện redirect attachment về trang chủ - giữ hành vi này
+https://43logistics.vn/wp-admin/*  /wp-login.php  /xmlrpc.php,,,410,WILDCARD: không còn WordPress
+https://43logistics.vn/wp-json/*,,,410,WILDCARD: REST API WordPress đang public
+http://43logistics.vn/*  và www.43logistics.vn/*,https://43logistics.vn/*,,301,"WILDCARD: 1 hop duy nhất tới https non-www (menu ""Trang chủ"" đang dùng http://)"

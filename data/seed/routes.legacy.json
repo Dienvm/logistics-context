@@ -1,0 +1,549 @@
+{
+  "$comment": "LEGACY SEED - unverified. Extracted from WordPress DB dump 2026-10-18 (page post_content). All prices VND. weightMaxKg null = open-ended. isVerified=false until operations confirm (see docs/context/11-open-questions.md Q-04/Q-05).",
+  "routes": [
+    {
+      "key": "sg",
+      "direction": "outbound",
+      "countryCode": "SG",
+      "vi": {
+        "name": "Singapore",
+        "slug": "gui-hang-di-singapore"
+      },
+      "en": {
+        "name": "Singapore",
+        "slug": "shipping-to-singapore"
+      },
+      "methods": [
+        "air"
+      ],
+      "transitDaysMin": 1,
+      "transitDaysMax": 2,
+      "transitNote": "ngày làm việc kể từ ngày bay; hàng đông lạnh giao trong 24h",
+      "flightSchedule": "Thứ 3-5-7 hàng tuần",
+      "rates": [
+        {
+          "method": "air",
+          "weightMinKg": 1,
+          "weightMaxKg": 5,
+          "pricePerKgVnd": 150000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 6,
+          "weightMaxKg": 20,
+          "pricePerKgVnd": 88000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 21,
+          "weightMaxKg": 100,
+          "pricePerKgVnd": 68000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 100,
+          "pricePerKgVnd": 57000,
+          "contactForPrice": false
+        }
+      ],
+      "notes": [
+        "Giao hàng tận nơi không phát sinh thêm chi phí",
+        "Giá chưa bao gồm VAT, phí bảo hiểm hàng hóa nếu có",
+        "CONFLICT: blog 11/2025 says air 85.000 VND/kg and sea ~0,8 SGD/kg (7-10 days)"
+      ],
+      "legacy": {
+        "wpId": 705,
+        "url": "/dich-vu/gui-hang-di-singapore/",
+        "updated": "2023-12-25"
+      },
+      "isActive": true,
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 0
+    },
+    {
+      "key": "my",
+      "direction": "outbound",
+      "countryCode": "MY",
+      "vi": {
+        "name": "Malaysia",
+        "slug": "gui-hang-di-malaysia"
+      },
+      "en": {
+        "name": "Malaysia",
+        "slug": "shipping-to-malaysia"
+      },
+      "methods": [
+        "air",
+        "sea"
+      ],
+      "transitDaysMin": 2,
+      "transitDaysMax": 4,
+      "transitNote": "ngày làm việc (đường bay); hàng đông lạnh 1-2 ngày; đường biển 7-10 ngày; Sabah, Sarawak chậm hơn 1-2 ngày",
+      "rates": [
+        {
+          "method": "air",
+          "weightMinKg": 1,
+          "weightMaxKg": 50,
+          "pricePerKgVnd": 68000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 51,
+          "weightMaxKg": 100,
+          "pricePerKgVnd": 58000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 100,
+          "pricePerKgVnd": 52000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 300,
+          "contactForPrice": true,
+          "notes": "Trên 300kg liên hệ"
+        }
+      ],
+      "notes": [
+        "Giá có thể thay đổi theo mùa, cân nặng, loại hàng"
+      ],
+      "legacy": {
+        "wpId": 834,
+        "url": "/dich-vu/gui-hang-di-malaysia/",
+        "updated": "2023-12-25"
+      },
+      "isActive": true,
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 1
+    },
+    {
+      "key": "kr",
+      "direction": "outbound",
+      "countryCode": "KR",
+      "vi": {
+        "name": "Hàn Quốc",
+        "slug": "gui-hang-di-han-quoc"
+      },
+      "en": {
+        "name": "South Korea",
+        "slug": "shipping-to-korea"
+      },
+      "methods": [
+        "air"
+      ],
+      "transitDaysMin": 2,
+      "transitDaysMax": 4,
+      "transitNote": "ngày làm việc",
+      "rates": [
+        {
+          "method": "air",
+          "weightMinKg": 1,
+          "weightMaxKg": 100,
+          "pricePerKgVnd": 75000,
+          "contactForPrice": false,
+          "promoLabel": "Đồng giá"
+        },
+        {
+          "method": "air",
+          "weightMinKg": 100,
+          "contactForPrice": true
+        }
+      ],
+      "notes": [
+        "Bảng giá áp dụng cho mọi loại hàng hóa, không tính phụ thu riêng lẻ",
+        "Miễn phí giao hàng mọi nơi tại Hàn Quốc khi đơn trên 5kg",
+        "Tracking CJ Logistics, EMS",
+        "CONFLICT: blog 11/2025 says 68.000 VND/kg"
+      ],
+      "legacy": {
+        "wpId": 836,
+        "url": "/dich-vu/gui-hang-di-han-quoc/",
+        "updated": "2024-01-04"
+      },
+      "isActive": true,
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 2
+    },
+    {
+      "key": "tw",
+      "direction": "outbound",
+      "countryCode": "TW",
+      "vi": {
+        "name": "Đài Loan",
+        "slug": "gui-hang-di-dai-loan"
+      },
+      "en": {
+        "name": "Taiwan",
+        "slug": "shipping-to-taiwan"
+      },
+      "methods": [
+        "air",
+        "sea"
+      ],
+      "transitDaysMin": 2,
+      "transitDaysMax": 4,
+      "transitNote": "ngày làm việc",
+      "rates": [
+        {
+          "method": "air",
+          "weightMinKg": 1,
+          "weightMaxKg": 100,
+          "pricePerKgVnd": 95000,
+          "contactForPrice": false,
+          "promoLabel": "Đồng giá"
+        },
+        {
+          "method": "air",
+          "weightMinKg": 100,
+          "contactForPrice": true
+        }
+      ],
+      "notes": [
+        "Giá tính cho mọi loại hàng được phép gửi, không có phụ thu riêng",
+        "Copy duplicated with Japan page and linked to a competitor - rewrite"
+      ],
+      "legacy": {
+        "wpId": 837,
+        "url": "/dich-vu/gui-hang-di-dai-loan/",
+        "updated": "2024-01-04"
+      },
+      "isActive": true,
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 3
+    },
+    {
+      "key": "jp",
+      "direction": "outbound",
+      "countryCode": "JP",
+      "vi": {
+        "name": "Nhật Bản",
+        "slug": "gui-hang-di-nhat-ban"
+      },
+      "en": {
+        "name": "Japan",
+        "slug": "shipping-to-japan"
+      },
+      "methods": [
+        "air",
+        "sea"
+      ],
+      "transitDaysMin": 2,
+      "transitDaysMax": 4,
+      "transitNote": "ngày làm việc",
+      "rates": [
+        {
+          "method": "air",
+          "weightMinKg": 1,
+          "weightMaxKg": 100,
+          "pricePerKgVnd": 95000,
+          "contactForPrice": false,
+          "promoLabel": "Đồng giá"
+        },
+        {
+          "method": "air",
+          "weightMinKg": 100,
+          "contactForPrice": true
+        }
+      ],
+      "notes": [
+        "Miễn phí giao hàng tận nơi ở Nhật Bản cho đơn trên 5kg",
+        "Title says \"2 chiều\" (two-way) - inbound JP→VN NEEDS CONFIRMATION"
+      ],
+      "legacy": {
+        "wpId": 3596,
+        "url": "/gui-hang-di-nhat-ban-2-chieu/",
+        "updated": "2025-12-31"
+      },
+      "isActive": true,
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 4
+    },
+    {
+      "key": "th",
+      "direction": "outbound",
+      "countryCode": "TH",
+      "vi": {
+        "name": "Thái Lan",
+        "slug": "gui-hang-di-thai-lan"
+      },
+      "en": {
+        "name": "Thailand",
+        "slug": "shipping-to-thailand"
+      },
+      "methods": [
+        "air_express",
+        "air_economy"
+      ],
+      "transitDaysMin": 2,
+      "transitDaysMax": 3,
+      "transitNote": "2-3 ngày bay nhanh hoặc 7-10 ngày bay chậm",
+      "rates": [
+        {
+          "method": "air",
+          "weightMinKg": 5,
+          "weightMaxKg": 10,
+          "pricePerKgVnd": 100000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 10,
+          "weightMaxKg": 30,
+          "pricePerKgVnd": 90000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 30,
+          "weightMaxKg": 40,
+          "pricePerKgVnd": 80000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 40,
+          "weightMaxKg": 50,
+          "pricePerKgVnd": 70000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 50,
+          "weightMaxKg": 70,
+          "pricePerKgVnd": 65000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 70,
+          "weightMaxKg": 100,
+          "pricePerKgVnd": 60000,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 100,
+          "contactForPrice": true
+        }
+      ],
+      "notes": [
+        "Bảng giá áp dụng cho tất cả loại hàng, không có phụ thu",
+        "Giao tận nơi có thể phát sinh thêm chi phí",
+        "Band edges overlap on old page (5-10, 10-30…) - define inclusive/exclusive"
+      ],
+      "legacy": {
+        "wpId": 851,
+        "url": "/gui-hang-di-thai-lan/",
+        "updated": "2024-01-04"
+      },
+      "isActive": true,
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 5
+    },
+    {
+      "key": "us",
+      "direction": "outbound",
+      "countryCode": "US",
+      "vi": {
+        "name": "Mỹ",
+        "slug": "gui-hang-di-my"
+      },
+      "en": {
+        "name": "United States",
+        "slug": "shipping-to-usa"
+      },
+      "methods": [
+        "air_economy",
+        "air_express",
+        "sea"
+      ],
+      "transitDaysMin": 8,
+      "transitDaysMax": 12,
+      "transitNote": "8-12 ngày bay chậm; 3-5 ngày bay thẳng; đường biển 3-4 tuần",
+      "weightRoundingKg": 0.5,
+      "rates": [
+        {
+          "method": "air",
+          "weightMinKg": 0.5,
+          "weightMaxKg": 0.5,
+          "flatPriceVnd": 1146215,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 1,
+          "weightMaxKg": 1,
+          "flatPriceVnd": 1227963,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 5,
+          "weightMaxKg": 5,
+          "flatPriceVnd": 2123931,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 10,
+          "weightMaxKg": 10,
+          "flatPriceVnd": 3143272,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 12,
+          "weightMaxKg": 12,
+          "flatPriceVnd": 3595778,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 15,
+          "weightMaxKg": 15,
+          "flatPriceVnd": 4214357,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 17,
+          "weightMaxKg": 17,
+          "flatPriceVnd": 4596289,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 20,
+          "weightMaxKg": 20,
+          "flatPriceVnd": 5173026,
+          "contactForPrice": false
+        },
+        {
+          "method": "air",
+          "weightMinKg": 21,
+          "pricePerKgVnd": 220000,
+          "contactForPrice": false
+        }
+      ],
+      "notes": [
+        "Bảng giá áp dụng cho hàng thường; hàng đông lạnh, trái cây liên hệ",
+        "Cân nặng làm tròn lên 0.5kg",
+        "Old table lists only some weights (0.5, 1, 5, 10, 12, 15, 17, 20kg) - intermediate weights NEEDS CONFIRMATION"
+      ],
+      "legacy": {
+        "wpId": 838,
+        "url": "/gui-hang-di-my/",
+        "updated": "2024-01-04"
+      },
+      "isActive": true,
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 6
+    },
+    {
+      "key": "sg-vn",
+      "direction": "inbound",
+      "countryCode": "SG",
+      "vi": {
+        "name": "Singapore → Việt Nam",
+        "slug": "gui-hang-tu-singapore-ve-viet-nam"
+      },
+      "en": {
+        "name": "Singapore → Vietnam",
+        "slug": "singapore-to-vietnam-shipping"
+      },
+      "methods": [
+        "air",
+        "sea"
+      ],
+      "pricesPublic": false,
+      "rates": [],
+      "notes": [
+        "Giá cước không công khai - liên hệ để báo giá",
+        "Nhận tại kho Singapore, phân loại & repack miễn phí, bay về kho HN hoặc HCM, cân lại và thanh toán trước khi ra hàng",
+        "Bảo hiểm 10% → đền bù 100% giá trị; không khai giá trị → đền bù x3 phí vận chuyển",
+        "Dịch vụ: checkout, order, làm permit"
+      ],
+      "legacy": {
+        "wpId": 866,
+        "url": "/van-chuyen-hang-singapore/",
+        "updated": "2024-01-04"
+      },
+      "isActive": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 7
+    },
+    {
+      "key": "my-vn",
+      "direction": "inbound",
+      "countryCode": "MY",
+      "vi": {
+        "name": "Malaysia → Việt Nam",
+        "slug": "gui-hang-tu-malaysia-ve-viet-nam"
+      },
+      "en": {
+        "name": "Malaysia → Vietnam",
+        "slug": "malaysia-to-vietnam-shipping"
+      },
+      "isActive": false,
+      "rates": [],
+      "notes": [
+        "Empty page on old site - NEEDS CONFIRMATION"
+      ],
+      "legacy": {
+        "wpId": 867,
+        "url": "/van-chuyen-hang-malaysia/"
+      },
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 8
+    },
+    {
+      "key": "th-vn",
+      "direction": "inbound",
+      "countryCode": "TH",
+      "vi": {
+        "name": "Thái Lan → Việt Nam",
+        "slug": "gui-hang-tu-thai-lan-ve-viet-nam"
+      },
+      "en": {
+        "name": "Thailand → Vietnam",
+        "slug": "thailand-to-vietnam-shipping"
+      },
+      "isActive": false,
+      "rates": [],
+      "notes": [
+        "Empty page on old site - NEEDS CONFIRMATION"
+      ],
+      "legacy": {
+        "wpId": 868,
+        "url": "/van-chuyen-hang-thai-lan/"
+      },
+      "pricesPublic": true,
+      "isVerified": false,
+      "volumetricDivisor": 5000,
+      "sort": 9
+    }
+  ]
+}
