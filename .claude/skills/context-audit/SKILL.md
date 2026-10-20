@@ -1,101 +1,212 @@
 ---
 name: context-audit
-description: Repository memory integrity check for the 43logistics.vn workspace. Finds contradictions between AGENTS.md, ADRs, docs/context, data files, skills, specs and the actual app code (versions, paths, scripts). Outputs a risk inventory with recommended actions — does not rewrite anything.
+description: Repository memory integrity check for the 43logistics.vn workspace. Finds contradictions between AGENTS.md, ADRs, docs/context, data, skills, specs and the actual app code; broken supersession chains; duplicate current docs; missing index pointers; stale references. Outputs a risk inventory with recommended commands, cross-checked and debated with Codex — does not rewrite docs.
 ---
 
-# Context Audit — does the workspace contradict itself?
+# Context Audit — Repository Memory Integrity
 
-This skill differs from `/doc-review`: it checks the workspace as a memory system, not the quality of one doc. It asks whether an agent that follows these files would get conflicting or false guidance.
+> **Before Step 1:** follow AGENTS.md §6 "Running skills". Resolve and `cd` to the context root, do the state recovery, substitute and quote every `<placeholder>`, and run long commands in the background in Claude Code (synchronously in Codex).
 
-**Output:** a risk inventory and recommended commands. **Do not edit files.**
+You are checking whether this workspace's docs, as a whole, give consistent and coherent guidance to AI agents and team members.
+
+This is different from `/doc-review`. You are not checking one doc's quality; you are checking whether **the workspace as a memory system contradicts itself, or contradicts the app it describes**.
+
+**Output:** a risk inventory with recommended commands, plus a Codex debate record. Do NOT rewrite any docs.
+
+**Project mapping (sample → this repo):**
+
+| Sample concept | In this repo |
+| --- | --- |
+| `docs/v0.2/` | `docs/adr/` (status lines) |
+| `docs/discussions/` | `docs/proposals/` (front matter) |
+| `docs/INDEX.md` | `docs/context/00-index.md` |
+| BLUEPRINT/UPDATE-PLAN | `AGENTS.md` + `10-roadmap.md` |
+
+The extra checks 3g–3k cover this repo's two-repo setup.
 
 ---
 
-## Step 1 — Inventory
+## Step 1 — Collect all docs and their front matter
+
+Read the first 15 lines of every `.md` file in:
+
+- `docs/adr/`
+- `docs/proposals/`
+- `specs/` and `lessons/`
 
 ```bash
-ls docs/context docs/adr docs/proposals specs lessons 2>/dev/null
-head -15 docs/proposals/*.md specs/*.md lessons/*.md 2>/dev/null
 grep -n "^- Status" docs/adr/*.md
+find docs/proposals specs lessons -maxdepth 1 -type f -name '*.md' 2>/dev/null | sort   # empty folders are fine (no zsh glob errors)
 ```
 
-Build a table of `file | type | status | owner_repo | updated`.
+For each listed file, read its front matter through the closing `---`. For ADRs, read the status line.
 
-## Step 2 — Ground truth
+Build a table:
 
-Read `AGENTS.md` in full, the status and decision headings of every ADR, and `docs/context/00-index.md`.
+```
+filename | type | status | superseded_by | owner_repo | roadmap | updated
+```
 
-## Step 3 — Checks
+---
 
-### 3a — Stack claims vs installed code
-Compare the "In the app today" column of `AGENTS.md` §3 with `43logistics.vn/package.json`, its config files (`next.config.*`, `proxy.ts`/`middleware.ts`, `biome.json`, `tailwind.config.*`, `drizzle.config.ts`) and its folder layout. Flag any row that is no longer true. That includes gaps that have closed but are still listed as open.
+## Step 2 — Read the index and authoritative docs
 
-### 3b — Paths that don't exist
-Grep `AGENTS.md`, `docs/context/*.md` and `.claude/skills/*/SKILL.md` for code paths (`app/`, `components/`, `server/`, `db/`, `lib/`, `scripts/`, `src/`). A missing path is fine if the text marks it as planned (a roadmap ID or "after F-xx"). Flag it otherwise. Any `src/` reference contradicts ADR 0002.
+Read in full:
 
-### 3c — Commands
-Check every row of the `AGENTS.md` §7 table: a row marked "exists" must be in `package.json` `scripts`, and a planned row must name a roadmap ID.
+- `docs/context/00-index.md`
+- `AGENTS.md`
+- `docs/context/10-roadmap.md`
 
-### 3d — One fact, one place
-Grep for business facts outside their homes. The homes are `01-business.md`, `data/seed/*`, `legacy-copy/*` and `07-data-model.md` settings examples.
+Also read the status and Decisions headings of every ADR. These are the ground truth: contradictions in current docs are measured against them.
+
+---
+
+## Step 3 — Check for these integrity risks
+
+### 3a — Duplicate current docs on same topic
+
+Two or more `status: current` proposals, or accepted ADRs, that cover the same subject (stack, analytics, consent, layout, workflow…). Resolve the amendment and supersession links first: ADR 0002 amends ADR 0001 and is not a duplicate. Flag only docs that compete for authority, and name the one that should be the single source of truth.
+
+### 3b — Broken supersession chains
+
+- A proposal with `status: superseded` but no `superseded_by` in its YAML, or an ADR status line "Superseded by …" with no target. These are two different formats: parse YAML for proposals and the status line for ADRs, and resolve numeric ADR targets (`0004` → `docs/adr/0004-*.md`).
+- A `superseded_by` pointing to a filename that doesn't exist.
+- A supersession loop (A supersedes B, B supersedes A).
+- An ADR marked "Amended by NNNN" where ADR NNNN doesn't exist.
+
+### 3c — Index gaps
+
+- `status: current` proposals not listed in the `00-index.md` Proposals table.
+- Index rows whose status differs from the file's front matter. Normalise first: the index cell `superseded → winner.md` equals YAML `superseded` (check the target separately).
+- ADRs missing from the `00-index.md` ADR row.
+- Specs missing from `specs/INDEX.md`, or whose INDEX status differs from the front matter.
+- Lessons missing from `lessons/INDEX.md`, INDEX rows pointing to missing lesson files, and lesson status mismatches (`open`/`resolved`).
+
+### 3d — Cross-repo docs missing consequences
+
+Read the docs with `owner_repo: both` in full. Judge each by its own artifact's sections: Consequences for proposals and ADRs; Affected Areas plus Dependencies & Risks for specs. Flag those that don't describe both the context impact and the app impact.
+
+### 3e — Contradiction with AGENTS.md / ADRs
+
+Do any current proposals, `docs/context/*` sections or skills make claims that contradict `AGENTS.md` §3–4 or an accepted ADR? For example:
+
+- `src/` paths (ADR 0002 says root layout);
+- ESLint as the primary linter;
+- GTM-only analytics;
+- `middleware.ts` as the target;
+- tags loaded before consent.
+
+Check titles, headings and greps first; deep-read only when a hit raises a flag.
+
+### 3f — Stale drafts
+
+Proposals or specs with `status: draft` whose `updated` date is more than 90 days before today. Flag them for an archive or promotion decision.
+
+### 3g — Stack claims vs installed code
+
+Compare the "In the app today" column of `AGENTS.md` §3 with `43logistics.vn/package.json`, the config files (`next.config.*`, `proxy.ts`/`middleware.ts`, `biome.json`, `tailwind.config.*`, `drizzle.config.ts`) and the folder layout. Also check the `AGENTS.md` §7 commands: an "exists" row must be in `scripts`, and a planned row must name a roadmap ID.
+
+### 3h — One fact, one place
 
 ```bash
 grep -rnE "0979|0827|đ/kg|[0-9]{2,3}\.000" AGENTS.md docs/context .claude/skills | grep -vE "01-business|legacy-copy|07-data-model"
 ```
 
-Flag values that differ between files, and prices that appear in prose instead of in `route_rates`.
+Flag values that differ between files, prices written in prose instead of `route_rates`, and `NEEDS CONFIRMATION` items in `01-business.md` without a matching open Q-ID. For each **Answered** row in `11-open-questions.md`, check that the answer reached its canonical home: business facts → `01-business.md`; hosting and architecture → `06-architecture.md` or an ADR; tracking → `05-seo-and-tracking.md`; i18n → `08-i18n.md`.
 
-### 3e — Open questions propagation
-For each row in the **Answered** section of `11-open-questions.md`, check that `01-business.md` (and the seed data, if relevant) carry the answered value. For each `NEEDS CONFIRMATION` in `01-business.md`, check that a matching open Q-ID exists.
+### 3i — Data files
 
-### 3f — Data counts
-Check that the row counts quoted in the docs match the files:
+Resolve each file's canonical location from the roadmap state first:
 
-- `data/redirect-map.csv`: 63 data rows.
-- `data/media-inventory.csv`: 330 rows, of which 175 are `migrate`.
+- `redirect-map.csv`, `design-tokens.json` and `seed/*.json` live in the context `data/` before F-01 is `[x]`, and in `43logistics.vn/data/` after.
+- `media-inventory.csv` lives in the context `data/` until C-04 is `[x]`.
 
-After F-01, check that `redirect-map.csv`, `design-tokens.json` and `seed/*.json` exist in `43logistics.vn/data/` and were removed from the context `data/` (ADR 0002 §11). `media-inventory.csv` stays in the context workspace until C-04. Two live copies of the same file is a 🔴 risk.
+Then check the counts at that location: `redirect-map.csv` has 63 data rows, and `media-inventory.csv` has 330 rows, 175 of them with `action = migrate`.
 
-### 3g — Roadmap vs specs
-- A `[x]` task in `10-roadmap.md` without an `implemented` spec, or one marked done by hand: 🟡.
-- A spec marked `implemented` whose roadmap task is still `[ ]`: 🔴.
-- A spec without a roadmap ID: 🟡.
+Two live copies of the same file is 🔴.
 
-### 3h — Proposals and ADRs lifecycle
-- A `superseded` proposal without `superseded_by`, or one pointing at a missing file.
-- A `current` proposal that contradicts an accepted ADR.
-- Two current docs on the same topic.
-- A draft with `updated` more than 90 days ago.
-- A proposal missing from the `00-index.md` Proposals table.
+### 3j — Roadmap vs specs; skills vs workspace
 
-### 3i — Skills and instruction files
-Grep `.claude/skills` and `CLAUDE.md` for references to things that don't exist here: `foresent`, `BLUEPRINT`, `UPDATE-PLAN`, `docs/v0.2`, `yarn`, `telegram`, `send_to_codex`, `preflight.sh`, or any `scripts/*.sh` that is missing. Also confirm that `.agents/skills` is still a symlink to `.claude/skills`.
+- **Roadmap and specs:**
+  - a roadmap `[x]` without an `implemented` spec is 🟡;
+  - an `implemented` spec whose roadmap box is still `[ ]` is 🔴;
+  - a spec without a roadmap ID is 🟡.
+- **Skills:** grep `.claude/skills` and `CLAUDE.md` for references to things that don't exist here: `foresent`, `BLUEPRINT`, `UPDATE-PLAN`, `docs/v0.2`, `yarn`, `send_to_codex`, `preflight.sh`, missing `scripts/*`. Confirm that `.agents/skills` is still a symlink to `.claude/skills`, and that every skill ends with a Codex review/debate step (ADR 0003 §6).
 
-### 3j — Secrets and personal data hygiene
-These are path checks only. **Never print values.**
+### 3k — Secrets & personal data hygiene
 
-- Report any line that `git -C 43logistics.vn ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$'` returns.
-- Check that `wordpress-site/` is listed in the root `.gitignore`.
-- Check that no `*.sql` file sits outside `wordpress-site/`.
+These checks look at paths only. **Never print values.**
+
+- `git -C 43logistics.vn ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$'` must be empty.
+- `wordpress-site/` must be in the root `.gitignore`.
+- No database **dump** may exist outside `wordpress-site/`. Drizzle migrations in `43logistics.vn/db/migrations/*.sql` are legitimate. Flag other `*.sql`, `*.sql.gz` or `*.dump` files by path, together with any file containing `INSERT INTO` for `wp_`/`wpiw_` tables (check with `grep -l`, never print the content).
+
+---
 
 ## Step 4 — Report
 
-```markdown
-## Context Audit — <date>
+Write the report to `/tmp/43l-context-audit.md` and show it:
 
-| # | Risk | Severity | Files | Recommended action |
-|---|------|----------|-------|--------------------|
-| 1 | AGENTS §3 says next ^15.3.3 but package.json has 16.x | 🔴 | AGENTS.md, package.json | Update §3 row; tick F-01 via /mark-implemented |
+```markdown
+## Context Audit — Repository Memory Integrity — <date>
+
+### Risk Inventory
+
+| # | Risk | Severity | Files | Recommended command |
+|---|------|----------|-------|---------------------|
+| 1 | Duplicate current docs: consent banner | 🔴 | docs/proposals/consent-a.md, consent-b.md | `/supersede consent-a.md consent-b.md` |
+| 2 | AGENTS §3 says next ^15.3.3 but package.json has 16.x | 🔴 | AGENTS.md, package.json | Correct the §3 row now. Run `/mark-implemented <f-01 spec slug> <merged app PR>` only if F-01's ACs are evidenced |
+| 3 | Missing index pointer | 🟡 | docs/proposals/zalo-oa.md | Add to 00-index Proposals table |
+| 4 | Stale draft >90 days | 🟢 | docs/proposals/blog-plan.md | Archive or promote |
 
 ### Overall health
-<2–3 sentences: would an agent following these files build the right thing?>
+<2-3 sentences on whether the workspace gives consistent guidance or has meaningful gaps an AI would stumble on>
 
-### Fix order
-1. …
+### Recommended fix order
+1. ...
+2. ...
 ```
 
-Severity:
+Severity guide:
 
-- 🔴 An agent would act on false or contradictory guidance, a secret or personal data is exposed, or two sources of truth exist.
-- 🟡 A gap or stale pointer that could confuse.
-- 🟢 Housekeeping.
+- 🔴 **High:** an agent or team member reading the workspace would get conflicting signals, false stack claims or broken references; or a secret or personal data is exposed.
+- 🟡 **Medium:** a gap or inconsistency that could confuse but doesn't directly contradict.
+- 🟢 **Low:** housekeeping, no immediate impact on guidance.
+
+---
+
+## Step 5 — Codex review, verify & debate
+
+Codex audits independently. Then the two inventories are reconciled.
+
+**5a — Availability:** run `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found" and stop.
+
+**5b — Round 1, Codex audits** (read-only; run it in the background and wait for the notification):
+
+```bash
+codex exec -s read-only --skip-git-repo-check -C "$PWD" \
+  -o /tmp/43l-codex-context-audit-r1.md \
+  "Independently audit this workspace as an AI-agent memory system: AGENTS.md, CLAUDE.md, docs/adr, docs/proposals, docs/context, specs, lessons, data, .claude/skills, and 43logistics.vn/package.json + config files. Then compare with Claude's inventory at /tmp/43l-context-audit.md: for each Claude row agree/disagree (with evidence, and severity change if any), and list risks Claude MISSED. Path-only checks for secrets — never print .env* or wordpress-site/ contents. Do NOT edit files. Return numbered items: type (verdict-on-#N | missed), severity, file:line, issue, recommended command." </dev/null
+```
+
+**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.
+
+**5c — Claude verifies:** check each item. Write `/tmp/43l-codex-context-audit-verdicts.md`, with one line per item: `#N accept | partial | reject — <evidence>`.
+
+**5d — Round 2, debate** (only if any verdict is `partial` or `reject`):
+
+```bash
+codex exec -s read-only --skip-git-repo-check -C "$PWD" \
+  -o /tmp/43l-codex-context-audit-r2.md \
+  "Round 2. Your items: /tmp/43l-codex-context-audit-r1.md. Claude's verdicts: /tmp/43l-codex-context-audit-verdicts.md. For each partial/reject item: concede, or rebut with file:line evidence in ≤3 sentences. Do NOT edit files." </dev/null
+```
+
+Stop after 2 rounds.
+
+**5e — Merge.** Add the accepted "missed" items to `/tmp/43l-context-audit.md`, and adjust severities that were agreed. Mark disputed rows `⚖️ disputed` for the user to decide. Show the final inventory with this line:
+
+```
+Codex debate: N items | agreed N | conceded by Codex N | disputed → user N
+```
+
+Still no doc edits: the user runs the recommended commands.

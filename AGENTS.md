@@ -19,7 +19,7 @@ Languages: **Vietnamese (default, no URL prefix)** and **English (`/en/…`)**, 
 
 | Path | What | Git |
 | --- | --- | --- |
-| `./` (this folder) | **Context workspace:** `AGENTS.md`, `CLAUDE.md`, `docs/`, `specs/`, `lessons/`, `data/`, `.claude/skills/` (`.agents/skills` is a symlink to it) | Git repo, branch `main` (initialised 2026-10-20). No remote yet: add one before using the skills' push/PR steps |
+| `./` (this folder) | **Context workspace:** `AGENTS.md`, `CLAUDE.md`, `docs/`, `specs/`, `lessons/`, `data/`, `.claude/skills/` (`.agents/skills` is a symlink to it) | Git repo, branch `main`, remote `origin` = `github.com/Dienvm/logistics-context` |
 | `43logistics.vn/` | **App repo:** all runtime code (Next.js). `github.com/Dienvm/43logistics.vn`, registered as a submodule | Own repo, branch `main` |
 | `wordpress-site/` | Legacy SQL dump + 1.4 GB full backup. **Read-only input** | Never committed (`.gitignore`). It contains password hashes and customer leads: grep it for specific facts only, and never copy rows into docs, prompts or either repo |
 | `refer-docs/` | The original context-repo template these rules were adapted from | Reference only, not project guidance |
@@ -174,6 +174,14 @@ repo health → /context-audit · /doc-review --audit
 | `/fix-implement <spec>` | Fixing code that doesn't meet its spec |
 | `/mark-implemented <spec> <pr>` | The only way to set `status: implemented` |
 | `/lesson <slug>` | Recording a learning that has a concrete follow-up |
+
+### Running skills (applies to every `SKILL.md`)
+
+- **Root first:** run every skill from the context root. Resolve it before Step 1 and `cd` there: `ROOT=$(git rev-parse --show-superproject-working-tree 2>/dev/null); [ -n "$ROOT" ] || ROOT=$(git rev-parse --show-toplevel); cd "$ROOT"`. Then check `test -f AGENTS.md -a -d .claude/skills`. Context documents are never created inside `43logistics.vn/`.
+- **State recovery:** do the §6 state recovery before the skill's own context budget. A skill's "read only…" limits apply on top of it.
+- **Placeholders:** every `<placeholder>` in a skill's commands must be substituted with a validated value and passed as a quoted variable. Example: `SLUG='consent-banner'; OUT="/tmp/43l-codex-proposal-$SLUG-r1.md"`. Never run a command that still contains `<` or `>`.
+- **Long runs:** Claude Code uses the Bash tool's background mode (`run_in_background`) and waits for the completion notification. Codex, and any other agent without background tasks, runs the same command synchronously.
+- **Codex review step:** every skill ends with Codex review → Claude verify → Codex debate (at most 2 rounds), as ADR 0003 §6 requires. A missing CLI, a non-zero exit, or a missing or stale output file is reported, never silently skipped.
 
 ### Second opinion from Codex
 

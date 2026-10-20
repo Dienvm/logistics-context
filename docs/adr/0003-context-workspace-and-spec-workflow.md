@@ -25,9 +25,11 @@
    - **Plan** is `docs/context/10-roadmap.md`.
    - **Doc index** is `docs/context/00-index.md`.
    - **Spec and lesson indexes** are `specs/INDEX.md` and `lessons/INDEX.md`.
-4. **Only `/mark-implemented` sets `status: implemented`** and ticks the roadmap checkbox. It requires the merged app-repo PR link.
+4. **Only `/mark-implemented` sets `status: implemented`** and ticks the roadmap checkbox. It requires a merged PR in the spec's owning repo: the app repo for `app`/`both`, and the context repo for `context`.
 5. **The Codex second opinion uses the `codex` CLI** (`codex exec -s read-only …`), not a tmux bridge. Codex reads the same skills through the `.agents/skills → .claude/skills` symlink and the same rules through `AGENTS.md`.
-6. **No Telegram/notification step.** The PR link is reported in the agent's summary. A notifier can be added later as a script plus an AGENTS.md rule.
+6. **Skills follow the sample structure in `refer-docs/skills/`** (same steps, numbering, templates and report formats, with project substitutions), amended 2026-10-20 at the owner's request:
+   - The notification step stays at its sample position, but runs only if `scripts/notify-telegram.sh` exists. Otherwise the agent reports the PR or spec link.
+   - Every skill ends with a **Codex review → Claude verify → Codex debate** step (at most 2 rounds), with disputed items decided by the user.
 7. **AGENTS.md is canonical; CLAUDE.md imports it** (`@AGENTS.md`). This is the reverse of the source project, because Codex, Cursor and Copilot read AGENTS.md natively.
 
 ## Alternatives considered
@@ -46,7 +48,7 @@
   git commit -m "chore: initialise context workspace"
   ```
 
-  `git submodule add` reuses the existing clone. Run `git status` before committing to confirm `wordpress-site/` and any `.env` are ignored, then add a remote. Until this is done, the skills skip their git steps and say so.
+  `git submodule add` reuses the existing clone. Run `git status` before committing to confirm `wordpress-site/` and any `.env` are ignored. The remote `origin` (`github.com/Dienvm/logistics-context`) was added afterwards; skills still skip push and PR steps when no remote exists.
 - Commit linkage between the repos:
   - each app PR body names its spec path;
   - each spec records `implementation_pr`;

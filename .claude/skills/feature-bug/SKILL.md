@@ -1,217 +1,520 @@
 ---
 name: feature-bug
-description: Create an implementation spec in specs/ for a roadmap task, feature or bug in the 43logistics.vn app. Interviews the user, reads the relevant context and real app paths, writes a complete spec tied to a roadmap ID. NOT for exploration — use /proposal for that.
-argument-hint: "[feature|bug] <roadmap-id or short title>"
+description: Create an implementation spec in specs/ for the 43logistics.vn app. Interviews the user, explores existing docs/specs/app code, writes a complete spec tied to a roadmap ID, has Codex review and debate it, and offers to implement. NOT for exploration — use /proposal for that.
+argument-hint: "[feature|bug] <roadmap-id or short-title>"
 ---
 
-# Feature / Bug — implementation spec
+# Feature / Bug — Implementation Spec Creator
 
-**This skill creates implementation commitments, not explorations.** If the user is still choosing between options, redirect them to `/proposal`.
+> **Before Step 1:** follow AGENTS.md §6 "Running skills". Resolve and `cd` to the context root, do the state recovery, substitute and quote every `<placeholder>`, and run long commands in the background in Claude Code (synchronously in Codex).
+
+**This skill creates implementation commitments, not exploration proposals.**
+If the user is still exploring options, redirect them to `/proposal` instead.
 
 **Context budget:**
 
 - `AGENTS.md`
+- `docs/context/00-index.md`
 - `docs/context/10-roadmap.md` (the task row)
-- `specs/INDEX.md`
-- `lessons/INDEX.md` (table only)
-- the `docs/context/*` files that the roadmap row lists under *Context*
+- the ADRs in `docs/adr/`
+- `specs/INDEX.md` and matching existing specs
 
-**Output:** `specs/<type>-<slug>.md` plus a row in `specs/INDEX.md`.
+**Output contract:** `specs/<type>-<slug>.md` + updated `specs/INDEX.md` + a Codex review/debate record.
 
-**Never:**
+**Never:** touch app code, mark anything implemented, create specs for docs-only changes.
 
-- edit app code;
-- set `status` beyond `approved`;
-- write a spec for a docs-only change (just edit the doc).
+**Project mapping (sample → this repo):**
+
+| Sample concept | In this repo |
+| --- | --- |
+| BLUEPRINT.md | `AGENTS.md` §3–4 + `docs/adr/*` + `docs/context/06-architecture.md` |
+| UPDATE-PLAN.md | `docs/context/10-roadmap.md` |
+| docs/INDEX.md | `docs/context/00-index.md` |
+| foresent-rules / foresent-robot | `context` (this workspace) / `app` (`43logistics.vn/`) |
+| Codex bridge | `codex exec` (see the final step) |
+| Claude tools when Codex runs this skill | `AskUserQuestion` → ask the same batches as plain text; `Explore` subagent → `rg`/`ls` with the same limits |
 
 ---
 
-## Step 1 — Classify
+## Step 1 — Classify and slug
 
-- **Type:** `feature` or `bug`. Ask if it's unclear.
-- **Roadmap ID:** if `$ARGUMENTS` contains one (`F-04`, `S-03`…), read that row; its *Context*, deliverable and *Accept* are the starting point. A feature without a roadmap row needs either a new row in `10-roadmap.md` (ask the user which phase it belongs to) or an explicit reason it's off-roadmap.
-- **Slug:** kebab-case, at most 6 words. Prefix the roadmap ID when there is one, e.g. `feature-s03-price-engine`.
+From `$ARGUMENTS`:
 
-## Step 2 — Gather context silently
+- **Type:** `feature` or `bug` (ask if unclear).
+- **Roadmap ID:** if `$ARGUMENTS` contains one (`F-00`, `S-03`…), read that row in `docs/context/10-roadmap.md`. Its *Context*, deliverable and *Accept* text are the starting point. Every spec needs a roadmap row (AGENTS.md §2). If none fits, propose a new row (phase, ID, *Accept*) and add it to `10-roadmap.md` only after the user approves. `roadmap: none` is not allowed.
+- **Slug:** kebab-case, max 6 words. Prefix the roadmap ID when there is one (`s03-price-engine`).
+- **Target file:** `specs/<type>-<slug>.md`.
 
-1. **Duplicates.** Check whether any `specs/INDEX.md` row has the same roadmap ID or title.
-   - **Exact match:** ask "Update `<file>` or create a separate spec?"
-   - **Partial match:** reference it under Related.
-2. **Docs.** Read the sections of the listed `docs/context/*` files that match the topic, plus any ADR about the topic.
-3. **Lessons.** Note the `lessons/INDEX.md` rows whose categories or summary match the topic.
-4. **Blocking facts.** Note the Q-IDs in `11-open-questions.md` that block the task. They become explicit placeholders in the spec, never guesses.
-5. **App scan (paths only).** If `43logistics.vn/package.json` exists:
+---
 
-   ```bash
-   ls 43logistics.vn/{app,components,server,db,lib,hooks,stores,messages,scripts,tests} 2>/dev/null
-   grep -rln "<keywords>" 43logistics.vn --include=*.ts --include=*.tsx --exclude-dir=node_modules --exclude-dir=.next | head -30
-   ```
+## Step 2 — Gather context silently (before asking questions)
 
-   For a broad search, spawn an `Explore` subagent (medium) with the same constraints: paths and line numbers only.
-6. **Stack gap.** Check `AGENTS.md` §3 for the task's prerequisites. If it needs something that isn't installed (Next 16 APIs, Tailwind v4, next-intl…) and its closing task isn't done, record that under **Dependencies**.
+### 2a — Scan existing specs for duplicates
 
-## Step 3 — Interview (AskUserQuestion, in batches; skip what is already answered)
+Read `specs/INDEX.md`. Scan for rows whose Roadmap ID or Title overlaps with the current request.
 
-Build the options from Step 2: use real paths, real roadmap IDs and real Q-IDs.
+- **Exact duplicate found:** warn the user: *"A spec for this already exists: `<filename>`. Update it, or create a separate one?"*
+  Then immediately log the duplicate attempt (before the user answers):
+  - Append a row to `specs/LESSONS.md` (create it with a header if missing): category `DUPLICATE_SPEC`, plus a description of the overlap. This file is a **duplicate-attempt log**, not a lesson; `/lesson` is only for learnings with a follow-up.
+  - This captures the pattern even if the user proceeds.
+- **Partial overlap:** note it, and reference it in the new spec's Related section.
 
-### Feature
+### 2b — Explore existing docs and code for context
 
-- **Batch 1 (intent):**
-  - What does success look like? Offer 2–3 options derived from the roadmap *Accept* text.
-  - Owner repo: `app` / `both`.
-  - Priority: `critical` / `must-have` / `nice-to-have`.
-- **Batch 2 (scope):**
-  - What is out of scope?
-  - Which surfaces are touched: public page / admin / proxy / DB schema / tracking / i18n strings?
-  - Is any blocking Q-ID acceptable as a placeholder for now?
-- **Batch 3 (acceptance):**
-  - Given/When/Then options derived from the roadmap.
-  - Failure behaviour: invalid input, missing translation, unverified route (`is_verified = false` → "Liên hệ"), no consent.
-  - Performance/SEO impact, i.e. whether it adds client JS to public pages.
-- **Batch 4 (tests):** skip for pure config work.
-  - Which behaviours to lock in: unit (Vitest), e2e (Playwright), redirect/SEO checks.
-  - Whether specific seed data is needed.
+Spawn an **Explore subagent** (subagent_type: `Explore`, thoroughness: `medium`) with this prompt:
 
-### Bug
+> "Summarize relevant context for: `<topic>`
+>
+> **Docs (read relevant sections only — do NOT read full files):**
+> 1. docs/context/10-roadmap.md — the row for `<roadmap-id>` and its listed *Context* files
+> 2. each docs/context/<NN>-*.md file named in that row's *Context* (e.g. 05 → docs/context/05-seo-and-tracking.md) — search for headings matching `<topic>`, read those sections only
+> 3. docs/adr/*.md — status lines + any decision about `<topic>`
+> 4. docs/proposals/ — list files, check front matter status, read only `status: current` files related to `<topic>`
+> 5. docs/context/11-open-questions.md — Q-IDs that block `<topic>`
+> 6. specs/INDEX.md — flag rows whose Title or Roadmap overlaps with `<topic>`
+>
+> **Lessons (table/index only — do NOT follow file links):**
+> 7. lessons/INDEX.md — read the index TABLE ONLY. Flag rows whose Summary or Categories match `<topic>`.
+> 8. lessons/ai-mistakes.md — if it exists, read the full file (it is short). Flag pattern numbers relevant to `<topic>`.
+>
+> **App scan (paths + grep only — do NOT read file contents unless specified):**
+> 9. Check if ./43logistics.vn/package.json exists. If yes:
+>    - List: app/, components/, server/, db/, lib/, hooks/, stores/, messages/, scripts/, tests/ (one level deep, paths only)
+>    - Grep `<topic keywords>` across **/*.ts and **/*.tsx (exclude node_modules, .next) — report matching file paths and line numbers only
+>    - Report the installed versions of next, react, tailwindcss, drizzle-orm, @clerk/nextjs, posthog-js from package.json
+> 10. AGENTS.md §3 — which 'In the app today' gaps does `<topic>` depend on?
+>
+> Return: (a) relevant doc sections, (b) flagged lesson rows and mistake patterns, (c) real file paths from the app that match the topic, (d) blocking Q-IDs and stack gaps"
 
-- **Batch 1:** expected vs actual behaviour; frequency; business impact (lost leads or contacts = `critical`).
-- **Batch 2:** environment (local / preview / production); which URL or locale; whether it started after a recent change.
-- **Batch 3:** where it breaks (proxy/redirect, cached query/tag, Server Action, client island, tracking, SEO metadata); any error text.
-- **Batch 4:** which regression test locks it in; the manual verification path if no test is feasible.
+Wait for the result. Use it to:
 
-Finish with plain text: "Anything else: deadline, owner constraint, campaign date?"
+- pre-fill Affected Areas with real paths from the app scan (root layout, no `src/`);
+- infer plausible interview options from the actual code structure;
+- carry flagged lessons and mistake patterns into Implementation Hints;
+- record blocking Q-IDs in `blocked_by_questions` and stack gaps under Dependencies.
+
+---
+
+## Step 3 — Interview the user (use the AskUserQuestion tool)
+
+Use `AskUserQuestion` for structured multiple-choice questions, and fall back to plain text for open-ended answers.
+
+- Run multiple batches, and read each batch's answers before deciding what to ask next.
+- Infer the options from the Step 2 findings.
+- Skip questions whose answers are already clear.
+
+---
+
+### FEATURE interview
+
+**Batch 1 — Core intent:**
+
+- "What problem does this solve?" Infer 2–3 options from the roadmap row and `01-business.md` goals (more contacts, ad conversion, trust, bilingual, speed), plus Other.
+- "Which repo owns this?" `app (43logistics.vn)` / `context (docs/data)` / `both` / Other.
+- "Who/what triggers this?" Infer from: visitor on a public page, visitor from an ads landing page, staff in `/admin`, build/deploy step, scheduled job. Plus Other.
+- "What does success look like?" Infer 2–3 outcomes from the roadmap *Accept* text, plus Other.
+
+**Batch 2 — Scope & constraints:**
+
+- "What is explicitly out of scope?" Infer 1–2 likely exclusions, plus "Nothing excluded" and Other.
+- "Does this change the data model (`07-data-model.md`) or migrations?" `Yes (schema + migration)` / `No` / `Not sure`.
+- "Does this affect URLs, redirects, metadata or tracking events (`05`, `data/redirect-map.csv`)?" `Yes` / `No` / `Not sure`.
+- "Does this add client JS to public pages (120 KB budget)?" `Yes — island needed` / `No — server only` / `Not sure`.
+- "Priority?" `nice-to-have` / `must-have` / `critical`.
+
+**Batch 3 — Edge cases & acceptance:**
+
+- "What must be true for this to be done?" Infer 2–3 Given/When/Then options from the roadmap *Accept* text, plus Other.
+- "What should happen if the input is malformed or data is missing?" Infer 2–3 likely failure modes from the architecture, plus Other. Examples:
+  - a Zod validation error returns `fieldErrors`;
+  - an unverified route (`is_verified = false`) shows "Liên hệ" instead of prices;
+  - a missing EN translation means a 404, not a VI fallback;
+  - without consent, no tracking request is sent.
+- "Any performance or scale concern?" Infer from LCP/JS budget, cache tags and invalidation, ad-traffic spikes, image weight. Plus "None" and Other.
+- "Is any blocking Q-ID acceptable as a placeholder for now?" List the Q-IDs from Step 2. Options: `Yes — placeholder behind a flag` / `No — wait for the owner`.
+
+**Batch 4 — Test plan:**
+
+Skip this batch entirely if the feature is a config-only change, a schema-only field addition with no new behaviour, or a pure scaffold with no logic. When in doubt, ask.
+
+- "Which behaviours are worth protecting with an automated test?" Infer 2–3 from the acceptance criteria, plus "None — config/scaffold only" and Other. Examples:
+  - the price engine rounds 1.3 kg to 1.5 kg;
+  - `/go/zalo` inserts a `contact_events` row and returns a 302;
+  - `/tieu-de/` returns 410.
+- "Does the test need specific seed data?" Ask only if the behaviour depends on data state (routes, rates, translations, consent). Options: `Yes — I'll describe the seed needed` / `No — generic test data is fine` / `Not sure`.
+- "Test layer preference?" `unit (Vitest, pure function)` / `integration (Vitest + test DB)` / `e2e (Playwright, full HTTP)` / `Let implementer decide`.
+
+**Follow-up (plain text, after all batches):**
+*"Anything else important — a deadline, campaign launch date, owner constraint, or legal requirement I should include?"*
+
+---
+
+### BUG interview
+
+**Batch 1 — What broke:**
+
+- "What did you expect?" Infer 2–3 expected behaviours from the docs, plus Other.
+- "What actually happened?" Infer likely failure modes, plus Other: wrong price shown, redirect chain/404, missing metadata or hreflang, tracking event not fired or fired twice, lead not saved, admin edit not reflected (cache tag), layout broken on mobile.
+- "How often?" `Always` / `Sometimes (certain conditions)` / `Only once`.
+- "Business impact?" `Low` / `Medium` / `High` / `Critical — loses contacts or leads`.
+
+**Batch 2 — Context:**
+
+- "Which repo?" `app (43logistics.vn)` / `context` / `both` / `Unknown`.
+- "Which environment?" `Local` / `Preview` / `Production` / `All`.
+- "Which locale/URL?" Infer from the report: VI root, `/en/…`, a landing page, admin.
+- "Did this recently start?" `After a recent change` / `Always existed` / `Unknown`.
+- "Is there a workaround?" `Yes` / `No` / `Not sure`.
+
+**Batch 3 — Technical details:**
+
+- "Where in the flow does it break?" Infer from the flow `proxy.ts` (410/legacy IDs/attribution/locale), cached query + `cacheTag`, Server Action, client island, `/go/[channel]`, tracking fan-out, `generateMetadata`/JSON-LD. Plus Other.
+- "Is it data-specific?" `Yes — specific routes/rates` / `Yes — specific locale/translation` / `No` / `Not sure`.
+- "Is there an error in logs, browser console or the response?" `Yes — I'll paste it` / `No visible error` / `Not sure`.
+
+**Batch 4 — Regression:**
+
+Skip this batch only if the bug is a pure copy/config fix with no behavioural change.
+
+- "Which scenario should a regression test lock in?" Derive 1–2 options from the reproduction steps, plus "Same as reproduction steps" and Other.
+- "Does the test need specific seed data?" Ask only if the bug depends on data state. Options: `Yes — I'll describe` / `No — generic` / `Not sure`.
+- "If no automated test is feasible, what is the manual verification path?" `Reproduction steps above are enough` / `Needs additional manual steps (I'll describe)` / `Cannot verify manually — explain blocker`.
+
+**Follow-up (plain text, after all batches):**
+*"Please paste the exact reproduction steps (URL, locale, device width), any error messages, and screenshots described in words."*
+
+---
+
+**Tips:**
+
+- Infer option labels from the Step 2 context: use real file paths, real roadmap IDs, real Q-IDs and real table/field names.
+- The tool auto-adds "Other", so users can always type a custom answer.
+- If a batch answer opens a new line of questioning (e.g. the user says "Yes — I'll describe it"), ask one targeted follow-up in plain text before moving to the next batch.
+- Skip questions whose answers are already clear from the roadmap row, `AGENTS.md` or the ADRs. Don't waste the user's time on obvious things.
+
+---
 
 ## Step 4 — Write the spec
 
-### Feature template
+---
+
+### FEATURE TEMPLATE
 
 ```markdown
 ---
-title: <imperative, ≤10 words>
+title: <imperative title ≤10 words>
 type: feature
 status: draft
-owner_repo: app | both
-roadmap: <ID or none>
-priority: critical | must-have | nice-to-have
+owner_repo: app | context | both
+roadmap: <ID>
+priority: must-have | nice-to-have | critical
 blocked_by_questions: [<Q-IDs or empty>]
 updated: <today YYYY-MM-DD>
 ---
 
 ## Feature: <title>
 
-### Problem
-### Proposed solution
-<!-- user-visible behaviour, not implementation -->
+### Problem Statement
+<!-- Why does this need to exist? What pain does it solve? Link to the roadmap row. -->
 
-### Acceptance criteria
-- [ ] Given …, when …, then …
+### Proposed Solution
+<!-- From the visitor/staff perspective — what, not how -->
+
+### Acceptance Criteria
+- [ ] Given <context>, when <action>, then <outcome>
+- [ ] ...
 
 ### Scope
 **In scope:**
-**Out of scope:**
+-
 
-### Affected areas
-| Repo | Layer | Path (real or planned) |
-|------|-------|------------------------|
+**Out of scope:**
+-
+
+### Affected Areas
+| Repo | Layer | File / Path (likely) |
+|------|-------|----------------------|
 | app | server/queries | server/queries/routes.ts |
+| app | page | app/[locale]/(site)/[slug]/page.tsx |
+| context | doc | docs/context/<file>.md |
 
 ### Golden-rule checks
-<!-- only those that apply: facts from DB (1–2), metadata/JSON-LD/H1/CTA (4), server-only DB (6), requireRole (7), JS budget (8), motion (9), a11y (10), VI typography (11), /go tracking (12), redirects (13), consent/PII (14) -->
+<!-- Only those that apply (AGENTS.md §4): facts from DB (1–2), metadata/JSON-LD/H1/CTA (4), server-only DB (6), requireRole (7), JS budget (8), motion (9), a11y (10), VI typography (11), /go tracking (12), redirects (13), consent/PII (14), secrets (15) -->
 
-### Dependencies & risks
-### Test plan
-- Unit (Vitest): <cases>
-- E2E (Playwright): <flows>
-- Command: `pnpm -C 43logistics.vn test -- <pattern>` / `pnpm -C 43logistics.vn test:e2e -- <pattern>`
-### Implementation hints
+### Dependencies & Risks
+- Depends on: <roadmap IDs / stack gaps from AGENTS.md §3>
+- Blocked by questions: <Q-IDs and the placeholder behaviour>
+- Risk: ...
+
+### Test / Fixture Plan
+- Scenario: <Given/When/Then>
+- Seed needs: <describe or "generic is fine">
+- Validation command: `pnpm -C 43logistics.vn test -- <pattern>` | `pnpm -C 43logistics.vn test:e2e -- <pattern>` (these scripts exist after F-01; before that, use `pnpm -C 43logistics.vn type-check` plus the manual steps listed here)
+
+### Implementation Hints
+<!-- Optional: patterns from existing code, related specs, lessons learned -->
+
 ### Related
+<!-- Links to roadmap row, docs/context sections, ADRs, proposals, other specs, lessons -->
 ```
 
-### Bug template
+---
+
+### BUG TEMPLATE
 
 ```markdown
 ---
-title: <broken behaviour, not the fix>
+title: <broken behavior title — not the fix>
 type: bug
 status: draft
-owner_repo: app | both
-roadmap: <ID or none>
+owner_repo: app | context | both
+roadmap: <ID>
 priority: critical | high | medium | low
-updated: <today>
+blocked_by_questions: [<Q-IDs or empty>]
+updated: <today YYYY-MM-DD>
 ---
 
 ## Bug: <title>
+
 ### Summary
+<!-- One sentence: what is broken and where -->
+
 ### Environment
 | Key | Value |
 |-----|-------|
-| URL / locale | |
-| Environment | local / preview / production |
-| Frequency | always / sometimes / once |
-### Reproduction steps
-### Expected
-### Actual
-### Root-cause hypothesis
-### Affected areas
-### Business impact
-### Regression test plan
-### Fix approach
+| Triggered by | <URL + locale / admin action / Server Action / route handler> |
+| Environment | Local / Preview / Production |
+| Device / width | <360 / 768 / 1280 / browser> |
+| Frequency | Always / Sometimes / Once |
+
+### Reproduction Steps
+1. Open: "..."
+2. Observe: ...
+
+### Expected Behavior
+<!-- What should happen (cite the doc/rule) -->
+
+### Actual Behavior
+<!-- What happens instead — include error message or wrong output -->
+
+### Root Cause Hypothesis
+<!-- Best guess based on proxy, cached query/tag, Server Action, client island, tracking, metadata -->
+
+### Affected Areas
+| Repo | Layer | File / Path (likely) |
+|------|-------|----------------------|
+
+### Business Impact
+`critical` | `high` | `medium` | `low` — who is affected and how (lost contacts/leads = critical)
+
+### Regression Test Plan
+- Scenario to lock in: <reproduction case as Given/When/Then>
+- Seed needs: <describe or "generic is fine">
+- Validation command: <cmd>
+
+### Fix Approach
+<!-- Optional: suggest direction without prescribing exact implementation -->
+
 ### Related
 ```
 
-## Step 5 — Self-review
+---
 
-- [ ] The title is imperative and at most 10 words, with no "maybe/should probably".
-- [ ] Each acceptance criterion can be verified on its own, and every roadmap *Accept* item is covered.
-- [ ] No invented facts; unknowns are listed in `blocked_by_questions`.
-- [ ] Affected areas use the root layout (no `src/`) and real or planned paths.
-- [ ] Out of scope is explicit.
-- [ ] The test plan names concrete cases and commands.
+## Step 5 — Quality checklist (self-review before saving)
 
-## Step 6 — Save and index
+- [ ] The title is imperative mood and ≤10 words.
+- [ ] No ambiguous language: "sometimes", "should probably", "might".
+- [ ] Every acceptance criterion is independently verifiable, and every roadmap *Accept* item is covered.
+- [ ] `owner_repo` and `roadmap` are explicit and accurate.
+- [ ] Affected areas reference plausible real paths from the Step 2 Explore pass (root layout, no `src/`).
+- [ ] Scope explicitly states what is NOT included.
+- [ ] No invented business facts; unknowns are listed in `blocked_by_questions`.
+- [ ] The test/fixture plan is concrete enough for Codex to use.
 
-1. Run `mkdir -p specs` and write `specs/<type>-<slug>.md`. Don't echo the spec in chat; give the path and a one-line summary.
-2. Insert a row at the top of the table in `specs/INDEX.md`:
-   `| <today> | <type> | [<file>](<file>) | <title> | <roadmap> | <owner_repo> | draft |`
+---
 
-## Step 7 — Spec PR (only if the context workspace is a git repo with a remote)
+## Step 6 — Save the spec
 
-```bash
-git rev-parse --is-inside-work-tree 2>/dev/null && git remote get-url origin 2>/dev/null
+1. Ensure the `specs/` directory exists: `mkdir -p specs`.
+2. Write to `specs/<type>-<slug>.md`.
+3. Do NOT echo the full doc in chat. Confirm the path and offer a one-line summary only.
+
+---
+
+## Step 7 — Update specs/INDEX.md
+
+Read `specs/INDEX.md` (create it if missing):
+
+```markdown
+# Specs index
+
+Implementation commitments for the 43logistics.vn app. Created by `/feature-bug`. Status transitions via `/mark-implemented`.
+
+| Date | Type | File | Title | Roadmap | Owner | Status |
+|------|------|------|-------|---------|-------|--------|
 ```
 
-If it is:
+Insert the new row at the top (newest first):
 
-```bash
-git checkout -b spec/<slug>
-git add specs/<type>-<slug>.md specs/INDEX.md
-git commit -m "spec(<slug>): <title>"
-git push -u origin spec/<slug>
-gh pr create --base main --head spec/<slug> --title "spec: <title>" --body "<type> · <roadmap> · <owner_repo> · <priority>
-
-<one-line problem>
-
-<acceptance criteria>"
+```
+| <today> | <type> | [<filename>](<filename>) | <title> | <roadmap> | <owner_repo> | draft |
 ```
 
-Otherwise report "Spec PR skipped: the context workspace has no git remote (see ADR 0003)". Write all PR text in English.
+Use the Edit tool; don't rewrite the whole file. Don't mention this step to the user unless it fails.
 
-## Step 8 — Approval and hand-off
+---
 
-Ask (AskUserQuestion): "Approve this spec for implementation?"
+## Step 8 — Create PR for the spec
 
-- `Yes — I implement it now (/implement)`
-- `Yes — hand to Codex` (only offer this if `command -v codex` succeeds)
-- `No — keep as draft`
+**All PR content must be written in English: title, summary and acceptance criteria.**
 
-On approval, set `status: approved` in the file and in its INDEX row. If Step 7 opened a spec PR, commit and push these two files to the same `spec/<slug>` branch. Then:
+Check what git setup exists:
 
-- **Claude:** run `/implement <slug>`.
-- **Codex:**
+```bash
+git rev-parse --is-inside-work-tree 2>/dev/null && echo repo=yes || echo repo=no
+git remote get-url origin 2>/dev/null && echo remote=yes || echo remote=no
+```
+
+- **repo=no:** skip all git steps. Note "Spec PR skipped — context workspace is not a git repo (ADR 0003)".
+- **repo=yes:** create a branch and commit locally:
 
   ```bash
-  codex exec -s workspace-write -C "$PWD" \
-   "Read AGENTS.md and .claude/skills/implement/SKILL.md, then implement specs/<file>. Paths in the skill are relative to this workspace root. Follow the skill steps in order and report the results table."
+  git checkout -b spec/<slug>
+  git add specs/<type>-<slug>.md specs/INDEX.md
+  git add specs/LESSONS.md            # only if Step 2a appended to it
+  git commit -m "spec(<slug>): <title>"
   ```
 
-  Run it in the background, and report its result when it finishes.
+- **remote=yes (in addition):** push and open a PR in this repo:
+
+  ```bash
+  git push -u origin spec/<slug>
+  gh pr create --base main --head spec/<slug> \
+    --title "spec: <title>" \
+    --body "$(cat <<'EOF'
+  ## Spec: <title>
+
+  **Type:** <feature|bug>
+  **Roadmap:** <ID>
+  **Owner repo:** <owner_repo>
+  **Priority:** <priority>
+
+  ### Summary
+  <one-line summary in English from Problem Statement>
+
+  ### Acceptance criteria
+  <paste acceptance criteria list>
+
+  🤖 Created by /feature-bug
+  EOF
+  )"
+  ```
+
+  Capture the PR URL from the `gh pr create` output.
+
+If there is no remote, or the push or `gh pr create` fails, keep the local commit and note "PR creation skipped — <reason>" for the Step 9 message.
+
+---
+
+## Step 9 — Send notification
+
+**All notification content must be written in English: title, summary and metadata.**
+
+Kept at the sample's position (ADR 0003 §6). Send via `scripts/notify-telegram.sh`, only if that script exists in this workspace and `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` are set:
+
+```bash
+test -x scripts/notify-telegram.sh && scripts/notify-telegram.sh "New spec ready for review 📋
+
+*<title>*
+Type: <feature|bug> | Roadmap: <ID> | Repo: <owner_repo> | Priority: <priority>
+
+<one-line summary in English>
+
+PR: <PR URL from Step 8, or \"pending\" if skipped>
+
+Spec: specs/<type>-<slug>.md"
+```
+
+If the script is missing or fails (missing env vars, network error), print the PR URL (or the spec path) to the user so they can share it manually, and say "Notification skipped — <reason>".
+
+---
+
+## Step 10 — Offer to implement (Codex if available, Claude otherwise)
+
+Use the `AskUserQuestion` tool:
+
+- question: "Approve this spec and implement it now?"
+- options:
+  - `Yes — Claude implements now (/implement)`
+  - `Yes — send to Codex for implementation` (only if `command -v codex` succeeded)
+  - `No — I'll implement later`
+
+Record the answer. **Don't hand off yet**: Step 11 (Codex review) runs first, and the chosen hand-off executes at the end of Step 11.
+
+If **No**: after Step 11, report "Run `/implement <slug>` when ready."
+
+If **Yes** (executed at the end of Step 11):
+
+1. **Set `status: approved`** in the spec file first (Edit tool). This records the user's approval before handoff.
+2. **Update `specs/INDEX.md`**: set the status column to `approved`. If a spec PR exists, commit and push both files to `spec/<slug>`.
+3. **Hand off:**
+   - **Claude:** run `/implement <slug>`.
+   - **Codex:** run in the background from the workspace root:
+
+     ```bash
+     codex exec -s workspace-write -C "$PWD" \
+       "Codex: read AGENTS.md and follow .claude/skills/implement/SKILL.md for this spec. Paths are relative to this workspace root.
+
+     Spec path: specs/<filename>
+     Roadmap: <ID>
+     Owner repo: <owner_repo>
+     Key acceptance criteria:
+     <paste acceptance criteria>
+
+     When done, print the Step 5 report as your final message." </dev/null
+     ```
+
+     - If the run **exits 0**, read Codex's final report. Claim success only if it shows the ACs covered and the checks passing; otherwise relay the blockers it reported.
+     - If it **fails** (non-zero exit), tell the user "Codex run failed — run `/implement <slug>` to implement directly." Don't retry.
+
+---
+
+## Step 11 — Codex review, verify & debate
+
+This is the final step. It runs before the hand-off chosen in Step 10 executes, so that implementation starts from a spec both agents have checked.
+
+**11a — Availability:** `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found" and execute the Step 10 choice.
+
+**11b — Round 1, Codex reviews** (read-only; run it in the background and wait for the notification):
+
+```bash
+codex exec -s read-only --skip-git-repo-check -C "$PWD" \
+  -o /tmp/43l-codex-feature-bug-<slug>-r1.md \
+  "Review specs/<type>-<slug>.md as a skeptical senior engineer. Check against AGENTS.md (§3 stack gaps, §4 golden rules), docs/adr/*, docs/context/10-roadmap.md row <ID>, and the docs/context files that row lists. Verify: (1) every roadmap Accept item is covered by an independently testable acceptance criterion; (2) affected paths exist or are clearly planned (root layout, no src/); (3) no invented business facts — unknowns carry Q-IDs; (4) dependencies on unclosed stack gaps are stated; (5) the test plan is concrete; (6) scope/out-of-scope is unambiguous. Do NOT read .env or wordpress-site/. Do NOT edit files. Return numbered findings: severity (high/medium/low), location, issue, proposed fix." </dev/null
+```
+
+**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask the user whether to retry or continue without it. Apply the same check after round 2.
+
+**11c — Claude verifies:** check each finding against the files. Write `/tmp/43l-codex-feature-bug-<slug>-verdicts.md`, with one line per finding: `#N accept | partial | reject — <evidence>`.
+
+**11d — Round 2, debate** (only if any verdict is `partial` or `reject`):
+
+```bash
+codex exec -s read-only --skip-git-repo-check -C "$PWD" \
+  -o /tmp/43l-codex-feature-bug-<slug>-r2.md \
+  "Round 2. Your findings: /tmp/43l-codex-feature-bug-<slug>-r1.md. Claude's verdicts: /tmp/43l-codex-feature-bug-<slug>-verdicts.md. For each partial/reject item: concede, or rebut with file:line evidence in ≤3 sentences. Do NOT edit files." </dev/null
+```
+
+Stop after 2 rounds. Items still disputed go to the user.
+
+**11e — Resolve with the user.** Show this table:
+
+```
+| # | Codex finding | Claude verdict | After debate | Proposed edit |
+```
+
+Ask (AskUserQuestion): "Apply which?" with options `All agreed items` / `Agreed + disputed` / `Specific numbers` / `None`. Apply the chosen edits to the spec with Edit. If a spec PR exists, commit and push them to `spec/<slug>`.
+
+---
+
+**11f — Execute the Step 10 choice.** If the user approved, set `status: approved` and hand off as described in Step 10. If Step 11e changed the spec, ask again before the hand-off.
