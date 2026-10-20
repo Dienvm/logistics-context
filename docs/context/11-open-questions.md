@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | Q-01 | Legal company name, tax code (MST), business/postal licence (if any)? | Footer, About, JSON-LD, policies | Open |
 | Q-02 | Is there a Hà Nội warehouse? Address? New official ward/district names for Đà Nẵng and TP.HCM addresses after 01/07/2025? Overseas warehouse address in Singapore? | Contact, LocalBusiness schema, SG→VN page | Open |
-| Q-03 | Real opening hours (header says T2–T7 08:00–18:00; contact says Mon → Saturday morning; schema 09:00–17:00). Is "CSKH 24/7" true (e.g. Zalo replies)? | Header/footer, schema, copy | Open |
+| Q-03 | Real opening hours (header says T2–T7 08:00–18:00; contact says Mon → Saturday morning; schema 09:00–17:00). Is "CSKH 24/7" true (e.g. Zalo replies)? Does staff answer customers in English (needed before JSON-LD `availableLanguage` lists `en`)? | Header/footer, schema, copy | Open |
 | Q-04 | Current price tables per route and validity of flat-rate promos (Korea 75.000 vs 68.000 đ/kg; Singapore 150.000 vs 85.000 đ/kg; Taiwan/Japan 95.000 đ/kg). VAT/insurance/surcharge rules. Who updates prices and how often? | Rate tables, calculator, ads | Open |
 | Q-05 | Which routes are really active: Japan → VN ("2 chiều")? Malaysia → VN? Thailand → VN? Any new destinations (EU, AU, CA, others)? | IA, inbound pages | Open |
 | Q-06 | Is 0827 575 567 still in use? Which number is Zalo / WhatsApp / hotline? | Contact links | Open |

@@ -19,8 +19,8 @@ Languages: **Vietnamese (default, no URL prefix)** and **English (`/en/…`)**, 
 
 | Path | What | Git |
 | --- | --- | --- |
-| `./` (this folder) | **Context workspace:** `AGENTS.md`, `CLAUDE.md`, `docs/`, `specs/`, `lessons/`, `data/`, `.claude/skills/` (`.agents/skills` is a symlink to it) | Not initialised yet. Run `git init` and add a remote before using the skills' commit/PR steps |
-| `43logistics.vn/` | **App repo:** all runtime code (Next.js). `github.com/Dienvm/43logistics.vn`, declared as a submodule in `.gitmodules` | Own repo, branch `main` |
+| `./` (this folder) | **Context workspace:** `AGENTS.md`, `CLAUDE.md`, `docs/`, `specs/`, `lessons/`, `data/`, `.claude/skills/` (`.agents/skills` is a symlink to it) | Git repo, branch `main` (initialised 2026-10-20). No remote yet: add one before using the skills' push/PR steps |
+| `43logistics.vn/` | **App repo:** all runtime code (Next.js). `github.com/Dienvm/43logistics.vn`, registered as a submodule | Own repo, branch `main` |
 | `wordpress-site/` | Legacy SQL dump + 1.4 GB full backup. **Read-only input** | Never committed (`.gitignore`). It contains password hashes and customer leads: grep it for specific facts only, and never copy rows into docs, prompts or either repo |
 | `refer-docs/` | The original context-repo template these rules were adapted from | Reference only, not project guidance |
 
@@ -131,7 +131,7 @@ At the start of any project task, or when asked for status or "what next", read:
 - `docs/context/10-roadmap.md`: the first unchecked task whose dependencies are done.
 - `specs/INDEX.md` and `lessons/INDEX.md` (tables only).
 - `docs/context/11-open-questions.md`, when the task touches content or facts.
-- `git -C 43logistics.vn status --short`, plus `git status --short` at the root once it is a repo.
+- `git status --short` at the root and `git -C 43logistics.vn status --short` in the app.
 
 Then name the next concrete action, its blockers and its owning repo. If the state makes the next step clear, do it. Don't answer "there is no task".
 

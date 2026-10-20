@@ -54,7 +54,7 @@ Check that the row counts quoted in the docs match the files:
 - `data/redirect-map.csv`: 63 data rows.
 - `data/media-inventory.csv`: 330 rows, of which 175 are `migrate`.
 
-After F-01, check the app copy in `43logistics.vn/data/` and confirm that the context copy was removed (ADR 0002 §11). Two live copies is a 🔴 risk.
+After F-01, check that `redirect-map.csv`, `design-tokens.json` and `seed/*.json` exist in `43logistics.vn/data/` and were removed from the context `data/` (ADR 0002 §11). `media-inventory.csv` stays in the context workspace until C-04. Two live copies of the same file is a 🔴 risk.
 
 ### 3g — Roadmap vs specs
 - A `[x]` task in `10-roadmap.md` without an `implemented` spec, or one marked done by hand: 🟡.

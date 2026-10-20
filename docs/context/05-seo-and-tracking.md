@@ -86,7 +86,7 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 - Route pages and home are fully static shells (Cache Components) with only the calculator and consent as client islands.
 - LCP image: `next/image` with `priority`, correct `sizes`, AVIF/WebP, ≤ 150 KB at 1280 px wide.
 - Fonts: 2 families, `display: swap`, subsets latin + vietnamese, preload via `next/font`.
-- Third-party: GTM loaded with `@next/third-parties/google` `GoogleTagManager` after consent defaults; PostHog initialised lazily only after analytics consent (no `posthog.init` at module load); no Maps iframe (static map image + link); no chat widget scripts.
+- Third-party: GTM loaded with `@next/third-parties/google` `GoogleTagManager` only after the user grants ads consent (basic mode: no GTM request before that); PostHog initialised lazily only after analytics consent (no `posthog.init` at module load); no Maps iframe (static map image + link); no chat widget scripts.
 - Budgets: JS ≤ 120 KB gz on route pages; CLS < 0.1 (reserve space for sticky bar and images).
 
 ## Tracking plan
@@ -133,6 +133,8 @@ The client link also emits the event with the same `event_id` (pass via data att
 - Default: `ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage` = `denied` until the user chooses; only strictly necessary cookies (the consent choice itself) are allowed before consent. `43l_attr` holds ad click IDs and is therefore **not** functional. Use Consent Mode **basic** (tags not loaded at all before consent), not advanced (cookieless pings).
 - Banner (VI/EN) with Accept all / Reject / Customize; choice stored (cookie + Zustand), `gtag('consent','update',…)`, and PostHog `opt_in_capturing()` / `opt_out_capturing()` mapped to `analytics_storage`.
 - Server-side conversions only when consent for ads is granted (stored on the lead/event row).
+- Per-vendor permissions: the Customize panel maps `analytics` → PostHog and `ads` → GTM plus each confirmed ad platform (Q-13); no vendor loads under a category the user rejected.
+- Withdrawal (banner reopenable from the footer): on revoking ads consent, delete `43l_attr`, stop loading GTM on the next navigation, and send no further server-side conversions (queued ones are dropped). On revoking analytics consent, call PostHog `opt_out_capturing()` and clear its cookies/storage. Rows already stored keep their recorded consent state.
 - Lead form has an explicit consent checkbox linking `/chinh-sach-bao-mat/`; store `consent_at` and the policy version.
 
 ## Ads landing page checklist

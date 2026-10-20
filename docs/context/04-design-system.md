@@ -73,7 +73,7 @@ Forbidden: crimson-300/400 for text, any hex not in the tokens, the old CTA reds
 
 | Token | Value | Use |
 | --- | --- | --- |
-| instant | 100 ms | Colour/opacity on press |
+| instant | 100 ms | Opacity on press (colour changes are instant, not animated) |
 | fast | 160 ms | Hover, press, toggles |
 | base | 240 ms | Accordion, menu, popover |
 | slow | 400 ms | Reveal on scroll |

@@ -37,7 +37,7 @@
 
 ## Consequences
 
-- The context workspace is not a git repository yet, and `.gitmodules` previously pointed at the misspelled path `43logistic.vn`. A `.gitmodules` file alone does not create a submodule. To register it:
+- The workspace was not a git repository, and `.gitmodules` pointed at the misspelled path `43logistic.vn`. A `.gitmodules` file alone does not create a submodule. It was registered on 2026-10-20 (commit `e80f9b0`) with:
 
   ```bash
   git init

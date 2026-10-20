@@ -65,7 +65,10 @@ implemented_date: <today YYYY-MM-DD>
 
 ## Step 6 — Commit (only if the context workspace is a git repo)
 
-This is a metadata-only change, so no PR is needed. First confirm you will push only this commit:
+This is a metadata-only change, so no PR is needed.
+
+- **No remote** (`git remote get-url origin` fails): commit locally, skip the fetch and push, and report "Push skipped: no remote (ADR 0003)".
+- **Remote exists:** first confirm you will push only this commit:
 
 - `git fetch origin`, then check that `git rev-parse HEAD` equals `git rev-parse origin/main` (no unpushed local commits);
 - check that `git status --short` lists only the files this skill changed.
@@ -78,7 +81,7 @@ git commit -m "spec(<slug>): mark implemented (<app PR ref>)"
 git push origin HEAD:main
 ```
 
-Stage only these files; never use `git add -A`. If the push is rejected (branch protection), open a branch and PR instead. If the workspace isn't a git repo, say "Commit skipped: context workspace is not a git repo (ADR 0003)".
+Stage only these files; never use `git add -A`. If the push is rejected (branch protection), open a branch and PR instead. 
 
 ## Step 7 — Report
 
