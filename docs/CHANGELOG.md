@@ -2,6 +2,15 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-21 — Generate legacy redirects from the CSV and check them
+
+- Spec: [specs/feature-f07-legacy-redirects-check.md](../specs/feature-f07-legacy-redirects-check.md) · Roadmap: F-07
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/8 (0822424); context: https://github.com/Dienvm/logistics-context/pull/17, https://github.com/Dienvm/logistics-context/pull/18
+- Owner: both
+- Summary: `next.config.ts` `redirects()` is generated from `redirect-map.csv` (80 rules, 301, both slash forms, validated at build), and `?attachment_id=` → `/` is added to the proxy.
+  - `pnpm check:redirects` runs in CI on every PR: 0 FAIL, with 103 redirects pending only on unbuilt destination pages.
+  - `--strict` at L-01 and the host run at L-02; uploads and attachment slugs belong to A-04.
+
 ## 2026-10-21 — Compose proxy.ts for gone, legacy, attribution and admin
 
 - Spec: [specs/feature-f06-proxy-composition.md](../specs/feature-f06-proxy-composition.md) · Roadmap: F-06

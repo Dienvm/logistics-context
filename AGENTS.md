@@ -214,7 +214,7 @@ Check availability first with `command -v codex`; if it's missing, skip the step
 | `pnpm tokens` / `pnpm tokens:check` | exists | Build `app/theme.css` from `43logistics.vn/data/design-tokens.json` / exit 1 if it is out of date |
 | `pnpm i18n:check` | exists | Every `messages/*.json` matches `vi.json` in keys and ICU arguments |
 | `pnpm db:seed` | exists | `tsx scripts/seed.ts`: idempotent, one transaction; routes, rates, settings (unverified), IA pages and menus (draft); requires `DATABASE_URL_DIRECT` |
-| `pnpm check:redirects` | F-07 | Verify every row of `43logistics.vn/data/redirect-map.csv` against a running server |
+| `pnpm check:redirects` | exists | Verify every row of `43logistics.vn/data/redirect-map.csv` against a running server (`--strict` at L-01, `--host-checks` at L-02); runs in the `verify` CI workflow |
 
 Keep this table true. When a task adds or renames a script, update its row in the same change.
 
