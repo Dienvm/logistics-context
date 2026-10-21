@@ -108,7 +108,7 @@
 | Task | Versions | Check | Expected | Observed | Date |
 | --- | --- | --- | --- | --- | --- |
 | F-01 | Next 16.4.2, React 19.3.1; no Clerk/next-intl | `pnpm build` + `pnpm dev` with `cacheComponents` + `partialPrefetching` | no errors or warnings | pass (0 warnings, 0 errors) | 2026-10-21 |
-| F-03 | next-intl @ install | Decision 1, F-03 list | all pass | pending | |
+| F-03 | Next 16.4.2, React 19.3.1, next-intl 4.14.9; locale from `next/root-params` (no `setRequestLocale`) | Decision 1, F-03 list | all pass | **pass.** Build: `/vi` and `/en` prerendered fully static (○), no Cache Components errors. Direct loads: right `lang`, messages, canonical, reciprocal `vi`/`en`/`x-default`. Client navigation VI → EN → VI twice: no locale mixing, no reload. Two isolated contexts, three alternations: no mixing. Notes: next-intl `Link` with an explicit `locale` emits a prefixed `/vi/` href, whose prefetch redirect hard-reloads the router, so links use `next/link` + `getPathname`. Unknown `[locale]` values 404 from the pages, not the root layout (app PR F-03) | 2026-10-21 |
 | F-05 | @clerk/nextjs @ install | Decision 1, F-05 list | all pass | pending | |
 
 Sources consulted: [Clerk rendering modes](https://clerk.com/docs/references/nextjs/rendering-modes), [Next.js authentication with Cache Components](https://nextjs.org/docs/app/guides/authentication-with-cache-components), [Lighthouse performance scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring), the Next 16.4.2 config warning text for `partialPrefetching`.

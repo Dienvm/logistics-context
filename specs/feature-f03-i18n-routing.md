@@ -1,7 +1,9 @@
 ---
 title: Add next-intl locale routing with VI root and /en
 type: feature
-status: approved
+status: in_implementation
+branch: feat/f-03-i18n-routing
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/5
 owner_repo: both
 roadmap: F-03
 priority: must-have
@@ -48,15 +50,16 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
 - [ ] Given a production build (`pnpm build && pnpm start`):
   - `/` → **200**, `<html lang="vi">`, Vietnamese placeholder text;
   - `/en/` → **200**, `<html lang="en">`, English placeholder text;
-  - `/vi/` and `/vi` → reach `/` in **at most one** redirect;
+  - `/vi/` → reaches `/` in **one** redirect. `/vi` takes two (308 trailing slash, then 307), because Next's trailing-slash redirect runs before the proxy. **Amended 2026-10-21 (owner):** one-hop handling moves to F-06 (`skipTrailingSlashRedirect` + proxy-owned normalisation);
   - `/en` → reaches `/en/` in **one** redirect;
   - `/en?utm_source=x` → reaches `/en/?utm_source=x` with the query string preserved;
   - for each, the redirect count, final URL and final status are recorded from the full chain (`curl -sL -w '%{num_redirects} %{url_effective} %{http_code}'`), not from the first response only.
 - [ ] Given an **unknown path under a locale** (`/khong-co/`, `/en/khong-co/`, and `/fr/`, which `as-needed` treats as a Vietnamese path), then the response is **404** with the localized not-found page: `lang`, one `<h1>` and text in that locale (`vi` for `/khong-co/` and `/fr/`).
-- [ ] Given a request that reaches `[locale]` with an **invalid root parameter** (a path the matcher excludes, e.g. `/missing.txt`), then the response is **404** from `app/global-not-found.tsx` (enabled with `experimental.globalNotFound`, per the bundled Next docs for dynamic root layouts):
-  - `<html lang="vi">`, Vietnamese text from `messages/vi.json`;
-  - it imports `globals.css` and the fonts itself, because it bypasses the layout;
-  - it has a link home.
+- [ ] Given a request that reaches `[locale]` with an **invalid root parameter** (a path the matcher excludes, e.g. `/missing.txt`), then the response is **404** with the localized not-found page in Vietnamese (`lang="vi"`, text from `messages/vi.json`, a link home).
+
+  **Amended 2026-10-21 (owner), after implementation:**
+  - `global-not-found` is never reached, because `/missing.txt` matches `/[locale]`. Instead, the root layout resolves unknown locales to VI, and every page calls `getPageLocale()`, which 404s inside the layout.
+  - 404 responses for paths that aren't prerendered carry the 404 status from the server, but their body renders after hydration (Cache Components + Partial Prefetching serve a resumable shell). This is accepted for now; S-10 revisits server-rendered 404 bodies.
 - [ ] Given a request to `/` with `Accept-Language: en-US,en;q=0.9`, then the response is **200 Vietnamese**, with no redirect (no auto redirect).
 - [ ] Given any request above, then the response has **no `Set-Cookie`** header and **no `Link` hreflang header**.
 - [ ] Given the **consent matrix** (AGENTS §9; triggered by `proxy.ts`), reduced to what exists before S-13, then on initial load of `/` and `/en/`, switcher navigation in both directions and a reload:

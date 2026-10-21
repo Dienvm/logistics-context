@@ -15,7 +15,7 @@ Decision: ADR 0005. The app is organised by **business module**, and each module
 ├── modules/<name>/ # one folder per business capability (list below)
 ├── shared/         # code with no business meaning: ui (shadcn), lib, config, hooks, i18n, types
 ├── db/             # client.ts (server-only), schema.ts (re-exports module schemas), migrations/
-├── messages/       # vi.json, en.json (stay at the app root; F-03 creates shared/i18n for routing/config)
+├── messages/       # vi.json, en.json (stay at the app root; shared/i18n holds routing, request config, navigation, locale helpers)
 ├── data/ scripts/  # build/runtime inputs and one-off scripts
 └── proxy.ts        # after F-01
 ```

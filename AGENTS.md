@@ -208,7 +208,7 @@ Check availability first with `command -v codex`; if it's missing, skip the step
 | `pnpm build && pnpm start` | exists | Production build |
 | `pnpm lint` | exists (`biome check .`) | Lint + format + import order (Biome 2) |
 | `pnpm lint:fix` / `pnpm format:write` | exists | Biome autofix (`biome check --write`) / format |
-| `pnpm typecheck` | exists | `tsc --noEmit` |
+| `pnpm typecheck` | exists | `next typegen` + `tsc --noEmit` (generated route and root-param types) |
 | `pnpm check:boundaries` | exists | dependency-cruiser module rules (ADR 0005) |
 | `pnpm db:generate` / `pnpm db:migrate` | exists | drizzle-kit (migrations in `db/migrations/`) |
 | `pnpm tokens` / `pnpm tokens:check` | exists | Build `app/theme.css` from `43logistics.vn/data/design-tokens.json` / exit 1 if it is out of date |
