@@ -1,7 +1,8 @@
 ---
 title: Untrack secrets and strip the demo template
 type: feature
-status: approved
+status: in_implementation
+branch: feat/f-00-security-template-cleanup
 owner_repo: app
 roadmap: F-00
 priority: critical
