@@ -1,7 +1,9 @@
 ---
 title: Add next-intl locale routing with VI root and /en
 type: feature
-status: approved
+status: in_implementation
+branch: feat/f-03-i18n-routing
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/5
 owner_repo: both
 roadmap: F-03
 priority: must-have
