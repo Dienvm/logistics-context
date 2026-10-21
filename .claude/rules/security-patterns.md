@@ -45,5 +45,6 @@ Context: `AGENTS.md` rules 6–7 and 14–15, `06-architecture.md`, proposal §6
 ## Headers and dependencies
 
 - Security headers in `next.config.ts` (after F-01): HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors 'none'`, and a static allowlist CSP. No nonce CSP, which would break the static shells.
+- Review every dependency a generator adds (shadcn CLI, codemods, V0) the same way. In F-02 the shadcn CLI added an unrelated npm package named `cn` and imported it; remove such packages and point imports at our own helpers.
 - No new dependency without checking that it's maintained, its size (public pages), and its licence. Allow its install scripts in `pnpm-workspace.yaml` only if needed.
 - gitleaks runs in CI and pre-commit. Never weaken `.gitleaksignore` beyond confirmed, rotated findings.
