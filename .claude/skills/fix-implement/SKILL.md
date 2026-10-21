@@ -27,8 +27,8 @@ You are fixing code that was implemented but doesn't satisfy its spec.
 | --- | --- |
 | BLUEPRINT.md | `AGENTS.md` + `docs/adr/*` |
 | `../foresent-robot`, `../foresent-rules` | `43logistics.vn/` (app) · context workspace (docs/data only) |
-| `yarn test` / `yarn lint` / validator | `$TEST` / `$LINT` / `$TYPECHECK`, resolved from `43logistics.vn/package.json` |
-| Fixture YAML case | Vitest unit test / Playwright e2e test / seed data |
+| `yarn test` / `yarn lint` / validator | `$LINT` / `$TYPECHECK` / `$BUILD`, resolved from `43logistics.vn/package.json` (no test suites, ADR 0004) |
+| Fixture YAML case | Manual verification step / seed data |
 | Codex bridge | `codex exec` |
 
 ---
@@ -77,10 +77,10 @@ Resolve the check commands once from the `package.json` scripts:
 
 - `$LINT` = `lint`
 - `$TYPECHECK` = `typecheck`, or else `type-check`
-- `$TEST` = `test`
-- `$E2E` = `test:e2e`
+- `$BUILD` = `build`
+- `$REDIRECTS` = `check:redirects` if present
 
-Report any missing ones as "not available until F-01".
+Report any missing ones as "not available until F-01". No `$TEST` / `$E2E`: automated tests are not used in the initial build phase (ADR 0004).
 
 ---
 
@@ -101,7 +101,7 @@ Output to the user:
 |---|------|-----------------|-----------------|----------|
 | 1 | components/blocks/rate-table.tsx:42 | Prices only from route_rates (AC 2, rule 2) | 75.000 đ hard-coded | Critical |
 | 2 | app/go/[channel]/route.ts:18 | 302 never waits on tracking (05) | awaits DB insert before redirect | High |
-| 3 | tests/unit/price.test.ts | Covers 1.3 kg → 1.5 kg (test plan) | Case missing | Medium |
+| 3 | lib/format/price.ts:12 | 1.3 kg rounds to 1.5 kg for US (manual verification plan) | rounds to 1.0 kg | Medium |
 ```
 
 Severity:
@@ -144,17 +144,17 @@ For each fix:
 
 1. State which discrepancy # you are fixing.
 2. Apply a minimal edit: no rewrites, no surrounding refactors.
-3. For app Critical/High rows: add a regression test (Vitest or Playwright) that fails before the fix and passes after it.
-4. For data-dependent rows: add or adjust seed data so the test proves the corrected behaviour.
+3. For app Critical/High rows: reproduce the problem by hand first (URL, steps, observed result), then repeat the same steps after the fix and record both. No regression tests are added (ADR 0004).
+4. For data-dependent rows: add or adjust seed data so the manual check shows the corrected behaviour.
 
 After all fixes, run:
 
 ```bash
-pnpm -C 43logistics.vn $LINT 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1 && pnpm -C 43logistics.vn $TEST 2>&1
-pnpm -C 43logistics.vn $E2E -- <affected spec files> 2>&1     # when a Playwright regression was added or touched
+pnpm -C 43logistics.vn $LINT 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1 && pnpm -C 43logistics.vn $BUILD 2>&1
+pnpm -C 43logistics.vn $REDIRECTS 2>&1     # every fix PR once the script exists (F-07)
 ```
 
-Report unit and e2e results separately. Skip unavailable scripts and say so; before F-01, verify manually and describe how. For context-owned rows, re-run the greps and row counts that prove the fix.
+Report the check results and the before/after manual verification per row. Skip unavailable scripts and say so. For context-owned rows, re-run the greps and row counts that prove the fix.
 
 Commit to the fix branch (explicit paths, Conventional Commits, `fix(<scope>): …`). If a PR exists, push to it.
 
@@ -175,8 +175,9 @@ Target repo: 43logistics.vn (not available locally)
 
 ### Commands to run after fixing
 cd 43logistics.vn
-# use the scripts that exist in package.json: lint; typecheck or type-check; test; test:e2e (absent before F-01)
-pnpm lint && pnpm <typecheck|type-check> && pnpm test && pnpm test:e2e -- <affected>
+# use the scripts that exist in package.json: lint; typecheck or type-check; build (no test suites, ADR 0004)
+pnpm lint && pnpm <typecheck|type-check> && pnpm build
+# then repeat the manual reproduction steps for each fixed row
 ```
 
 In BRIEF mode, still run Step 6. Record the evidenced mistakes with `status: open`, and mark the fixes as "not applied — BRIEF mode".
@@ -217,7 +218,7 @@ status: <resolved only when the fixes pass AND the Follow-up action is done; oth
 
 ## Resolution
 - Discrepancies fixed: N/N
-- Tests/validation: ✅ | ❌
+- Checks + manual verification: ✅ | ❌
 ```
 
 Mistake categories (use these exact labels; the vocabulary also lives in `lessons/INDEX.md`):
@@ -250,7 +251,7 @@ Then insert a row at the top of the `lessons/INDEX.md` table (create the file wi
 Mode: APPLIED | BRIEF
 Target: 43logistics.vn  ·  Branch: <branch>
 Discrepancies fixed: #1, #2, #4 (skipped: #3 per user)
-Tests/validation: ✅ N/N | ❌ <errors> | not available — <reason>
+Checks + manual verification: ✅ N/N | ❌ <errors> | not available — <reason>
 Lesson file: lessons/<filename>.md (status: open | resolved)
 
 Remaining open: <any skipped rows>
@@ -268,12 +269,12 @@ Next: Step 8 (Codex), then /code-review <spec-slug> to verify all acceptance cri
 ```bash
 codex exec -s read-only --skip-git-repo-check -C "$PWD" \
   -o /tmp/43l-codex-fix-implement-<slug>-r1.md \
-  "Verify the correction pass for specs/<file>. Discrepancy table: <paste or path>. APPLIED: fix diff = git $R diff $BASE..$FIX_BRANCH -- . ':(exclude).env*' ':(exclude)**/.env*' plus any uncommitted changes (git $R diff HEAD with the same excludes). BRIEF: review /tmp/43l-fix-brief-<slug>.md only — no diff exists. For each discrepancy row: fixed correctly / incomplete / regressed / not attempted, with file:line. Check that each Critical/High row has a regression test that would fail without the fix. List any new discrepancy against the spec or AGENTS.md §4. Check lesson categories in lessons/<file> are accurate. Never print .env* contents. Do NOT edit files. Return numbered items: severity, file:line, issue, fix." </dev/null
+  "Verify the correction pass for specs/<file>. Discrepancy table: <paste or path>. APPLIED: fix diff = git $R diff $BASE..$FIX_BRANCH -- . ':(exclude).env*' ':(exclude)**/.env*' plus any uncommitted changes (git $R diff HEAD with the same excludes). BRIEF: review /tmp/43l-fix-brief-<slug>.md only — no diff exists. For each discrepancy row: fixed correctly / incomplete / regressed / not attempted, with file:line. Check that each Critical/High row has a recorded before/after manual verification (no regression tests, ADR 0004). List any new discrepancy against the spec or AGENTS.md §4. Check lesson categories in lessons/<file> are accurate. Never print .env* contents. Do NOT edit files. Return numbered items: severity, file:line, issue, fix." </dev/null
 ```
 
 **Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.
 
-**8c — Claude verifies:** check each item against the code and the tests. Write `/tmp/43l-codex-fix-implement-<slug>-verdicts.md`, with one line per item: `#N accept | partial | reject — <evidence>`.
+**8c — Claude verifies:** check each item against the code and the recorded before/after manual evidence. Write `/tmp/43l-codex-fix-implement-<slug>-verdicts.md`, with one line per item: `#N accept | partial | reject — <evidence>`.
 
 **8d — Round 2, debate** (only if any verdict is `partial` or `reject`):
 

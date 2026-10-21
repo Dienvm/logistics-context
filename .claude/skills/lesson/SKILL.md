@@ -47,7 +47,7 @@ Options:
 - Update a rule or the stack table in `AGENTS.md`.
 - Update a doc in this workspace (`docs/context/*`, an ADR via `/adr`, a spec).
 - Update a skill in `.claude/skills/` (e.g. add a checklist item to `/implement` or `/code-review`).
-- Add a test or check to the app (name the roadmap or spec ID).
+- Add a check to the app: a manual verification step, or a permitted script (lint rule, `i18n:check`, `check:redirects`, gitleaks). Name the roadmap or spec ID. Automated tests need a proposal for a later ADR (ADR 0004).
 - Ask the owner a new question (add a Q-ID to `docs/context/11-open-questions.md`).
 - Create a new spec for a bug or gap found (`/feature-bug`).
 

@@ -131,18 +131,18 @@ Use `AskUserQuestion` for structured multiple-choice questions, and fall back to
   - a missing EN translation means a 404, not a VI fallback;
   - without consent, no tracking request is sent.
 - "Any performance or scale concern?" Infer from LCP/JS budget, cache tags and invalidation, ad-traffic spikes, image weight. Plus "None" and Other.
-- "Is any blocking Q-ID acceptable as a placeholder for now?" List the Q-IDs from Step 2. Options: `Yes — placeholder behind a flag` / `No — wait for the owner`.
+- Don't ask whether blocking Q-IDs may wait: ADR 0004 makes owner questions non-blocking. List the Q-IDs from Step 2 in `blocked_by_questions` and describe the placeholder behaviour (render nothing, "Liên hệ", or a marked placeholder behind a flag).
 
-**Batch 4 — Test plan:**
+**Batch 4 — Manual verification plan** (no automated tests in this phase, ADR 0004):
 
 Skip this batch entirely if the feature is a config-only change, a schema-only field addition with no new behaviour, or a pure scaffold with no logic. When in doubt, ask.
 
-- "Which behaviours are worth protecting with an automated test?" Infer 2–3 from the acceptance criteria, plus "None — config/scaffold only" and Other. Examples:
+- "Which behaviours must a reviewer verify by hand?" Infer 2–3 from the acceptance criteria, plus "None — config/scaffold only" and Other. Examples:
   - the price engine rounds 1.3 kg to 1.5 kg;
   - `/go/zalo` inserts a `contact_events` row and returns a 302;
   - `/tieu-de/` returns 410.
-- "Does the test need specific seed data?" Ask only if the behaviour depends on data state (routes, rates, translations, consent). Options: `Yes — I'll describe the seed needed` / `No — generic test data is fine` / `Not sure`.
-- "Test layer preference?" `unit (Vitest, pure function)` / `integration (Vitest + test DB)` / `e2e (Playwright, full HTTP)` / `Let implementer decide`.
+- "Does verification need specific seed data?" Ask only if the behaviour depends on data state (routes, rates, translations, consent). Options: `Yes — I'll describe the seed needed` / `No — the default seed is fine` / `Not sure`.
+- Don't ask about test layers: Vitest/Playwright are not used in this phase (ADR 0004).
 
 **Follow-up (plain text, after all batches):**
 *"Anything else important — a deadline, campaign launch date, owner constraint, or legal requirement I should include?"*
@@ -172,13 +172,13 @@ Skip this batch entirely if the feature is a config-only change, a schema-only f
 - "Is it data-specific?" `Yes — specific routes/rates` / `Yes — specific locale/translation` / `No` / `Not sure`.
 - "Is there an error in logs, browser console or the response?" `Yes — I'll paste it` / `No visible error` / `Not sure`.
 
-**Batch 4 — Regression:**
+**Batch 4 — Verification** (manual; no regression tests in this phase, ADR 0004):
 
 Skip this batch only if the bug is a pure copy/config fix with no behavioural change.
 
-- "Which scenario should a regression test lock in?" Derive 1–2 options from the reproduction steps, plus "Same as reproduction steps" and Other.
-- "Does the test need specific seed data?" Ask only if the bug depends on data state. Options: `Yes — I'll describe` / `No — generic` / `Not sure`.
-- "If no automated test is feasible, what is the manual verification path?" `Reproduction steps above are enough` / `Needs additional manual steps (I'll describe)` / `Cannot verify manually — explain blocker`.
+- "Which scenario must the fix be verified against?" Derive 1–2 options from the reproduction steps, plus "Same as reproduction steps" and Other.
+- "Does verification need specific seed data?" Ask only if the bug depends on data state. Options: `Yes — I'll describe` / `No — the default seed is fine` / `Not sure`.
+- "What is the manual verification path?" `Reproduction steps above are enough` / `Needs additional manual steps (I'll describe)` / `Cannot verify manually — explain blocker`.
 
 **Follow-up (plain text, after all batches):**
 *"Please paste the exact reproduction steps (URL, locale, device width), any error messages, and screenshots described in words."*
@@ -246,10 +246,11 @@ updated: <today YYYY-MM-DD>
 - Blocked by questions: <Q-IDs and the placeholder behaviour>
 - Risk: ...
 
-### Test / Fixture Plan
-- Scenario: <Given/When/Then>
-- Seed needs: <describe or "generic is fine">
-- Validation command: `pnpm -C 43logistics.vn test -- <pattern>` | `pnpm -C 43logistics.vn test:e2e -- <pattern>` (these scripts exist after F-01; before that, use `pnpm -C 43logistics.vn type-check` plus the manual steps listed here)
+### Manual Verification Plan
+- Scenario: <Given/When/Then>, with the URL(s) and viewport(s) to check
+- Seed needs: <describe or "default seed is fine">
+- Steps: <numbered manual steps a reviewer follows; include the axe DevTools scan for UI changes>
+- Validation commands: `pnpm -C 43logistics.vn lint` + `typecheck` (before F-01: `type-check`) + `build`; `i18n:check` (from F-03) and `check:redirects` (from F-07, every PR); the consent matrix when consent, tracking, proxy or leads are touched. No automated tests (ADR 0004)
 
 ### Implementation Hints
 <!-- Optional: patterns from existing code, related specs, lessons learned -->
@@ -307,10 +308,10 @@ updated: <today YYYY-MM-DD>
 ### Business Impact
 `critical` | `high` | `medium` | `low` — who is affected and how (lost contacts/leads = critical)
 
-### Regression Test Plan
-- Scenario to lock in: <reproduction case as Given/When/Then>
-- Seed needs: <describe or "generic is fine">
-- Validation command: <cmd>
+### Verification Plan
+- Scenario to verify: <reproduction case as Given/When/Then>
+- Seed needs: <describe or "default seed is fine">
+- Manual steps + validation commands (lint, typecheck, build): <steps>
 
 ### Fix Approach
 <!-- Optional: suggest direction without prescribing exact implementation -->
@@ -329,7 +330,7 @@ updated: <today YYYY-MM-DD>
 - [ ] Affected areas reference plausible real paths from the Step 2 Explore pass (root layout, no `src/`).
 - [ ] Scope explicitly states what is NOT included.
 - [ ] No invented business facts; unknowns are listed in `blocked_by_questions`.
-- [ ] The test/fixture plan is concrete enough for Codex to use.
+- [ ] The manual verification plan is concrete enough for a reviewer and Codex to follow (URLs, steps, expected result).
 
 ---
 
@@ -490,7 +491,7 @@ This is the final step. It runs before the hand-off chosen in Step 10 executes, 
 ```bash
 codex exec -s read-only --skip-git-repo-check -C "$PWD" \
   -o /tmp/43l-codex-feature-bug-<slug>-r1.md \
-  "Review specs/<type>-<slug>.md as a skeptical senior engineer. Check against AGENTS.md (§3 stack gaps, §4 golden rules), docs/adr/*, docs/context/10-roadmap.md row <ID>, and the docs/context files that row lists. Verify: (1) every roadmap Accept item is covered by an independently testable acceptance criterion; (2) affected paths exist or are clearly planned (root layout, no src/); (3) no invented business facts — unknowns carry Q-IDs; (4) dependencies on unclosed stack gaps are stated; (5) the test plan is concrete; (6) scope/out-of-scope is unambiguous. Do NOT read .env or wordpress-site/. Do NOT edit files. Return numbered findings: severity (high/medium/low), location, issue, proposed fix." </dev/null
+  "Review specs/<type>-<slug>.md as a skeptical senior engineer. Check against AGENTS.md (§3 stack gaps, §4 golden rules), docs/adr/*, docs/context/10-roadmap.md row <ID>, and the docs/context files that row lists. Verify: (1) every roadmap Accept item is covered by an independently testable acceptance criterion; (2) affected paths exist or are clearly planned (root layout, no src/); (3) no invented business facts — unknowns carry Q-IDs; (4) dependencies on unclosed stack gaps are stated; (5) the Manual Verification Plan is concrete (steps, URLs, expected results); (6) scope/out-of-scope is unambiguous. Do NOT read .env or wordpress-site/. Do NOT edit files. Return numbered findings: severity (high/medium/low), location, issue, proposed fix." </dev/null
 ```
 
 **Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask the user whether to retry or continue without it. Apply the same check after round 2.

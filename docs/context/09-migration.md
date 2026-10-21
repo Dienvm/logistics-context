@@ -50,7 +50,7 @@ Security: never commit the SQL dump, `wp-config.php`, or exported leads. The old
 6. **Redirects:** load `data/redirect-map.csv` into `next.config.ts` `redirects()` + `proxy.ts` (410, legacy IDs) and the `redirects` table.
 7. **Staging QA** (all must pass):
    - `pnpm check:redirects` against staging: every CSV row returns its status, single hop, correct `Location`;
-   - crawl staging (Screaming Frog or a Playwright crawler): no 404, one H1 per page, canonical self, hreflang reciprocal, JSON-LD valid;
+   - crawl staging (Screaming Frog): no 404, one H1 per page, canonical self, hreflang reciprocal, JSON-LD valid;
    - Lighthouse mobile on home, 2 route pages, 1 LP;
    - GTM preview: all dataLayer events; Meta/TikTok test events received with matching `event_id`;
    - lead form → row in `leads` + sales notification.

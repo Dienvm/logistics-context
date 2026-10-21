@@ -65,7 +65,7 @@ logistics-context/                 # context workspace (this repo)
 ├── messages/{vi,en}.json                     # UI strings (next-intl)
 ├── data/                                     # redirect-map.csv, design-tokens.json, seed/* (moved here in F-01)
 ├── scripts/                                  # seed.ts, import-wordpress.ts, build-tokens.ts, check-redirects.ts
-├── tests/{unit,e2e}/
+├── (no tests/ in the initial build phase, ADR 0004)
 ├── proxy.ts                                  # (today: middleware.ts — replaced in F-01/F-06)
 └── next.config.ts · drizzle.config.ts · biome.json · components.json
 ```
@@ -120,7 +120,7 @@ export default clerkMiddleware(async (auth, req) => {
   captureAttribution(req, res)                                              // sets 43l_attr if utm/click ids present
   return res
 })
-// the dot-exclusion would skip /wp-login.php and /xmlrpc.php — list legacy file paths explicitly so the 410 rules run (unit-test both)
+// the dot-exclusion would skip /wp-login.php and /xmlrpc.php — list legacy file paths explicitly so the 410 rules run (verify both with check:redirects / the manual plan; ADR 0004)
 export const config = { matcher: ['/((?!_next|.*\\..*).*)', '/wp-login.php', '/xmlrpc.php', '/wp-:path*', '/(api|trpc)(.*)'] }
 ```
 
@@ -197,10 +197,12 @@ Validate with a Zod `env.ts` at boot; never commit `.env*`.
 
 ## Quality harness
 
-- **Lint/format:** Biome 2 (`biome check`, with the `next` and `react` rule domains enabled; ADR 0002). F-01 compares Biome's rules with `@next/eslint-plugin-next` + React hooks rules; if a needed rule is missing, add a narrowly scoped ESLint config for those plugins only (Biome keeps formatting). Accessibility is verified with axe in Playwright, not by lint alone. The template's `prettier.config.cjs` is deleted in F-01. Pre-commit runs Biome on staged files only (never `git add .`).
+- **Lint/format:** Biome 2 (`biome check`, with the `next` and `react` rule domains enabled; ADR 0002). F-01 compares Biome's rules with `@next/eslint-plugin-next` + React hooks rules; if a needed rule is missing, add a narrowly scoped ESLint config for those plugins only (Biome keeps formatting). Accessibility is verified manually with axe DevTools (ADR 0004), not by lint alone. The template's `prettier.config.cjs` is deleted in F-01. Pre-commit runs Biome on staged files only (never `git add .`).
 - **Types:** `tsc --noEmit` strict.
-- **Unit (Vitest):** price calculation (chargeable weight, bands, rounding), slug/URL builders, metadata builder, JSON-LD builders, redirect loader, Zod schemas.
-- **E2E (Playwright):** home → route → calculator → Zalo click (assert `/go/zalo` 302 + event row), lead form happy/error paths, language switch keeps the equivalent page, admin edit rate → public page shows new price.
-- **SEO checks in CI:** every public page has 1 `h1`, canonical, hreflang pairs reciprocal, JSON-LD parses; `check:redirects` against preview deploy.
-- **Performance:** Lighthouse CI on `/`, one route page, `/lp/sample/` with budgets from `AGENTS.md`.
+- **No automated tests in the initial build phase (ADR 0004).** No Vitest, Playwright or `tests/` folder. Keep the price engine, slug/URL, metadata and JSON-LD builders, redirect loader and Zod schemas as pure typed functions so tests can be added later.
+- **Manual verification per PR** (spec's "Manual verification plan"): home → route → calculator → Zalo click (`/go/zalo` 302 + `contact_events` row), lead form happy/error paths, language switch keeps the equivalent page, admin rate edit → public page shows the new price; 360/768/1280 px, keyboard, reduced motion, axe DevTools scan.
+- **SEO checks (manual per page type):** 1 `h1`, canonical, hreflang pairs reciprocal, JSON-LD valid (Rich Results Test); `check:redirects` (script, not a test suite) in CI against the preview deploy.
+- **Scripts kept in CI (not test suites):** gitleaks, `i18n:check`, `check:redirects` (every PR from F-07).
+- **Consent matrix (manual):** initial / accept / selective / withdraw / reload, cookies and storage, server conversions gated; re-run when consent, tracking, `proxy.ts` or leads change (ADR 0004).
+- **Performance:** Lighthouse mobile run manually on the changed page, with LCP/CLS/INP and initial JS (gz, consent rejected) recorded; a budget miss blocks the PR; Lighthouse CI on `/`, one route page and `/lp/sample/` as a report in F-08, with budgets from `AGENTS.md`.
 - **Next.js DevTools MCP** can be enabled for agent debugging (Next 16 feature).

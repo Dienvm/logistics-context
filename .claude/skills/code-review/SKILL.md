@@ -125,7 +125,8 @@ Follows the patterns in `AGENTS.md` §8:
 ### H — Performance, SEO, a11y
 
 - **Client JS:** new `"use client"` boundaries or imports of `motion`, Clerk or TanStack Query on public pages. The 120 KB budget is gzipped first-party JS on the initial route render, framework included, with consent rejected; third-party scripts loaded after consent are reported separately (AGENTS.md §4.8). Also flag unnecessary sequential awaits that could be `Promise.all`.
-- **Test coverage:** compare the tests in the diff with the spec's Test / Fixture Plan. Flag missing scenarios, edge cases (band edges, missing translation, no consent, invalid channel) and tests that would pass without the feature (Vitest/Playwright).
+- **Verification coverage (no automated tests, ADR 0004):** compare the PR's recorded manual verification with the spec's Manual Verification Plan. Flag ACs with no recorded check, unchecked edge cases (band edges, missing translation, no consent, invalid channel), and pure logic (price, URL, metadata, JSON-LD, redirects, Zod) that isn't kept in pure typed functions. Don't flag missing Vitest/Playwright tests, and don't recommend adding them.
+- **Outstanding owner questions:** the PR lists the Q-IDs it depends on, and every unconfirmed fact renders nothing or a marked placeholder (rule 1).
 - **Images and motion:** `next/image` with `sizes`; LCP not animated; transform/opacity only; reduced motion respected.
 - **SEO:** one H1, `generateMetadata` with canonical + alternates, valid JSON-LD, breadcrumbs (except home), Zalo CTA via `/go`.
 - **Accessibility:** labelled inputs, visible focus, ≥ 44 px targets, token colours, no uppercase menus.
@@ -164,7 +165,7 @@ Write to `/tmp/43l-review-findings.md`:
 All acceptance criteria met. No blocking findings. Eligible for /mark-implemented.
 Required evidence before running:
 - [ ] Implementation PR link (merged): ___
-- [ ] Passing checks (lint · typecheck · unit · e2e): ___
+- [ ] Passing checks (lint · typecheck · build · i18n:check · check:redirects · gitleaks) + recorded manual verification, performance evidence and consent matrix where required: ___
 - [ ] Lighthouse / SEO checks for changed public pages: ___
 - [ ] AGENTS.md §3/§7 rows updated if a gap closed: yes | N/A
 - [ ] Changelog/digest decision: added | deferred | N/A
@@ -247,7 +248,7 @@ Ask: "Fix which findings? (all / 🔴 only / specific numbers / none)"
 1. Run `git $R status --short` in each target repo.
 2. Never fix on `main`. Use the spec's `branch:`; otherwise create `fix/<slug>` from the reviewed revision.
 3. If there are uncommitted changes you didn't make, list them and ask before touching those files. Never stash or revert them.
-4. Resolve the check commands once from `43logistics.vn/package.json` (`$LINT`, `$TYPECHECK` = `typecheck` or `type-check`, `$TEST`, `$E2E`; missing → "not available until F-01"). Give both paths the same commands and limitations.
+4. Resolve the check commands once from `43logistics.vn/package.json` (`$LINT`, `$TYPECHECK` = `typecheck` or `type-check`, `$BUILD` = `build`; missing → "not available until F-01"; no `$TEST`/`$E2E`, ADR 0004). Give both paths the same commands and limitations.
 
 **Check whether Codex is available for fix delegation:**
 
@@ -259,11 +260,11 @@ command -v codex >/dev/null && echo codex=yes || echo codex=no
 
   ```bash
   codex exec -s workspace-write -C "$PWD" \
-    "Read /tmp/43l-review-findings.md and AGENTS.md. In 43logistics.vn/ on branch <branch>, fix [all / 🔴 High / findings #N,M]. Edit minimally, then run pnpm -C 43logistics.vn <$LINT> <$TYPECHECK> <$TEST — only those that exist>, and report a fix table (finding #, file:line, change, check result). Never print .env* contents." </dev/null
+    "Read /tmp/43l-review-findings.md and AGENTS.md. In 43logistics.vn/ on branch <branch>, fix [all / 🔴 High / findings #N,M]. Edit minimally, then run pnpm -C 43logistics.vn <$LINT> <$TYPECHECK> <$BUILD — only those that exist; no tests, ADR 0004>, and report a fix table (finding #, file:line, change, check result). Never print .env* contents." </dev/null
   ```
 
   If it exits non-zero or its report shows failing checks, fall back to Claude applying the fixes directly.
-- **Codex not available:** Claude applies the fixes directly. Edit minimally with the Edit tool, then re-run the resolved `$LINT`, `$TYPECHECK` and `$TEST` (state which are unavailable).
+- **Codex not available:** Claude applies the fixes directly. Edit minimally with the Edit tool, then re-run the resolved `$LINT`, `$TYPECHECK` and `$BUILD` (state which are unavailable), and repeat the manual step that shows each fix.
 
 If the "Implemented transition recommendation" section is present, tell the user to run `/mark-implemented <spec-slug> <pr-link>` once the PR is merged.
 

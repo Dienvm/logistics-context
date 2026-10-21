@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Implement an approved spec from specs/ in the 43logistics.vn app repo. Detects whether the app repo is locally available and switches mode accordingly, works test-first, opens a PR, then has Codex review, verify and debate the implementation. Never marks spec as implemented.
+description: Implement an approved spec from specs/ in the 43logistics.vn app repo. Detects whether the app repo is locally available and switches mode accordingly, writes code only (no automated tests, ADR 0004) and verifies by lint/typecheck/build + manual checks, opens a PR, then has Codex review, verify and debate the implementation. Never marks spec as implemented.
 argument-hint: "<spec-filename-or-slug> [--review]"
 ---
 
@@ -27,8 +27,8 @@ argument-hint: "<spec-filename-or-slug> [--review]"
 | --- | --- |
 | BLUEPRINT.md | `AGENTS.md` + `docs/adr/*` + `docs/context/06-architecture.md` |
 | foresent-rules / foresent-robot | `context` (this workspace) / `app` (`43logistics.vn/`) |
-| `yarn test` / `yarn lint` | `pnpm -C 43logistics.vn test` / `pnpm -C 43logistics.vn lint` + `typecheck` |
-| Fixture YAML | Vitest unit tests + Playwright e2e + seed data |
+| `yarn test` / `yarn lint` | `pnpm -C 43logistics.vn lint` + `typecheck` + `build` (no test suites, ADR 0004) |
+| Fixture YAML | Manual verification plan + seed data |
 | Codex bridge | `codex exec` |
 
 ---
@@ -45,7 +45,7 @@ Read the spec fully. Extract:
 - `owner_repo`, `roadmap`, `blocked_by_questions`, `branch` (if present)
 - the Affected Areas table
 - the Acceptance Criteria
-- the Test / Fixture plan
+- the Manual Verification Plan (older specs: the Test / Fixture plan, read as manual steps)
 
 The spec must have `status: approved` or `status: in_implementation` to proceed.
 If it has `status: draft`, tell the user to review and approve the spec first (`/feature-bug` Step 11, or edit the spec).
@@ -76,8 +76,10 @@ git remote get-url origin 2>/dev/null && echo context_remote=yes || echo context
 
 - `$LINT` = `lint`
 - `$TYPECHECK` = `typecheck`, or else `type-check`
-- `$TEST` = `test` if present
-- `$E2E` = `test:e2e` if present
+- `$BUILD` = `build`
+- `$REDIRECTS` = `check:redirects` if present
+- `$I18N` = `i18n:check` if present
+- No `$TEST` / `$E2E`: automated tests are not used in the initial build phase (ADR 0004). Don't add them, even if a script exists.
 
 A missing script is reported as "not available until F-01". The step that needs it then falls back to the manual check it names.
 
@@ -119,14 +121,14 @@ Before writing any code, ask the user clarifying questions. Use AskUserQuestion 
 **Non-interactive runs** (e.g. Codex started by `/feature-bug` Step 10) can't ask questions:
 
 - Proceed on the scope the spec settles, and list every assumption in the Step 5 report.
-- For genuine blockers (AGENTS.md §6.6, or a `blocked_by_questions` item without an approved placeholder), stop the dependent ACs. Implement the rest, and report the blockers as plain-text questions for the user.
+- For genuine blockers (credentials, security, destructive actions, AGENTS.md §6.6), stop the dependent ACs. A `blocked_by_questions` item is not a blocker: ship the placeholder (ADR 0004) and list the Q-ID. Implement the rest, and report the blockers as plain-text questions for the user.
 
 **Batch 1 — Confirm scope:**
 
 - "Is there anything in the spec that's unclear or needs clarification before I start?" `No, spec is clear` / `Yes — <infer 1–2 likely ambiguities from the spec>`, plus Other.
 - "Should I check for existing code that might need to change beyond the Affected Areas?" `Yes, scan broadly` / `No, stay in scope` / `Not sure`.
 - "Any known constraints or gotchas I should watch out for?" Infer 1–2 from `AGENTS.md` §4 (JS budget, consent, no hard-coded facts), plus `None` and Other.
-- For each Q-ID in `blocked_by_questions`, ask: `Ship with placeholder behind a flag` / `Wait for the owner`.
+- Don't ask about Q-IDs in `blocked_by_questions`: ADR 0004 settles them (placeholder behind a flag, integration switched off, Q-ID listed in the PR).
 
 Wait for the answers, then continue.
 
@@ -153,7 +155,7 @@ Acceptance Criteria covered:
 - AC: <criterion> → <planned change that satisfies it>
 - ...
 
-Exempt support files (tests/seed/messages — no approval needed):
+Exempt support files (seed/messages — no approval needed):
 - <file> — <reason: "directly enables AC X">
 - (none if not applicable)
 
@@ -175,15 +177,15 @@ Before writing any code, call `TaskCreate` (or the session's task-list tool, if 
 
 - **One task per item in "Acceptance Criteria covered"**, not one per file. An AC is the unit the Step 6 conformance check verifies; splitting by file just duplicates the same work under a different cut.
 - **One task per remaining pipeline stage:**
-  - `Write failing test (Red)`
-  - `Implement to green`
+  - `Implement`
+  - `Verify (lint · typecheck · build · manual plan)`
   - `Self-review checklist`
   - `Spec conformance check`
   - `Create PR`
   - `Send notification`
   - `Codex review & debate`
 
-Set a task to `in_progress` when you start it, and to `completed` as soon as it's done; don't batch the updates at the end. Mark an AC task `completed` only once the code that satisfies it passes its test, not when the edit is merely written. This keeps progress durable if the session is interrupted or compacted mid-implementation. It also shows the user which criteria are actually verified and which are just touched.
+Set a task to `in_progress` when you start it, and to `completed` as soon as it's done; don't batch the updates at the end. Mark an AC task `completed` only once the code that satisfies it has been verified (checks pass and the manual verification step for that AC was done), not when the edit is merely written. This keeps progress durable if the session is interrupted or compacted mid-implementation. It also shows the user which criteria are actually verified and which are just touched.
 
 **Read mistake patterns before writing code:**
 
@@ -222,27 +224,23 @@ Wait for the result, and use it to inform the implementation plan.
 
 **For the app (Next.js):**
 
-- Write failing tests first (Red):
-  - pure logic (price engine, slug/metadata/JSON-LD builders, Zod schemas, redirect loader) → Vitest in `tests/unit/`;
-  - flows (`/go/[channel]`, lead form, language switch, redirects, SEO checks) → Playwright in `tests/e2e/`.
-- Run: `pnpm -C 43logistics.vn $TEST -- <pattern> 2>&1`
-- **If the tests pass at this point, stop.** Either the test is wrong (it doesn't test real behaviour) or the code already exists. Investigate before proceeding.
-- Expected output: the tests FAIL with "Cannot find module", "is not a function" or assertion errors. That means they correctly describe code that doesn't exist yet.
-- If `$TEST` isn't available (before F-01), say so. Verify with `pnpm -C 43logistics.vn $TYPECHECK` plus the manual check named in the spec's test plan, and note it in the PR.
-- Implement code to make the tests pass (Green).
-- Re-run `pnpm -C 43logistics.vn $TEST -- <pattern> 2>&1`; everything must pass.
-- Run lint: `pnpm -C 43logistics.vn $LINT 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1`
+- **No automated tests (ADR 0004).** Don't write Vitest/Playwright tests or create `tests/`.
+- Keep pure logic (price engine, slug/metadata/JSON-LD builders, Zod schemas, redirect loader) in pure typed functions with no framework imports, so tests can be added later.
+- Implement the code for each AC.
+- Run the checks: `pnpm -C 43logistics.vn $LINT 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1 && pnpm -C 43logistics.vn $BUILD 2>&1`; plus `pnpm -C 43logistics.vn $I18N` (from F-03) and `pnpm -C 43logistics.vn $REDIRECTS` against the candidate build on every PR once the script exists (F-07). Record status, destination and one-hop results.
+- Do the spec's Manual Verification Plan: run `pnpm -C 43logistics.vn dev` (or `start`), follow each step, and record the observed result per AC (URL, viewport, what you saw). Use the `run` skill or a browser tool when available; otherwise say which steps the user must do by hand.
+- Owner facts that are still open: ship the placeholder the spec describes and add the Q-ID to the "Outstanding owner questions" list for the PR and final report.
 
-Update the spec's front matter to `status: in_implementation` after the first passing check. Update its `specs/INDEX.md` row too.
+Update the spec's front matter to `status: in_implementation` after the first passing lint/typecheck/build run. Update its `specs/INDEX.md` row too.
 
-**Failure tracking:** count your fix attempts. If the tests still fail after 2 attempts:
+**Failure tracking:** count your fix attempts. If the checks or the manual verification still fail after 2 attempts:
 
 - note the failure pattern (what broke, what was tried);
 - auto-create a lesson draft (see Step 4 — Lesson check).
 
 ---
 
-### Code quality self-review (LOCAL mode — run after tests pass, before Step 4)
+### Code quality self-review (LOCAL mode — run after the checks pass, before Step 4)
 
 Scan every file written or modified and apply these checks. Fix issues inline before moving on.
 
@@ -296,20 +294,24 @@ Scan every file written or modified and apply these checks. Fix issues inline be
 
 ---
 
-### Re-run tests after lint/quality fixes (LOCAL mode)
+### Re-run checks after lint/quality fixes (LOCAL mode)
 
-The TDD tests were confirmed green above. Re-run them now, to make sure the lint/quality fixes didn't break anything:
+Re-run the checks now, to make sure the lint/quality fixes didn't break anything:
 
-- app: `pnpm -C 43logistics.vn $TEST -- <pattern> 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1` (skip `$TEST` if unavailable)
+- app: `pnpm -C 43logistics.vn $LINT 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1 && pnpm -C 43logistics.vn $BUILD 2>&1`, then repeat the manual steps for any AC whose code the fixes touched
 - context: re-run the verification greps
 
-If a test now fails after a quality fix, the fix broke something. Revert or correct the implementation, not the test.
+If a check now fails after a quality fix, the fix broke something. Revert or correct it.
 
 ### Definition-of-done evidence (`AGENTS.md` §9 — before Step 7)
 
 Record the evidence for each item, or write "not available — <reason>" when you can't verify it. Never claim a check you didn't run.
 
-- [ ] Full `$LINT`, `$TYPECHECK` and `$TEST` runs (not just the pattern), plus `$E2E` if it exists.
+- [ ] Full `$LINT`, `$TYPECHECK` and `$BUILD` runs, plus `$I18N` and `$REDIRECTS` (every PR once they exist). No test suites (ADR 0004).
+- [ ] Changed public pages: recorded LCP/CLS/INP and initial first-party JS (gz) with consent rejected; a budget miss blocks the PR.
+- [ ] Consent matrix (ADR 0004 Decision 2) re-run if the change touches consent, tracking, `proxy.ts` or lead processing.
+- [ ] Manual Verification Plan done, with the observed result per AC; axe DevTools scan (360 + 1280 px) for UI changes.
+- [ ] "Outstanding owner questions" list (Q-IDs) ready for the PR, or "none".
 - [ ] 360 / 768 / 1280 px and keyboard-only check of the changed pages (method used).
 - [ ] Public pages changed: Lighthouse mobile ≥ 90 / 100 / ≥ 95, and the SEO checks (H1, canonical, hreflang, JSON-LD).
 - [ ] VI and EN message keys exist for new strings.
@@ -343,11 +345,11 @@ Generate an implementation brief:
 ### Golden rules that apply
 <from AGENTS.md §4>
 
-### Test / fixture plan
+### Manual verification plan
 <From spec>
 
 ### Commands to run
-cd 43logistics.vn && pnpm test -- <pattern> && pnpm lint && pnpm typecheck
+cd 43logistics.vn && pnpm lint && pnpm typecheck && pnpm build   # no test suites (ADR 0004)
 
 ### Completion criteria
 All acceptance criteria passing. Then run `/mark-implemented <spec-slug> <merged-pr-link>`.
@@ -371,7 +373,7 @@ Check whether any of these failure conditions occurred during this run:
 
 | Condition | Trigger |
 |-----------|---------|
-| Tests failed after 2+ fix attempts | LOCAL mode repeated failure |
+| Checks or manual verification failed after 2+ fix attempts | LOCAL mode repeated failure |
 | Spec acceptance criteria were ambiguous and blocked implementation | Any mode |
 | Implementation required changes outside the spec's affected areas | LOCAL mode scope creep |
 | Lint/type errors could not be resolved | LOCAL mode |
@@ -419,7 +421,8 @@ Mode: <LOCAL | HANDOFF | REVIEW-ONLY>
 Spec: specs/<filename>.md (status: in_implementation)
 Target repo: <repo>  ·  Branch: <branch>
 
-[LOCAL] Tests: ✅ N/N pass | Lint: ✅ | Typecheck: ✅
+[LOCAL] Lint: ✅ | Typecheck: ✅ | Build: ✅ | Manual plan: ✅ N/N ACs
+Outstanding owner questions: <Q-IDs, or none>
 [HANDOFF] Brief: /tmp/43l-impl-brief-<slug>.md
 [REVIEW-ONLY] Report: /tmp/43l-impl-review-<slug>.md
 ```
@@ -476,7 +479,7 @@ Result: PASS (no bugs) | BLOCKED (N bugs found)
 
 Skip the app part when `owner_repo` is `context`.
 
-**All PR content must be written in English: the title, changes summary and test results.**
+**All PR content must be written in English: the title, changes summary and verification results.**
 
 ```bash
 git -C 43logistics.vn add <explicit paths>                    # never `add .` / `-A`
@@ -498,8 +501,11 @@ gh pr create -R Dienvm/43logistics.vn --base main \
 ### Acceptance criteria
 <paste from spec — mark each ✅ or ⚠️ partial>
 
-### Test results
-<paste test output summary in English>
+### Verification
+<lint/typecheck/build results + the manual verification steps and what was observed, in English (no automated tests, ADR 0004)>
+
+### Outstanding owner questions
+<Q-IDs this change depends on and the placeholder shown meanwhile, or "none">
 
 ### Conformance notes
 <spec-amendment / compatible-tightening items, or "none">
@@ -555,7 +561,7 @@ The condition (script + credentials) follows ADR 0003 §6. If the script is miss
 ```bash
 codex exec -s read-only --skip-git-repo-check -C "$PWD" \
   -o /tmp/43l-codex-implement-<slug>-r1.md \
-  "Review the implementation of specs/<file> on app branch <branch> (run: git -C 43logistics.vn diff main...<branch> -- . ':(exclude).env*' ':(exclude)**/.env*' — never print secret-file diffs). [HANDOFF/REVIEW-ONLY: review /tmp/43l-impl-brief-<slug>.md or /tmp/43l-impl-review-<slug>.md instead.] Check: (1) every acceptance criterion is truly met and tested; (2) AGENTS.md §4 golden rules — hard-coded facts/prices, metadata/JSON-LD/H1, server-only DB, requireRole, client JS budget, consent, secrets; (3) correctness bugs and missing edge cases; (4) APIs used that are not installed (AGENTS.md §3); (5) tests that would pass without the feature. Do NOT read .env or wordpress-site/. Do NOT edit files. Return numbered findings: severity (high/medium/low), file:line, issue, fix." </dev/null
+  "Review the implementation of specs/<file> on app branch <branch> (run: git -C 43logistics.vn diff main...<branch> -- . ':(exclude).env*' ':(exclude)**/.env*' — never print secret-file diffs). [HANDOFF/REVIEW-ONLY: review /tmp/43l-impl-brief-<slug>.md or /tmp/43l-impl-review-<slug>.md instead.] Check: (1) every acceptance criterion is truly met and tested; (2) AGENTS.md §4 golden rules — hard-coded facts/prices, metadata/JSON-LD/H1, server-only DB, requireRole, client JS budget, consent, secrets; (3) correctness bugs and missing edge cases; (4) APIs used that are not installed (AGENTS.md §3); (5) recorded verification that would look the same without the feature (evidence that doesn't distinguish correct from incorrect behaviour). Do NOT read .env or wordpress-site/. Do NOT edit files. Return numbered findings: severity (high/medium/low), file:line, issue, fix." </dev/null
 ```
 
 **Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.
@@ -583,9 +589,9 @@ Ask (AskUserQuestion): "Fix which?" with options `All agreed` / `Agreed + disput
 Then act according to the mode:
 
 - **LOCAL**, for each chosen fix:
-  1. Add a failing test when the finding is about behaviour.
-  2. Fix it.
-  3. Re-run `$LINT`, `$TYPECHECK` and `$TEST` (whichever are available).
+  1. Fix it.
+  2. Re-run `$LINT`, `$TYPECHECK` and `$BUILD`, and repeat the manual step that shows the finding is fixed.
+  3. (No tests are added, ADR 0004.)
   4. Commit and push to the same branch.
 - **HANDOFF / REVIEW-ONLY:** update only the brief or the review report. No code, commits or pushes.
 

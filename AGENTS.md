@@ -57,7 +57,7 @@ The **Target** column is what new code is written for. The **In the app today** 
 | i18n | **next-intl**, `localePrefix: 'as-needed'`, VI default | — | F-03 |
 | Validation | **Zod**, schemas shared by Server Actions and forms | `zod ^3` | — |
 | Lint/format | **Biome 2** (`biome check`, `next`/`react` domains) + `tsc --noEmit`; narrow ESLint only for Next rules Biome lacks | Biome 1.9 + an unused Prettier config | F-01 |
-| Tests | **Vitest** (unit) + **Playwright** (e2e, redirects, SEO checks) | none | F-01 |
+| Tests | **None in the initial build phase** (ADR 0004): verification = lint + typecheck + build + `check:redirects` + manual checks (§9). Code stays testable (pure functions) | none | — (ADR 0004) |
 | Package manager | **pnpm**, Node ≥ 20.9 | `pnpm-lock.yaml`, but the husky hook calls `npm` | F-00 |
 | Hosting | Vercel (assumed, Q-15). Supabase in `ap-southeast-1` | — | L-02 |
 
@@ -142,9 +142,9 @@ Then name the next concrete action, its blockers and its owning repo. If the sta
 3. **Use the matching skill:** if a skill is named or clearly matches, read its `SKILL.md` and follow its steps in order. Don't skip a step because the next one feels more urgent.
 4. **Inspect the real files** (docs, app code, `package.json`) instead of relying on memory.
 5. **Respect existing changes:** check `git status` before edits, treat existing changes as the user's, and never revert them unasked.
-6. **Ask only when blocked** by owner-only facts (rule 1), credentials, destructive actions or a genuinely risky ambiguity.
+6. **Ask only when blocked** by credentials, destructive actions or a genuinely risky ambiguity. A missing owner fact is **not** a blocker for code (ADR 0004): render nothing or a marked placeholder (rule 1), build owner-dependent integrations switched off, and end the task with an "Outstanding owner questions" list of Q-IDs. Activation and launch still need the answers (ADR 0004 Decision 5).
 7. **Carry the work through:** unless the user asked only to discuss, review or plan, finish the edit, verification and a concise summary.
-8. **Verify narrowly:** run the narrowest meaningful check (one test file, `pnpm typecheck`, a doc grep). If you didn't verify, say why.
+8. **Verify narrowly:** run the narrowest meaningful check (`pnpm typecheck`, `pnpm lint`, `pnpm build`, a manual browser check, a doc grep; no test suites per ADR 0004). If you didn't verify, say why.
 
 ### Lifecycle
 
@@ -209,8 +209,6 @@ Check availability first with `command -v codex`; if it's missing, skip the step
 | `pnpm lint:fix` / `pnpm format:write` | exists | Biome autofix / format |
 | `pnpm typecheck` | F-01 (today: `pnpm type-check`) | `tsc --noEmit` |
 | `pnpm db:generate` / `pnpm db:migrate` | exists | drizzle-kit (migrations in `db/migrations/`) |
-| `pnpm test` | F-01 | Vitest |
-| `pnpm test:e2e` | F-01 | Playwright (incl. redirect + SEO checks) |
 | `pnpm tokens` | F-02 | Build `app/theme.css` from `data/design-tokens.json` |
 | `pnpm i18n:check` | F-03 | VI/EN message-key parity |
 | `pnpm db:seed` | F-04 | `tsx scripts/seed.ts` (legacy routes, settings) |
@@ -227,7 +225,7 @@ Keep this table true. When a task adds or renames a script, update its row in th
   - `server/{queries,actions,services}`
   - `db/{client.ts,schema/,migrations/}`
   - `lib/{seo,i18n,format,tracking,validation}`
-  - `hooks/`, `stores/`, `types/`, `messages/`, `data/`, `scripts/`, `tests/{unit,e2e}`
+  - `hooks/`, `stores/`, `types/`, `messages/`, `data/`, `scripts/` (no `tests/` in the initial build phase, ADR 0004)
 - File names are `kebab-case.tsx`, components `PascalCase`, one component per file. Server Actions end with `Action` (`submitLeadAction`).
 - UI chrome copy lives in `messages/{vi,en}.json`; page content lives in the database.
 - Dates are stored in UTC and displayed in `Asia/Ho_Chi_Minh`. Money is stored as integer VND (`bigint`) and formatted with `Intl.NumberFormat('vi-VN')`, e.g. `75.000 đ`.
@@ -236,11 +234,14 @@ Keep this table true. When a task adds or renames a script, update its row in th
 
 ## 9. Definition of done (every app PR)
 
-- [ ] `pnpm lint && pnpm typecheck && pnpm test` pass; no new console errors.
+- [ ] `pnpm lint && pnpm typecheck && pnpm build` pass, plus `pnpm i18n:check` (from F-03), `pnpm check:redirects` (from F-07, every PR) and gitleaks; no new console errors. No automated test suites in this phase (ADR 0004).
+- [ ] Manual verification plan from the spec done and recorded in the PR, incl. an axe DevTools scan at 360 and 1280 px with zero serious/critical issues.
+- [ ] PR ends with "Outstanding owner questions" (Q-IDs the change depends on), or "none".
 - [ ] Works at 360 px, 768 px and 1280 px; keyboard-navigable; reduced-motion checked.
 - [ ] New public page: metadata + canonical + hreflang + JSON-LD validated (Rich Results Test or a schema validator).
 - [ ] No hard-coded business facts; strings in `messages/*` for both VI and EN.
-- [ ] Lighthouse mobile on the changed page: ≥ 90 performance, 100 SEO, ≥ 95 accessibility.
+- [ ] Lighthouse mobile on the changed page: ≥ 90 performance, 100 SEO, ≥ 95 accessibility; recorded LCP/CLS/INP and initial first-party JS (gz) with consent rejected. A budget miss blocks the PR.
+- [ ] Consent matrix (ADR 0004) re-run when the change touches consent, tracking, `proxy.ts` or lead processing.
 - [ ] Context updated in the same change set if a decision or fact changed:
   - roadmap checkbox via `/mark-implemented`;
   - an ADR in `docs/adr/` for stack or architecture changes;
