@@ -14,8 +14,9 @@
 | Legal company name | — | `NEEDS CONFIRMATION` |
 | Tax code (MST) / business licence | — | `NEEDS CONFIRMATION` |
 | Founded | — | `NEEDS CONFIRMATION` (site first published Oct 2023) |
+| Trust numbers (years, customers, shipments) | None on the old site. The only counters ("Outlet Office", "Happy Customer", "Local Courier") are theme demo widgets on the Lorem-ipsum About pages, so they are not facts | `NEEDS CONFIRMATION` (Q-23) |
 | Domain | `https://43logistics.vn` (https, non-www) | Confirmed |
-| Sister company | Quý Nam (`https://quynam.vn`), same HCMC address "34 Nguyễn Trọng Lội, P4, Tân Bình". Its data (routes, rates, goods rules, policies, FAQ) may be reused as a source; each value still needs 43 Logistics confirmation before publishing (scope: Q-24) | Confirmed by owner 2026-10-21 (Q-21) |
+| Sister company | Quý Nam (`https://quynam.vn`), same HCMC address "34 Nguyễn Trọng Lội, P4, Tân Bình". **Reference for site structure only** (sitemap, page types, page count, layout, feature patterns). Its facts, prices, numbers, slogans, images and wording are **not** a source for 43logistics.vn; 43L publishes only its own facts | Confirmed by owner 2026-10-21 (Q-21, clarified the same day) |
 
 ## Locations
 
