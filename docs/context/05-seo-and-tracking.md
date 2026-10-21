@@ -74,7 +74,12 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 ## Redirects & legacy URLs
 
 - Source of truth: `43logistics.vn/data/redirect-map.csv` (`old_url,new_url_vi,new_url_en,status_code,notes`).
-- Implementation v1: generate `redirects()` in `next.config.ts` from the CSV at build (≈50 rules, all **301** — use `statusCode: 301`, not `permanent: true`, which emits 308), plus `rewrites()` for `/wp-content/uploads/:path*` → Supabase Storage public URL (same path, 200).
+- **As built (F-07):** `next.config.ts` `redirects()` is generated from the CSV at build by `modules/seo` (`loadRedirectMap` → `buildNextRedirects`).
+  - **Rules:** 43 exact rows give 80 rules, each `statusCode: 301` (not `permanent: true`, which emits 308). Non-file sources appear with and without the trailing slash, so slash-less legacy URLs are still one hop; config redirects run before `proxy.ts`.
+  - **Validation:** the CSV is checked with Zod at build: header, status codes, same-origin destinations, no duplicates, no overlap with `proxy.ts` rules, and a named handler for each of the 6 wildcard rows. A malformed CSV fails the build with the line and field.
+  - **Uploads:** the `/wp-content/uploads/*` rewrite to Storage is owned by **A-04**. Owner note (2026-10-21): old WordPress URLs like these won't appear on the new site, so A-04 confirms whether they're preserved at all.
+- **`?attachment_id=`** on `/`, `/vi` or `/index.php` → 301 `/` in `proxy.ts`, with precedence `page_id` > `p` > `attachment_id`; the legacy params are removed and others kept. Attachment **slugs** → A-04.
+- **Exception (owner, F-07):** legacy ID params on non-root legacy URLs (e.g. `/home1/?page_id=705`) are bypassed. They're ordinary params there, and the second hop is accepted.
 - 410 rows (`/tieu-de/`, `/portfolio/*`, `/wp-admin/*`, `/wp-login.php`, `/xmlrpc.php`, `/wp-json/*`): handled in `proxy.ts` (F-06), which returns an empty 410 with `cache-control: public, max-age=3600`.
 - Old query URLs `/?page_id={id}`, `/?p={id}` (also on `/vi` and `/index.php`): mapped through `43logistics.vn/data/legacy-wp-ids.json` (21 IDs; the sources per ID are in `specs/feature-f06-proxy-composition.md`) in one 301.
   - `page_id` wins over `p`, and other parameters are kept.
@@ -82,7 +87,17 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 - Trailing slash and the locale prefix (`/vi` → `/`, `/EN` → `/en/`) are normalised by `proxy.ts` in the same single hop (`skipTrailingSlashRedirect: true`).
 - `http://` and `www.` → `https://43logistics.vn` at the host/CDN level (one hop).
 - Runtime additions later: `redirects` table read in `proxy.ts` (cached), managed in admin. Precedence: the CSV owns legacy WordPress URLs and is immutable after launch; the table owns new redirects (slug changes). The admin action rejects a `from_path` that exists in the CSV, and `check:redirects` fails on any overlap.
-- `pnpm check:redirects` (a Node script using `fetch`/undici, not a test suite; ADR 0004) must pass in CI: every CSV row returns the expected status and `Location`, no chains.
+- `pnpm check:redirects` (a script, not a test suite; ADR 0004) runs in the `verify` CI workflow against `pnpm start` on every PR, and **0 FAIL** is required. Outcome per check:
+
+  | Observed | Default | `--strict` |
+  | --- | --- | --- |
+  | 200 | PASS | PASS |
+  | 404 on a not-yet-built page | PENDING | FAIL |
+  | any other status, a wrong `Location`, a second hop, a request error or a timeout | FAIL | FAIL |
+  | deferred handler (A-04) | PENDING | FAIL |
+  | host rules | SKIPPED (L-02) unless `--host-checks` | FAIL unless `--host-checks` |
+
+  L-01 requires `--strict`; L-02 requires `--base https://43logistics.vn --host-checks --strict`.
 
 ## Performance rules (SEO-relevant)
 

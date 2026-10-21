@@ -15,7 +15,7 @@
 - [ ] **F-04 Database** — Supabase project (Singapore region), Drizzle client + schema from 07, migrations, seed script with `43logistics.vn/data/seed/*`. *Context:* 07. *Accept:* `pnpm db:migrate && pnpm db:seed` on a fresh DB creates all tables with RLS enabled and 10 routes (8 active); `db/client.ts` cannot be imported from client code (`server-only`); template todo/profile tables dropped; Drizzle/drizzle-kit upgraded to current. — partial: specs/feature-f04-database-schema-seed.md (code merged in app PR #6; Supabase cloud project + its migrate/seed/RLS checks pending the owner)
 - [ ] **F-05 Auth** — Clerk for `/admin` only, roles in `publicMetadata`, session claim `role`, `requireRole()`, Clerk webhook → `profiles`. *Context:* 06. *Accept:* Clerk works with `cacheComponents: true` (build + a request to `/admin`), result recorded in ADR 0006; unauthenticated `/admin` → sign-in; `editor` cannot open leads; public pages ship no Clerk JS (check bundle).
 - [x] **F-06 proxy.ts** — compose around the F-03 next-intl proxy: 410 rules, legacy `?page_id`/`?p` redirects, attribution cookie, Clerk protection, and one-hop trailing-slash handling (`skipTrailingSlashRedirect`, so `/vi` and slash-less legacy URLs don't take two hops). *Context:* 05, 06. *Accept:* matchers are pure functions in `lib/`; `/tieu-de/` → 410; `/?page_id=705` → 301 `/gui-hang-di-singapore/`; `?utm_source=x` sets `43l_attr` only when the ads-consent cookie is granted, and sets nothing without it. — spec: specs/feature-f06-proxy-composition.md (Clerk protection = `/admin` deny seam; F-05 swaps in `auth.protect()`)
-- [ ] **F-07 Redirects** — CSV loader → `next.config.ts` `redirects()`/`rewrites()`; `scripts/check-redirects.ts`. *Context:* 05, `43logistics.vn/data/redirect-map.csv`. *Accept:* all 63 rows pass against `next start`. *Note (F-06):* `skipTrailingSlashRedirect` is on and config `redirects()` run **before** `proxy.ts`, so a slash-less legacy URL (e.g. `/dich-vu/gui-hang-di-singapore`) must be matched by the CSV rule itself (generate both forms) to stay one hop.
+- [ ] **F-07 Redirects** — CSV loader → `next.config.ts` `redirects()`/`rewrites()`; `scripts/check-redirects.ts`. *Context:* 05, `43logistics.vn/data/redirect-map.csv`. *Accept:* `pnpm check:redirects` against `next start` reports 0 FAIL, and every row is PASS or a named deferral (PENDING page, PENDING A-04, SKIPPED L-02); full availability is proven by `--strict` at L-01 and by the host run at L-02. *Note (F-06):* `skipTrailingSlashRedirect` is on and config `redirects()` run **before** `proxy.ts`, so a slash-less legacy URL (e.g. `/dich-vu/gui-hang-di-singapore`) must be matched by the CSV rule itself (generate both forms) to stay one hop.
 - [ ] **F-08 CI** — GitHub Actions: lint, typecheck, build, gitleaks, i18n:check, check:redirects, Lighthouse CI as a report (framework baseline + ≤ 50 KB gz app JS per ADR 0006; per-PR evidence is binding). No unit/e2e jobs (ADR 0004).
 
 ## Phase 1 — Public site core
@@ -39,7 +39,7 @@
 - [ ] **A-01 Admin shell** — `/admin` layout with Clerk `<UserButton>`, nav by role, React Query provider. 
 - [ ] **A-02 Routes & rates editor** — CRUD bands, validity dates, `is_verified` toggle (admin only), preview of public table; actions call `updateTag('route:{key}')` + `revalidateTag('menu','max')`. *Accept:* editing a price shows on the public route page, mega menu and calculator after save (checked manually).
 - [ ] **A-03 Pages & translations** — block editor (form-based per block type), SEO fields with length counters, slug change → auto redirect row, status workflow (draft → review → published), "Create EN draft".
-- [ ] **A-04 Media library** — upload (sharp conversion), required alt VI/EN, usage list.
+- [ ] **A-04 Media library** — upload (sharp conversion), required alt VI/EN, usage list. Owns the `/wp-content/uploads/*` legacy URLs: either a Storage rewrite, or the owner's decision not to keep them (owner note 2026-10-21). Also owns the attachment-slug redirects from `data/media-inventory.csv` (F-07).
 - [ ] **A-05 FAQs, goods rules, testimonials** — with approval (`approved_at`) and consent (`consent_at`) gates.
 - [ ] **A-06 Leads inbox** (sales) — DataTable (TanStack Query + Table), filters (status, route, source, date), status updates, notes, CSV export, attribution detail. *Accept:* `editor` gets 403.
 - [ ] **A-07 Contact analytics** — counts of `contact_events` + leads by channel/route/source per week.
@@ -63,8 +63,8 @@
 
 ## Phase 5 — Launch
 
-- [ ] **L-01 Staging QA** — everything in `09-migration.md` step 7, plus a full manual pass of the flows that have no automated tests (ADR 0004): price calculation per route, the full consent matrix (ADR 0004 Decision 2), `/go/[channel]` logging, lead form, language switch. Price evidence: approved rates **and** hand-calculated S-03 worked examples per route. Launch gate: answers behind every published fact plus Q-15, Q-17, Q-20.
-- [ ] **L-02 Go-live** — DNS, Search Console sitemap, monitoring (Sentry or similar, uptime), 4-week watch.
+- [ ] **L-01 Staging QA** — everything in `09-migration.md` step 7, plus a full manual pass of the flows that have no automated tests (ADR 0004): price calculation per route, the full consent matrix (ADR 0004 Decision 2), `/go/[channel]` logging, lead form, language switch. Price evidence: approved rates **and** hand-calculated S-03 worked examples per route. Launch gate: answers behind every published fact plus Q-15, Q-17, Q-20. `pnpm check:redirects --strict` must pass (F-07).
+- [ ] **L-02 Go-live** — DNS, Search Console sitemap, monitoring (Sentry or similar, uptime), 4-week watch. `pnpm check:redirects --base https://43logistics.vn --host-checks --strict` must pass in production (F-07).
 
 ## Phase 6 — Later
 
