@@ -338,7 +338,7 @@ export const contactEvents = pgTable('contact_events', {
   adsConsent: boolean('ads_consent').notNull().default(false),            // gate for server-side conversions
   analyticsConsent: boolean('analytics_consent').notNull().default(false),
   consentPolicyVersion: text('consent_policy_version'),
-  consentAt: timestamp('consent_at', { withTimezone: true }),          // when the consent choice was made (from the consent cookie), not the event time
+  consentAt: timestamp('consent_at', { withTimezone: true }),          // when the consent choice was made (the `at` field of the 43l_consent cookie, 05), not the event time
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index('contact_events_created_idx').on(t.createdAt), index('contact_events_channel_idx').on(t.channel)]).enableRLS()
 
