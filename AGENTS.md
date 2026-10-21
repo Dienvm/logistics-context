@@ -56,7 +56,7 @@ The **Target** column is what new code is written for. The **In the app today** 
 | Client server-state | **TanStack Query**, only in admin screens (and the calculator if it ever needs live data) | — | A-01 |
 | i18n | **next-intl**, `localePrefix: 'as-needed'`, VI default | — | F-03 |
 | Validation | **Zod**, schemas shared by Server Actions and forms | `zod ^4.6.7`; env via `shared/config/env.server.ts` / `env.public.ts` | done (F-01) |
-| Lint/format | **Biome 2** (`biome check`, `next`/`react` domains) + `tsc --noEmit`; narrow ESLint only for Next rules Biome lacks | Biome 2.5 (`biome check`, `next`/`react` domains); no ESLint fallback (every applicable rule covered; ADR 0002 §4) + `tsc --noEmit` + dependency-cruiser `check:boundaries` (ADR 0005) | done (F-01) |
+| Lint/format | **Biome 2** (`biome check`, `next`/`react` domains) + `tsc --noEmit`; narrow ESLint only for Next rules Biome lacks | Biome 2.5 (`biome check`, `next`/`react` domains); no ESLint fallback (rules Biome lacks were assessed as unnecessary for this App Router app, see 43logistics.vn PR #2; ADR 0002 §4) + `tsc --noEmit` + dependency-cruiser `check:boundaries` (ADR 0005) | done (F-01) |
 | Tests | **None in the initial build phase** (ADR 0004): verification = lint + typecheck + build + `check:redirects` + manual checks (§9). Code stays testable (pure functions) | none | — (ADR 0004) |
 | Package manager | **pnpm**, Node ≥ 22 | pnpm 11 (`pnpm-lock.yaml`, `pnpm-workspace.yaml` `allowBuilds`), `engines.node >=22`; husky pre-commit uses pnpm + `biome check --staged` + gitleaks | done (F-00, F-01) |
 | Hosting | Vercel (assumed, Q-15). Supabase in `ap-southeast-1` | — | L-02 |
