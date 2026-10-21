@@ -1,7 +1,9 @@
 ---
 title: Generate legacy redirects from the CSV and check them
 type: feature
-status: approved
+status: in_implementation
+branch: feat/f-07-legacy-redirects-check
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/8
 owner_repo: both
 roadmap: F-07
 priority: must-have
