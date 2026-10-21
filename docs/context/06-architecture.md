@@ -102,7 +102,14 @@ i18n with Cache Components: pass `locale` explicitly into cached query functions
 
 ## `proxy.ts` composition (order matters)
 
-F-03 created `proxy.ts` with only the next-intl middleware (`export default createMiddleware(routing)`; matcher excludes `api`, `go`, `_next`, `_vercel` and dotted paths). F-06 composes the rest around it, as sketched below.
+**As built (F-06):** `proxy.ts` calls one pure planner, `planRequest` (`modules/seo/application/request-plan.ts`), and acts on its decision:
+1. 410 for gone paths;
+2. 404 with `x-robots-tag: noindex` for `/admin…` and `/api/admin…` (F-05 replaces it with Clerk `auth.protect()`);
+3. pass-through for `/api`, `/go` and files;
+4. **one** redirect combining legacy ID, locale prefix and trailing slash (`skipTrailingSlashRedirect: true`; 308 for slash-only fixes, 301 otherwise);
+5. next-intl, then `43l_attr` on non-redirect responses only.
+
+The matcher excludes `_next`, `_vercel` and dotted paths, and lists the legacy `.php`, `/portfolio`, `/admin` and `/api/admin` paths explicitly. `proxy.ts` imports only client-safe module entries (a depcruise rule). The sketch below was the plan; Clerk is still to come (F-05).
 
 ```ts
 // proxy.ts (sketch)

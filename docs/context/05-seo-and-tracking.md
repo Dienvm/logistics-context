@@ -75,8 +75,11 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 
 - Source of truth: `43logistics.vn/data/redirect-map.csv` (`old_url,new_url_vi,new_url_en,status_code,notes`).
 - Implementation v1: generate `redirects()` in `next.config.ts` from the CSV at build (≈50 rules, all **301** — use `statusCode: 301`, not `permanent: true`, which emits 308), plus `rewrites()` for `/wp-content/uploads/:path*` → Supabase Storage public URL (same path, 200).
-- 410 rows (`/tieu-de/`, `/portfolio/*`, `/wp-admin/*`, `/wp-login.php`, `/xmlrpc.php`, `/wp-json/*`): handled in `proxy.ts` returning `new NextResponse(null, { status: 410 })`.
-- Old query URLs `/?page_id={id}`, `/?p={id}` → map WP IDs (580, 705, 834, 836, 837, 838, 851, 866, 3596, 694, 3570, 3587) to new URLs in `proxy.ts`.
+- 410 rows (`/tieu-de/`, `/portfolio/*`, `/wp-admin/*`, `/wp-login.php`, `/xmlrpc.php`, `/wp-json/*`): handled in `proxy.ts` (F-06), which returns an empty 410 with `cache-control: public, max-age=3600`.
+- Old query URLs `/?page_id={id}`, `/?p={id}` (also on `/vi` and `/index.php`): mapped through `43logistics.vn/data/legacy-wp-ids.json` (21 IDs; the sources per ID are in `specs/feature-f06-proxy-composition.md`) in one 301.
+  - `page_id` wins over `p`, and other parameters are kept.
+  - An ID mapped to `gone` (832) → 410; an unknown ID → 301 to `/` (owner decision).
+- Trailing slash and the locale prefix (`/vi` → `/`, `/EN` → `/en/`) are normalised by `proxy.ts` in the same single hop (`skipTrailingSlashRedirect: true`).
 - `http://` and `www.` → `https://43logistics.vn` at the host/CDN level (one hop).
 - Runtime additions later: `redirects` table read in `proxy.ts` (cached), managed in admin. Precedence: the CSV owns legacy WordPress URLs and is immutable after launch; the table owns new redirects (slug changes). The admin action rejects a `from_path` that exists in the CSV, and `check:redirects` fails on any overlap.
 - `pnpm check:redirects` (a Node script using `fetch`/undici, not a test suite; ADR 0004) must pass in CI: every CSV row returns the expected status and `Location`, no chains.
@@ -92,6 +95,12 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 ## Tracking plan
 
 ### Identifiers captured (first-party cookie `43l_attr`, 90 days, set in `proxy.ts` on landing — **only when ads consent is already granted**; otherwise the identifiers are kept in the URL/session for the current visit and written after consent)
+
+Cookie format (F-06; `modules/tracking`):
+- **Attributes:** `Path=/`, `HttpOnly`, `SameSite=Lax`, `Secure` (production), `Max-Age` 90 days.
+- **Value:** base64url JSON of the parameters below. `landing_path` is the pathname only, `referrer_host` the hostname only, and `first_seen_at` the first landing time.
+- **Size:** each value is capped at 150 UTF-8 bytes; the cookie is at most 3,072 bytes, otherwise it isn't set.
+- **Behaviour:** last-touch on each new landing with parameters, keeping `first_seen_at`. Never set on a redirect, 410 or 404 answered by the proxy.
 
 `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `gclid`, `gbraid`, `wbraid`, `fbclid` (→ build `_fbc`), `ttclid`, `landing_path`, `referrer`, `first_seen_at`. Attached to every `leads` and `contact_events` row.
 
@@ -132,6 +141,10 @@ The client link also emits the event with the same `event_id` (pass via data att
 
 - Default: `ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage` = `denied` until the user chooses; only strictly necessary cookies (the consent choice itself) are allowed before consent. `43l_attr` holds ad click IDs and is therefore **not** functional. Use Consent Mode **basic** (tags not loaded at all before consent), not advanced (cookieless pings).
 - Banner (VI/EN) with Accept all / Reject / Customize; choice stored (cookie + Zustand), `gtag('consent','update',…)`, and PostHog `opt_in_capturing()` / `opt_out_capturing()` mapped to `analytics_storage`.
+- **Consent cookie contract (F-06 reads it; S-13 must write exactly this):** `43l_consent`.
+  - **Value:** `v1.<ads 0|1>.<analytics 0|1>.<unix seconds>`.
+  - **Attributes:** `Path=/`, host-only, `SameSite=Lax`, `Secure` in production, `Max-Age` 180 days, not HttpOnly.
+  - **Invalid values:** a malformed value, another version, a timestamp before 2026-01-01 or in the future all count as **not granted**.
 - Server-side conversions only when consent for ads is granted (stored on the lead/event row).
 - Per-vendor permissions: the Customize panel maps `analytics` → PostHog and `ads` → GTM plus each confirmed ad platform (Q-13); no vendor loads under a category the user rejected.
 - Withdrawal (banner reopenable from the footer): on revoking ads consent, delete `43l_attr`, stop loading GTM on the next navigation, and send no further server-side conversions (queued ones are dropped). On revoking analytics consent, call PostHog `opt_out_capturing()` and clear its cookies/storage. Rows already stored keep their recorded consent state.
