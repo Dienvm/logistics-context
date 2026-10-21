@@ -36,15 +36,26 @@ The owner has also asked for **code only: no unit tests and no e2e tests**. That
 
 ## Proposed approach
 
-Principle: **Quý Nam's information architecture and page order, built on 43 Logistics data with the stack and rules we already have.** Quý Nam is a sister company, and the owner allows reusing its data (Q-21, answered 2026-10-21). So we reuse **data and structure**, but we rewrite the **wording**, because the same text on two domains is duplicate content.
+Principle: **Quý Nam's structure, 43 Logistics' identity.** Quý Nam is a sister company (Q-21). The owner clarified on 2026-10-21 that it is a **reference for structure only**: sitemap, page types, number of pages, layout, section order and how features work. **43logistics.vn is our own brand and the only site we optimise.** Every fact, number, slogan, image, colour and claim on it comes from 43 Logistics' own sources. We never copy Quý Nam's wording, data, numbers or media.
 
-### 0. Reusing Quý Nam data
+### 0. What comes from where
 
-- **What can be imported as a source:** route list, rate tables, goods rules (accepted / refused), FAQ questions, process steps, policy outlines (complaints, privacy), operational notes (cut-off times, surcharges).
-- **How it enters the site (rule 1 still applies):** import into the seed data with `source = 'quynam'` and `is_verified = false` / no `approved_at`. A 43 Logistics staff member confirms each value in the admin (A-02, A-05) before it is published. This matters because Quý Nam's rates are quoted from Hồ Chí Minh, and Q-24(a) decides whether they also apply from Đà Nẵng.
-- **Claims and trust numbers** ("12+ năm", "10,000+ khách", press logos, "bảo hiểm 100%", hours): these describe Quý Nam. They are shown only if Q-24(b) allows it, and then **attributed** to Quý Nam or the group, never presented as 43 Logistics' own.
-- **Linking:** a link to quynam.vn as the sister company (footer, About) is allowed once Q-24(e) confirms we may say so publicly. The §10 "no competitor links" rule doesn't apply to a sister company.
-- **Media:** Quý Nam's photos and customer screenshots need the same consent rules (Q-12) and are used only where they show real shared operations.
+| Take from **quynam.vn** (structure) | Take from **43 Logistics** (identity and facts) |
+| --- | --- |
+| Sitemap shape and page types: home, route pages, combined price list, calculator, tracking, guides, about, contact, policies | Brand: name "43 Logistics", taglines "Vận chuyển hàng Quốc Tế" and "43 Logistics - Gửi hàng đi nước ngoài!" (`01-business.md`) |
+| Number and kind of pages: about 13 route pages, a long-tail layer (goods × route, city × route), a glossary/how-to blog | Routes, prices, transit times, flight days, surcharges: `routes` / `route_rates` seeded from 43L's own legacy data (`data/seed/routes.legacy.json`), published only after 43L staff verify them (rule 1–2, Q-04) |
+| Section order on home and route pages (§2) | Contacts, offices, hours: `01-business.md` / `site_settings` (Q-02, Q-03, Q-06) |
+| Feature patterns: price list with a route switcher, calculator inputs (from, to, goods type, kg, L×W×H), tracking lookup, author box, customer-message wall, goods gallery | Colours, type, signature details: crimson `#AC0C2E`, hard offset shadow, 20 px card radius, Barlow Condensed display (`02-legacy-audit.md` "What to keep", `04-design-system.md`, `data/design-tokens.json`) |
+| What *not* to do: their weak points in "What quynam.vn does" | Images: 43L's own photos (`SEE_5122…SEE_5184` office/team, 2025 blog photos; `data/media-inventory.csv`: 175 used files), logo from the old site (raster only, 300 × 300 PNG; vector pending Q-11), consented and blurred customer screenshots (Q-12) |
+| | Trust numbers: **none exist yet**. The old site's only counters ("Outlet Office", "Happy Customer", "Local Courier") are theme demo widgets on the Lorem-ipsum About pages (`02-legacy-audit.md` #1), so they are not facts. The stats band stays hidden until 43L gives real numbers (Q-23) |
+| | Process, goods rules, FAQ, policies: 43L's own legacy copy (`legacy-copy/*`), rewritten and confirmed (C-01, C-02, Q-09, Q-10) |
+
+Rules that follow:
+
+- No `source = 'quynam'` data enters the seed or the DB.
+- No Quý Nam numbers, press logos or claims ("12+ năm", "10,000+ khách", "bảo hiểm 100%", "giá thấp nhất") appear on 43logistics.vn, attributed or not.
+- No Quý Nam wording is copied, even reworded paragraph by paragraph. 43L copy is written from 43L's own facts.
+- Any link between the two sites is decided in §5 "Off-page SEO", not by default.
 
 ### 1. Sitemap changes (amends `03-information-architecture.md`)
 
@@ -54,7 +65,7 @@ The existing sitemap stays. Quý Nam suggests these deltas:
 | --- | --- | --- | --- | --- |
 | **Add** a combined price list page | `/bang-gia/` | `/en/rates/` | `routes` + `route_rates` (rule 2), route switcher (tabs that work without JS) | Uses the shared price-eligibility rule below |
 | **Promote** in the header nav: Bảng giá, Tính cước, Kinh nghiệm, Liên hệ | — | — | — | — |
-| **Keep** `/tra-cuu/` as P2 | `/tra-cuu/` | `/en/tracking/` | `tracking.quynam.vn` API (sister company) or a carrier API | Q-18 / Q-24(c); never a login wall for a single lookup |
+| **Keep** `/tra-cuu/` as P2 | `/tra-cuu/` | `/en/tracking/` | Carrier API, or the sister company's tracking system if the owner approves it (Q-18, Q-24) | Q-18 / Q-24; never a login wall for a single lookup |
 | **Add** a "service variant" page type: goods × route and city × route (long-tail SEO) | `/gui-{goods}-di-{country}/`, `/gui-hang-di-{country}-tai-{city}/` | EN only if there's demand | `pages` + blocks; prices are still read from the parent route | Published only when **all** hold: parent route confirmed; for goods variants, an operations-approved `goods_rules` entry for that goods type and country (Q-10); for city variants, confirmed pickup/service coverage in that city (Q-22); unique content (≥ 600 words, own FAQ). No programmatic thin pages |
 | **Add** a customer-appreciation / proof page (optional) | `/khach-hang/` | `/en/customers/` | `testimonials` + consented screenshots | Q-12 |
 | **More countries** (AU, CA, CN, UK, DE, FR, EU…) | `/gui-hang-di-{country}/` | `/en/shipping-to-{country}/` | New `routes` rows | Only those confirmed in Q-05/Q-22; the route registry is data, so no code change is needed |
@@ -141,8 +152,37 @@ View Transitions between route pages stay out of scope (04 already requires an A
 - **Topic clusters copied from Quý Nam's model:** route page (pillar) ↔ goods/city variants ↔ `kinh-nghiem` guides and glossary posts, with automatic "related" blocks driven by the route relationship, so internal links never depend on editors remembering them. `07-data-model.md` already has `posts.route_id` and `categories.route_id`. The variant→route link (e.g. `pages.route_id` + `pages.type`), block validation, editor support and the related-content query are new. They are assigned to F-04 (schema), A-03 (editor) and S-15 (queries/pages).
 - **"Bảng giá {year}"** in the H2 and metadata, with the year and `updated_at` taken from data (never hard-coded).
 - **Quality gate against thin pages:** variant pages need unique copy and their own FAQ, otherwise they stay `noindex` in draft.
-- **Duplicate-content and cannibalisation guard:** reused data, original wording. The two sister sites target the same keywords ("gửi hàng đi {country}"), so they will compete in Google unless the split is agreed (Q-24(d)) before variant pages are written. A likely split: 43 Logistics leads on Đà Nẵng / central Vietnam and its own routes; Quý Nam keeps HCMC and the long-tail countries. Each site keeps its own canonical URLs; no cross-domain canonicals.
+- **43logistics.vn is the only site we optimise.** All on-page work (keywords, metadata, JSON-LD `Organization`/`LocalBusiness`, internal links) targets 43 Logistics. The keyword set:
+  - the route keywords from `AGENTS.md` §1;
+  - local intent where 43L really operates: "gửi hàng đi … tại Đà Nẵng", and TP.HCM once the office is confirmed (Q-02);
+  - long-tail goods/route variants.
+- **No duplicate content with quynam.vn.** All 43L copy is original (§0). Each site keeps its own canonical URLs; no cross-domain canonicals.
 - Measured with Search Console after launch (Q-13), not guessed.
+
+**Off-page SEO for 43logistics.vn** (new roadmap tasks, proposed G-01…G-03 in Phase 5–6; each only with confirmed facts):
+
+1. **Local presence (G-01).**
+   - Google Business Profile for the Đà Nẵng office, and TP.HCM if confirmed (Q-02). Category, hours, services and real photos, all from `site_settings`.
+   - NAP (name, address, phone) identical everywhere: site footer, JSON-LD, GBP, Facebook, Zalo OA, directories.
+   - Reviews collected only from real customers, with consent; never bought or gated.
+2. **Citations and profiles (G-01).**
+   - Vietnamese business directories and map apps (Google Maps, Apple Maps, Cốc Cốc map, local business listings).
+   - The Facebook page `facebook.com/43logistics` and Zalo OA, both linking to the site.
+   - Kept consistent with the `site_settings` values.
+3. **Backlinks earned, not bought (G-02).**
+   - **Linkable assets:** the calculator, the combined price list with its "updated" date, per-country prohibited-goods guides, and glossary posts. Other sites cite these.
+   - **Diaspora and community outreach:** Vietnamese community sites, associations and groups in Singapore, Korea, Japan, Taiwan and the US (the audience in `01-business.md`), with useful guides rather than ads.
+   - **Content partnerships:** guest articles on Vietnamese expat, study-abroad and e-commerce seller blogs; local Đà Nẵng business media.
+   - **Partners:** carrier or partner listings only if Q-08 allows naming them.
+   - **PR:** only real news (e.g. a new route); no fabricated press.
+4. **What we don't do.**
+   - Paid links, PBNs, link exchanges, link farms or mass directory/comment spam. They breach Google's spam policies and risk a manual action on the one site we're building.
+   - Links from quynam.vn are limited to at most an editorial "sister company" mention on its About page, if Q-24 allows the relationship to be public. No sitewide footer links and no reciprocal link schemes.
+5. **Monitoring (G-03).**
+   - Search Console: Links report, queries per route, coverage.
+   - A monthly backlink review (Search Console + one backlink tool, chosen at task time).
+   - Disavow only if a real spam attack appears.
+   - KPIs: impressions and clicks per route keyword, referring domains, GBP calls and direction requests, feeding the existing `contact_events` reporting (A-07).
 
 ### 6. Security focus
 
@@ -181,14 +221,15 @@ Recorded as **ADR 0004 (accepted 2026-10-21), amending ADR 0002 §4** ("Accessib
   - `07`: variant→route link and page type, localised rate notes.
   - `10`: new tasks S-14 `/bang-gia/` and S-15 variant pages; test criteria removed.
   - `11`: Q-22…Q-24 (Q-21 answered).
-  - `01`: sister-company row (added 2026-10-21).
+  - `01`: sister-company row (added 2026-10-21; clarified as structure-only the same day).
+  - `10`: new tasks S-14, S-15 and G-01…G-03 (off-page SEO).
   - `09`: a Quý Nam import step (source-tagged, unverified seed).
   - `AGENTS.md` §3/§7/§9, the four skills listed in §7, and ADR 0004.
 - **app:** no new dependencies beyond the ADR 0002 stack. New code: the variant page type + route link (F-04/S-15), localised rate notes (F-04), the shared price-eligibility helper, the `/bang-gia/` route, security headers, and the components from `04` with the motion catalogue applied. `next.config.ts`, `proxy.ts` and `motion` (instead of `framer-motion`) exist only after F-01/F-02; today the app is on Next 15 with `next.config.mjs` and `framer-motion`.
 
 ## Alternatives considered
 
-1. **Clone Quý Nam 1:1, including its wording, claims and stats.** Rejected even though it is a sister company. Identical text on two domains is duplicate content, so one site gets filtered out of search results. Its numbers describe Quý Nam, not 43 Logistics. Prices quoted from HCMC may not apply from Đà Nẵng (rule 1, Q-24).
+1. **Clone Quý Nam 1:1, or reuse its data, wording, claims and stats.** Rejected by the owner (2026-10-21): quynam.vn is a structure reference only. Copied text is duplicate content, and its numbers, prices and claims describe Quý Nam, not 43 Logistics (rule 1).
 2. **Keep the 03 IA unchanged and ignore Quý Nam.** Rejected by the owner: it misses the price-list page, the long-tail content model and the proof sections that make Quý Nam effective.
 3. **Programmatic country × goods × city pages generated from data.** Rejected for now: high risk of thin or duplicate pages that Google demotes; variants are created by hand behind a quality gate instead.
 4. **Keep the full test harness (Vitest + Playwright) as `AGENTS.md` requires.** Not chosen, per the owner's instruction. A middle ground is **tests only for the S-03 price engine** (about 20 cases): money is the place where a silent bug costs real revenue and trust. Not chosen in ADR 0004.
@@ -197,7 +238,8 @@ Recorded as **ADR 0004 (accepted 2026-10-21), amending ADR 0002 §4** ("Accessib
 ## Consequences
 
 - **Performance budget:** unchanged. LCP < 2.5 s, INP < 200 ms, CLS < 0.1, and first-party JS < 120 KB gz measured on the initial route render with consent rejected (framework included). The motion catalogue is CSS-first, and `motion` is allowed only in the calculator island after a bundle measurement. The screenshot wall and goods gallery are lazy and below the fold, with reserved dimensions (CLS). Removing tests doesn't relax the budget; Lighthouse becomes a manual step instead of a CI gate.
-- **SEO/redirects:** the new `/bang-gia/` and variant pages add indexable URLs; `redirect-map.csv` needs no change (`/bang-gia/` is new). The variant page type increases editorial load. Cannibalisation with the sister site quynam.vn is a certain risk until the keyword split (Q-24(d)) is agreed.
+- **SEO/redirects:** the new `/bang-gia/` and variant pages add indexable URLs; `redirect-map.csv` needs no change (`/bang-gia/` is new). The variant page type increases editorial load. quynam.vn competes for the same route keywords; we answer with original 43L content, local signals (GBP, NAP, Đà Nẵng intent) and earned links, never with shared or copied content.
+- **Off-page effort:** G-01…G-03 are recurring work (outreach, reviews, monitoring) for the owner or a marketer, not one-off code.
 - **Security:** headers and CSP add a small setup cost and need care with GTM (S-13). The F-00 key rotation is a blocking ops task for the owner.
 - **Consent/PDP law:** proof sections depend on documented customer consent (Q-12). The author box needs staff consent. The consent architecture is unchanged unless a video facade is adopted: that adds a third-party request on click, so it belongs to the S-13 spec, the privacy-policy disclosures and the Q-20 vendor/transfer assessment. The default is a plain outbound link.
 - **i18n:** `/bang-gia/` needs EN slugs. Route rate notes need localised storage. Variant pages may stay VI-only at first (08 workflow), provided unpublished EN equivalents are absent from pages, hreflang and the sitemap.
@@ -210,9 +252,9 @@ Recorded as **ADR 0004 (accepted 2026-10-21), amending ADR 0002 §4** ("Accessib
 
 ## Open questions
 
-- **Q-21** (answered 2026-10-21): Quý Nam is a sister company and its data may be reused.
-- **Q-24** (new): scope of that reuse: (a) do HCMC-origin rates apply from Đà Nẵng? (b) may Quý Nam's numbers, press and claims appear, and attributed to whom? (c) API access to `tracking.quynam.vn`? (d) keyword/city split between the two sites? (e) may we say publicly that 43 Logistics is part of the group?
-- **Q-22** (new): which of Quý Nam's extra destinations (AU, CA, CN, UK, DE, FR, other EU) and services (order consolidation from VN marketplaces, frozen food, vacuum packing, home pickup) does 43 Logistics really offer?
+- **Q-21** (answered and clarified 2026-10-21): Quý Nam is a sister company. It is a reference for structure, layout, page count and implementation only; 43logistics.vn uses only 43 Logistics' own facts, numbers, slogans, images and colours.
+- **Q-24** (narrowed 2026-10-21): (a) may 43logistics.vn say publicly that it is part of the Quý Nam group (About page, footer)? (b) may the site use the sister company's tracking system or calculator API (`tracking.quynam.vn`) for 43L shipments, if it is the real operational system?
+- **Q-22** (new): which extra destinations and services does **43 Logistics itself** offer? Quý Nam's menu (AU, CA, CN, UK, DE, FR, other EU; order consolidation, frozen food, vacuum packing, home pickup) is only a checklist of what to ask, not a fact about 43L.
 - **Q-23** (new): real trust numbers and coverage for 43 Logistics: years operating, shipments or customers per year, press mentions. Otherwise the stats band and press strip stay hidden.
 - Existing questions this proposal depends on: Q-03 (hours / 24-7), Q-04 (prices), Q-05 (active routes), Q-08 (carriers/logos), Q-09 (compensation), Q-10 (goods rules, also gates goods variants), Q-12 (testimonial consent), Q-13 (Search Console access), Q-16 (translation effort), Q-18 (tracking data source), Q-20 (privacy assessment for any new embed or vendor).
 - C-01 must also confirm the 4-step process before it is displayed.

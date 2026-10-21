@@ -33,7 +33,7 @@ This folder is the project memory for the 43logistics.vn rebuild. It was produce
 
 | File | Status | Summary |
 | --- | --- | --- |
-| docs/proposals/nextjs-rebuild-quynam-pattern.md | draft | Follow quynam.vn sitemap/templates with better UX, motion, SEO, security; code-only delivery (no automated tests) |
+| docs/proposals/nextjs-rebuild-quynam-pattern.md | draft | quynam.vn (sister co.) as the structure reference only; 43L's own facts, brand and media; SEO + off-page/backlinks for 43logistics.vn only; better UX, motion, security; code-only delivery |
 
 ## Prompt starters
 
