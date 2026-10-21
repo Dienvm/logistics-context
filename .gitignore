@@ -12,3 +12,6 @@ wordpress-site/
 .DS_Store
 .claude/scheduled_tasks.lock
 .claude/settings.local.json
+
+# Local extract of claude-analyze/43logistics-context-pack.zip (older snapshot; docs/context is current)
+claude-analyze/43logistics-context-pack/
