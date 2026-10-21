@@ -1,7 +1,7 @@
 ---
 title: Add next-intl locale routing with VI root and /en
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: F-03
 priority: must-have
