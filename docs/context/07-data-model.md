@@ -26,9 +26,22 @@ pages ─ routes ─< route_rates
 menu_items ─< menu_item_translations     site_settings (key → jsonb)     redirects
 ```
 
-## Drizzle schema (draft) — split per module into `modules/<name>/infrastructure/schema.ts`, re-exported by `db/schema.ts` (ADR 0005)
+## Drizzle schema — split per module into `modules/<name>/infrastructure/schema.ts`, re-exported by `db/schema.ts` (ADR 0005)
 
-> Draft written against drizzle-orm ≥ 0.36 APIs (array-style table extras, `check`, `.enableRLS()`). It was **not compiled** in the analysis environment — run `pnpm typecheck` and `pnpm db:generate` first and adjust to the installed version (newer releases may prefer `pgTable.withRLS(...)` over `.enableRLS()`). Split into files per domain if preferred.
+> **Implemented in F-04** (drizzle-orm 0.45, drizzle-kit 0.31; one baseline migration in `43logistics.vn/db/migrations/`). The app code is authoritative. The sketch below is the original draft, with these F-04 changes:
+> - **`pages.route_id → routes.id`** replaces `routes.page_id`. `content` owns the page↔route link, so module schema imports stay acyclic.
+> - **`menu_items.key`** (`not null`, `unique(menu, key)`): a stable key such as `header.outbound`.
+> - **`site_settings.is_verified`** (`boolean not null default false`): only verified keys are published (rule 1).
+> - `pages.parent_id` and `menu_items.parent_id` are self-referencing FKs.
+>
+> Layout:
+> - shared enums in `db/enums.ts`; `timestamps` in `db/columns.ts`; `relations()` only in `db/relations.ts`;
+> - `content` is split into `infrastructure/schema/{pages,blog,editorial,menus}.ts`;
+> - `.enableRLS()` is the current API in 0.45; every table has it and there are no policies.
+>
+> Schema import graph:
+> - `routes`, `auth`, `media`, `settings`, `seo`: enums only;
+> - `pricing` → `routes`; `goods` → `routes`, `auth`; `content` → `routes`, `media`, `auth`; `leads` → `routes`, `auth`; `contact` → `routes`.
 
 ```ts
 import { sql } from 'drizzle-orm'
@@ -363,6 +376,7 @@ export const db = drizzle(client, { schema, casing: 'snake_case' })
 | `hours` | `{ display: { vi, en }, spec: [{ days: ["Mo","Tu","We","Th","Fr","Sa"], opens: "08:00", closes: "18:00" }] }` — NEEDS CONFIRMATION |
 | `social` | `{ facebook: "https://www.facebook.com/43logistics" }` |
 | `tracking` | `{ gtmId: "GTM-WF967MKT" }` |
+| `pricingRules` | `{ volumetricFormula, paymentNote: { vi } }` — legacy copy, NEEDS CONFIRMATION |
 | `offers` | `{ newCustomer: { active: true, percent: 10, text: { vi, en } } }` — NEEDS CONFIRMATION |
 
 ## Blocks (`page_translations.blocks`, `post_translations.blocks`)
@@ -399,4 +413,17 @@ Upload pipeline (server action): validate type/size → convert to WebP/AVIF (sh
 
 ## Seed
 
-`scripts/seed.ts` loads `43logistics.vn/data/seed/routes.legacy.json` (routes, rates, translations — `is_verified: false`) and `43logistics.vn/data/seed/site-settings.legacy.json`, plus pages/menus for the IA in `03-information-architecture.md`. Idempotent upserts by `key`.
+`pnpm db:seed` (`scripts/seed.ts`, F-04) reads the following from `43logistics.vn/data/seed/`, or from `$SEED_DATA_DIR` when set:
+- `routes.legacy.json`: routes, rates and translations, with `isVerified` that must be `false`;
+- `site-settings.legacy.json`;
+- `pages.json`: 22 IA pages from `03`. Route pages take their slugs and names from the routes file;
+- `menus.json`: `header`, `footer-services` and `footer-policies`, 27 items.
+
+Every file is validated with Zod, including cross-file references, before anything is written. Everything runs in one transaction and needs `DATABASE_URL_DIRECT`.
+
+Re-runs are idempotent and respect ownership:
+- routes and settings are refreshed only while `is_verified = false`;
+- an unverified route's rate bands are replaced, and a verified route is never touched;
+- pages, menus and all translations are insert-only.
+
+Legacy route-level `notes` (e.g. "Giá chưa bao gồm VAT") have no column. They are page copy for the route-page tasks and aren't seeded.

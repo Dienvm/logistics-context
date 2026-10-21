@@ -182,7 +182,7 @@ Never mirror server data into Zustand. `QueryClientProvider` mounts only in `/ad
 | Name | Scope | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | server | Supabase transaction pooler (app runtime) |
-| `DATABASE_URL_DIRECT` | server/CI | Direct connection for drizzle-kit migrations |
+| `DATABASE_URL_DIRECT` | server/CI | Session pooler (5432) or direct connection; required by `pnpm db:migrate` and `pnpm db:seed` (no fallback to `DATABASE_URL`) |
 | `NEXT_PUBLIC_SUPABASE_URL` | public | Storage public URLs |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | Storage uploads, admin ops |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET` | public/server | Staff auth |
