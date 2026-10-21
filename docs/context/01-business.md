@@ -15,6 +15,7 @@
 | Tax code (MST) / business licence | — | `NEEDS CONFIRMATION` |
 | Founded | — | `NEEDS CONFIRMATION` (site first published Oct 2023) |
 | Domain | `https://43logistics.vn` (https, non-www) | Confirmed |
+| Sister company | Quý Nam (`https://quynam.vn`), same HCMC address "34 Nguyễn Trọng Lội, P4, Tân Bình". Its data (routes, rates, goods rules, policies, FAQ) may be reused as a source; each value still needs 43 Logistics confirmation before publishing (scope: Q-24) | Confirmed by owner 2026-10-21 (Q-21) |
 
 ## Locations
 

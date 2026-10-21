@@ -79,7 +79,7 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 - Old query URLs `/?page_id={id}`, `/?p={id}` → map WP IDs (580, 705, 834, 836, 837, 838, 851, 866, 3596, 694, 3570, 3587) to new URLs in `proxy.ts`.
 - `http://` and `www.` → `https://43logistics.vn` at the host/CDN level (one hop).
 - Runtime additions later: `redirects` table read in `proxy.ts` (cached), managed in admin. Precedence: the CSV owns legacy WordPress URLs and is immutable after launch; the table owns new redirects (slug changes). The admin action rejects a `from_path` that exists in the CSV, and `check:redirects` fails on any overlap.
-- `pnpm check:redirects` (Playwright/undici) must pass in CI: every CSV row returns the expected status and `Location`, no chains.
+- `pnpm check:redirects` (a Node script using `fetch`/undici, not a test suite; ADR 0004) must pass in CI: every CSV row returns the expected status and `Location`, no chains.
 
 ## Performance rules (SEO-relevant)
 
