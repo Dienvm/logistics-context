@@ -4,6 +4,8 @@ type: feature
 status: in_implementation
 branch: feat/f-04-database-schema-seed
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/6
+implementation_commit: 2f5109cef0b6d1da687fc8368486f083b2986450
+pending_verification: "Supabase cloud (owner creates the ap-southeast-1 project and sets DATABASE_URL/DATABASE_URL_DIRECT): migrate + seed, RLS/role checks, runtime-pooler query. Every other AC was verified on a fresh local Postgres 17 (app PR #6)."
 owner_repo: both
 roadmap: F-04
 priority: must-have
