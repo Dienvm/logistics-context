@@ -93,7 +93,7 @@ Flag each drift item: `meets spec` / `partial` / `deviates` / `out of scope`.
 ### D — Reusability & Abstraction
 
 - Logic that appears only once but is clearly generic: suggest extraction only if it would benefit other areas.
-- Is data fetching (`server/queries`) separated from rendering? Does `components/ui` stay free of fetching?
+- Is data fetching (module `infrastructure/` queries) separated from rendering? Does `shared/ui` stay free of fetching? Are cross-module imports only via `index.ts`/`client.ts` (ADR 0005)?
 - **Do not flag** single-use code as needing extraction. Only flag genuine reuse opportunities (≥ 2 use sites).
 
 ### E — Type safety
@@ -153,8 +153,8 @@ Write to `/tmp/43l-review-findings.md`:
 ### Findings
 | # | Severity | Category | Location | Issue | Suggestion |
 |---|----------|----------|----------|-------|------------|
-| 1 | 🔴 High | C – SSOT | components/blocks/rate-table.tsx:42 | Price 75000 hard-coded | Read from route_rates via server/queries |
-| 2 | 🟡 Medium | C – Redundancy | lib/tracking/events.ts:10,34 | 'click_zalo' literal twice | Extract to named constant |
+| 1 | 🔴 High | C – SSOT | modules/pricing/ui/rate-table.tsx:42 | Price 75000 hard-coded | Read from route_rates via modules/pricing queries |
+| 2 | 🟡 Medium | C – Redundancy | modules/tracking/constants.ts:10,34 | 'click_zalo' literal twice | Extract to named constant |
 | 3 | 🟢 Low | F – Conventions | app/go/[channel]/route.ts:18 | `<ai_context>` header in new file | Remove |
 
 ### Summary

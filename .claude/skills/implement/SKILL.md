@@ -199,7 +199,7 @@ Set a task to `in_progress` when you start it, and to `completed` as soon as it'
 
 Spawn an `Explore` subagent with this prompt:
 
-> "Read these files and summarize current patterns, conventions, and content: [list every file from Affected Areas table only — not the whole app]. Note naming conventions and how similar problems are solved nearby (server/queries, server/actions, components/ui vs blocks, lib/tracking, messages keys)."
+> "Read these files and summarize current patterns, conventions, and content: [list every file from Affected Areas table only — not the whole app]. Note naming conventions and how similar problems are solved nearby (module layers and entry points per ADR 0005, actions.ts, shared/ui vs modules/*/ui, modules/tracking, messages keys)."
 
 Wait for the result, and use it to inform the implementation plan.
 
@@ -252,14 +252,14 @@ Scan every file written or modified and apply these checks. Fix issues inline be
 
 **B — Single source of truth**
 
-- Shared constants (event names, cache tags, route keys, consent categories, status codes) must live in ONE place (`lib/tracking`, `lib/seo`, …).
+- Shared constants (event names, cache tags, route keys, consent categories, status codes) must live in ONE place (the owning module's `constants.ts`: `modules/tracking`, `modules/seo`, …).
 - Types and Zod schemas that describe the same shape must not be duplicated across files; infer types from the schema.
 - Business facts and prices are never literals; they come from DB/settings.
 
 **C — Reusable functions**
 
 - Only extract logic that appears in ≥ 2 places. Do NOT extract for a single use site.
-- Keep data fetching (`server/queries`) separate from rendering. `components/ui` does no fetching.
+- Keep data fetching (module `infrastructure/` queries) separate from rendering. `shared/ui` does no fetching. Respect the module dependency rule and entry points (ADR 0005, `.claude/rules/module-structure.md`).
 
 ---
 
@@ -281,13 +281,13 @@ Scan every file written or modified and apply these checks. Fix issues inline be
 
 - [ ] No business fact or price in components/copy; unknowns render nothing or a placeholder (rules 1–2).
 - [ ] Public pages: one H1, `generateMetadata` with canonical + alternates, JSON-LD, breadcrumbs (except home), Zalo CTA (rule 4).
-- [ ] Reads go through `server/queries` with `"use cache"` + `cacheTag`; writes go through `server/actions` and invalidate the right tags (rule 5).
+- [ ] Reads go through module queries with `"use cache"` + `cacheTag`; writes go through module `actions.ts` and invalidate the right tags (rule 5); no deep cross-module imports (ADR 0005).
 - [ ] `@/db` is imported only on the server, and no secrets reach client bundles (rule 6).
 - [ ] Admin actions and handlers call `requireRole` (rule 7).
 - [ ] No new client JS on public pages without need (no Clerk, TanStack Query or `motion` there), and `next/image` is used (rule 8).
 - [ ] Animations use transform/opacity only, respect reduced motion and don't touch the LCP element (rule 9).
 - [ ] Labels, visible focus, ≥ 44 px targets, token colours; no uppercase menus or buttons (rules 10–11).
-- [ ] Contact links go through `/go/[channel]`, and events fire once via `lib/tracking` (rule 12).
+- [ ] Contact links go through `/go/[channel]`, and events fire once via `modules/tracking` (rule 12).
 - [ ] Consent is respected; IPs are hashed; no `.env*` is staged (rules 14–15).
 - [ ] Strings exist in both `messages/vi.json` and `messages/en.json`.
 - [ ] `pnpm -C 43logistics.vn $LINT 2>&1` passes with 0 errors.

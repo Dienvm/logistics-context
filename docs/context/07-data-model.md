@@ -26,7 +26,7 @@ pages ─ routes ─< route_rates
 menu_items ─< menu_item_translations     site_settings (key → jsonb)     redirects
 ```
 
-## Drizzle schema — `db/schema/index.ts` (draft)
+## Drizzle schema (draft) — split per module into `modules/<name>/infrastructure/schema.ts`, re-exported by `db/schema.ts` (ADR 0005)
 
 > Draft written against drizzle-orm ≥ 0.36 APIs (array-style table extras, `check`, `.enableRLS()`). It was **not compiled** in the analysis environment — run `pnpm typecheck` and `pnpm db:generate` first and adjust to the installed version (newer releases may prefer `pgTable.withRLS(...)` over `.enableRLS()`). Split into files per domain if preferred.
 
@@ -367,7 +367,7 @@ export const db = drizzle(client, { schema, casing: 'snake_case' })
 
 ## Blocks (`page_translations.blocks`, `post_translations.blocks`)
 
-Typed JSON array; each block maps to a component in `components/blocks`. Validate with a Zod discriminated union on `type`:
+Typed JSON array; each block maps to a component in `modules/content/ui/blocks/`. Validate with a Zod discriminated union on `type`:
 
 `hero` · `richText` (markdown) · `routeGrid` · `rateTable` (routeKey) · `calculator` (routeKey?) · `processSteps` (items) · `reasons` (items) · `goodsList` (routeKey) · `faq` (faqIds or routeKey) · `testimonials` (routeKey?) · `proofGallery` (mediaIds) · `ctaBand` (variant) · `image` (mediaId) · `callout` (tone, text) · `relatedRoutes` · `relatedPosts`.
 

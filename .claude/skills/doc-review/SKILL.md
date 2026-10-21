@@ -92,7 +92,7 @@ Write to `/tmp/43l-doc-review-findings.md`:
 |---|----------|----------|----------|-------|------------|
 | 1 | 🔴 High | Consistency | §2, para 3 | Claims GTM-only analytics; contradicts ADR 0002 §8 | Update to the two-lane model |
 | 2 | 🟡 Medium | Front matter | front matter | missing updated field | Add today's date |
-| 3 | 🟢 Low | Staleness | §5 | References `src/lib/seo` | Use `lib/seo` |
+| 3 | 🟢 Low | Staleness | §5 | References `src/lib/seo` | Use `modules/seo` |
 
 ### Summary
 <2-3 sentences on doc health and whether it is safe to mark current>

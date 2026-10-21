@@ -11,7 +11,7 @@
 Every page exports `generateMetadata` that reads `page_translations` (`seo_title`, `seo_description`, `og_image_id`, `noindex`).
 
 ```ts
-// lib/seo/build-metadata.ts (shape)
+// modules/seo/domain/build-metadata.ts (shape)
 export function buildMetadata({ locale, path, alternates, title, description, ogImage, noindex }: Args): Metadata {
   return {
     metadataBase: new URL('https://43logistics.vn'),
@@ -104,7 +104,7 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 3. Fire server-side conversion (see below) only if ads consent was granted, with the same `event_id`.
 4. `302` to `https://zalo.me/0979222357` / `tel:+84979222357` / `https://wa.me/84979222357?text=…` / `https://m.me/43logistics`.
 
-The client link also emits the event with the same `event_id` (pass via data attribute) for pixel de-duplication. Events are defined once in `lib/tracking/events.ts` and fanned out to `dataLayer` (GTM) and — after consent — PostHog.
+The client link also emits the event with the same `event_id` (pass via data attribute) for pixel de-duplication. Events are defined once in `modules/tracking/constants.ts` and fanned out to `dataLayer` (GTM) and — after consent — PostHog.
 
 ### dataLayer events
 
