@@ -2,6 +2,13 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-21 — Add next-intl locale routing with VI root and /en
+
+- Spec: [specs/feature-f03-i18n-routing.md](../specs/feature-f03-i18n-routing.md) · Roadmap: F-03
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/5 (6d1c60e); context: https://github.com/Dienvm/logistics-context/pull/11, https://github.com/Dienvm/logistics-context/pull/12
+- Owner: both
+- Summary: next-intl 4.14 with VI at `/` and EN at `/en/`. The locale comes from `next/root-params` (the ADR 0006 Cache Components gate passed; both locales are static). There's no locale cookie or detection, and a minimal `proxy.ts`. It adds `pnpm i18n:check` (keys + ICU arguments) and a `verify` CI workflow. Known limits: `/vi` takes 2 hops (F-06), and 404 bodies render after hydration (S-10).
+
 ## 2026-10-21 — Generate the token theme and move to Tailwind v4
 
 - Spec: [specs/feature-f02-tokens-and-theme.md](../specs/feature-f02-tokens-and-theme.md) · Roadmap: F-02
