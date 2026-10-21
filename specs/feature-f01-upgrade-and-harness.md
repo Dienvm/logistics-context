@@ -1,9 +1,11 @@
 ---
 title: Upgrade to Next 16 and adopt the module layout
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/f-01-upgrade-and-harness
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/2
+implementation_commit: f4f38d6948e28bd1035a849aae1f00cc07953095
+implemented_date: 2026-10-21
 owner_repo: both
 roadmap: F-01
 priority: critical

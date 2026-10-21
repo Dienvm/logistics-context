@@ -37,28 +37,28 @@ Artifact types (never mix them):
 
 ## 3. Tech stack (ADR 0001 as amended by ADR 0002)
 
-The **Target** column is what new code is written for. The **In the app today** column is the honest state of `43logistics.vn/` on 2026-10-20. If a task needs a target feature that isn't installed yet (`proxy.ts`, Cache Components, `updateTag`, `@theme`), do the closing task first. Don't hack around the gap or close it opportunistically inside an unrelated task.
+The **Target** column is what new code is written for. The **In the app today** column is the honest state of `43logistics.vn/` on 2026-10-21 (after F-01). If a task needs a target feature that isn't installed yet (`proxy.ts`, Cache Components, `updateTag`, `@theme`), do the closing task first. Don't hack around the gap or close it opportunistically inside an unrelated task.
 
 | Layer | Target | In the app today | Closed by |
 | --- | --- | --- | --- |
-| Framework | **Next.js 16** (App Router, Turbopack), `proxy.ts`, `cacheComponents: true`, async `params`/`searchParams`/`cookies()`/`headers()` | `next ^15.3.3`, `next.config.mjs`; no middleware (template `middleware.ts` removed in F-00; `proxy.ts` comes in F-01/F-06) | F-01 |
-| UI runtime | **React 19.2**: Server Components by default, `"use client"` only for interactivity | `react ^19.1` | F-01 |
-| Components | **shadcn/ui** (Radix) in `shared/ui` (ADR 0005), restyled only via tokens | ~50 default-style shadcn components in `components/ui`, mostly unused | F-01 (move), F-02 |
+| Framework | **Next.js 16** (App Router, Turbopack), `proxy.ts`, `cacheComponents: true`, async `params`/`searchParams`/`cookies()`/`headers()` | `next ^16.4.2` (Turbopack), `next.config.ts` with `cacheComponents`, `partialPrefetching`, `trailingSlash` (ADR 0006); no `proxy.ts` yet | done (F-01); `proxy.ts` F-06 |
+| UI runtime | **React 19.2+**: Server Components by default, `"use client"` only for interactivity | `react ^19.3.1` | done (F-01) |
+| Components | **shadcn/ui** (Radix) in `shared/ui` (ADR 0005), restyled only via tokens | ~50 default-style shadcn components in `shared/ui` (moved in F-01), mostly unused; Tailwind 3 | F-02 |
 | Styling | **Tailwind CSS v4**, `@theme` generated into `app/theme.css` from `43logistics.vn/data/design-tokens.json` | Tailwind 3.4 + `tailwind.config.ts` + `tailwindcss-animate` | F-02 |
-| Motion | CSS first. **`motion`** (Framer Motion) only inside client islands via `LazyMotion` + `m` | `framer-motion ^11` | F-02 |
-| Mutations | **Server Actions** + Zod, returning `ActionState<T>` (`shared/types/action-state.ts`, extended with `fieldErrors`) | none (template `actions/db/*` removed in F-00); `ActionState<T>` exists without `fieldErrors` | F-01 |
-| Database | **Supabase Postgres via Drizzle, server only** (`db/client.ts` with `server-only`) | `drizzle-orm 0.33`, `db/db.ts` with an empty schema (template todo/profile schema removed in F-00; old migration files remain) | F-04 |
+| Motion | CSS first. **`motion`** (Framer Motion) only inside client islands via `LazyMotion` + `m` | none (`framer-motion` removed in F-01) | F-02 |
+| Mutations | **Server Actions** + Zod, returning `ActionState<T>` (`shared/types/action-state.ts`, extended with `fieldErrors`) | `ActionState<T>` with `fieldErrors` in `shared/types/action-state.ts`; no actions yet | done (F-01) |
+| Database | **Supabase Postgres via Drizzle, server only** (`db/client.ts` with `server-only`) | `drizzle-orm 0.33`, `db/client.ts` (`server-only`, lazy `getDb()`), empty `db/schema.ts`; old template migration files remain | F-04 |
 | Files | **Supabase Storage** buckets `media` (public), `og` (public), `private` (signed URLs) | — | A-04 |
-| Auth | **Clerk, staff only** (admin/editor/sales). `ClerkProvider` only in `/admin`; no public sign-up | `@clerk/*` installed but unused: global `ClerkProvider`, public `/login`/`/signup`, `/todo` and `middleware.ts` removed in F-00 | F-05 (F-00 done) |
-| Product analytics | **PostHog**, loaded only after analytics consent, proxied via `/ingest`, anonymous visitors never identified | `posthog-js` installed but not loaded (init-on-load provider removed in F-00) | S-13 (F-00 done) |
+| Auth | **Clerk, staff only** (admin/editor/sales). `ClerkProvider` only in `/admin`; no public sign-up | none (`@clerk/*` removed in F-01; reinstalled at the current version in F-05) | F-05 |
+| Product analytics | **PostHog**, loaded only after analytics consent, proxied via `/ingest`, anonymous visitors never identified | none (`posthog-js` removed in F-01; reinstalled in S-13) | S-13 |
 | Ads & conversions | **GTM** (Consent Mode v2, basic) carrying only the ad platforms confirmed in Q-13, plus their server-side APIs | — | S-13, T-01 |
 | Client state | **Zustand** for UI state only (mobile nav, calculator inputs, consent, banners) | — | S-01, S-07 |
 | Client server-state | **TanStack Query**, only in admin screens (and the calculator if it ever needs live data) | — | A-01 |
 | i18n | **next-intl**, `localePrefix: 'as-needed'`, VI default | — | F-03 |
-| Validation | **Zod**, schemas shared by Server Actions and forms | `zod ^3` | — |
-| Lint/format | **Biome 2** (`biome check`, `next`/`react` domains) + `tsc --noEmit`; narrow ESLint only for Next rules Biome lacks | Biome 1.9 + an unused Prettier config | F-01 |
+| Validation | **Zod**, schemas shared by Server Actions and forms | `zod ^4.6.7`; env via `shared/config/env.server.ts` / `env.public.ts` | done (F-01) |
+| Lint/format | **Biome 2** (`biome check`, `next`/`react` domains) + `tsc --noEmit`; narrow ESLint only for Next rules Biome lacks | Biome 2.5 (`biome check`, `next`/`react` domains); no ESLint fallback (every applicable rule covered; ADR 0002 §4) + `tsc --noEmit` + dependency-cruiser `check:boundaries` (ADR 0005) | done (F-01) |
 | Tests | **None in the initial build phase** (ADR 0004): verification = lint + typecheck + build + `check:redirects` + manual checks (§9). Code stays testable (pure functions) | none | — (ADR 0004) |
-| Package manager | **pnpm**, Node ≥ 20.9 | pnpm (`pnpm-lock.yaml`, `pnpm-workspace.yaml` `allowBuilds` for pnpm 11); husky pre-commit uses pnpm + `biome check --staged` + gitleaks | done (F-00) |
+| Package manager | **pnpm**, Node ≥ 22 | pnpm 11 (`pnpm-lock.yaml`, `pnpm-workspace.yaml` `allowBuilds`), `engines.node >=22`; husky pre-commit uses pnpm + `biome check --staged` + gitleaks | done (F-00, F-01) |
 | Hosting | Vercel (assumed, Q-15). Supabase in `ap-southeast-1` | — | L-02 |
 
 AI tooling: Cursor, Claude Code and Codex read this file; an agent that opens only the app finds `43logistics.vn/AGENTS.md`. **V0** output is a draft: give it only tokens and non-sensitive copy, review any dependency it adds, replace its placeholder or fabricated copy with `messages/*` keys or DB data, map colours, radii and spacing to tokens, and land it through a normal spec/PR. **Perplexity** research is never a source for business facts (rule 1).
@@ -204,11 +204,12 @@ Check availability first with `command -v codex`; if it's missing, skip the step
 
 | Command | Status | Purpose |
 | --- | --- | --- |
-| `pnpm dev` | exists | `next dev` (Turbopack after F-01) |
+| `pnpm dev` | exists | `next dev` (Turbopack) |
 | `pnpm build && pnpm start` | exists | Production build |
-| `pnpm lint` | exists (`biome lint .`), becomes `biome check .` in F-01 | Lint + format check |
-| `pnpm lint:fix` / `pnpm format:write` | exists | Biome autofix / format |
-| `pnpm typecheck` | F-01 (today: `pnpm type-check`) | `tsc --noEmit` |
+| `pnpm lint` | exists (`biome check .`) | Lint + format + import order (Biome 2) |
+| `pnpm lint:fix` / `pnpm format:write` | exists | Biome autofix (`biome check --write`) / format |
+| `pnpm typecheck` | exists | `tsc --noEmit` |
+| `pnpm check:boundaries` | exists | dependency-cruiser module rules (ADR 0005) |
 | `pnpm db:generate` / `pnpm db:migrate` | exists | drizzle-kit (migrations in `db/migrations/`) |
 | `pnpm tokens` | F-02 | Build `app/theme.css` from `43logistics.vn/data/design-tokens.json` |
 | `pnpm i18n:check` | F-03 | VI/EN message-key parity |
