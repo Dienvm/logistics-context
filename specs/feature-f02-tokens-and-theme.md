@@ -1,9 +1,12 @@
 ---
 title: Generate the token theme and move to Tailwind v4
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/f-02-tokens-and-theme
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/3
+implementation_followup_pr: https://github.com/Dienvm/43logistics.vn/pull/4
+implementation_commit: 137560b84bc27e909005581a4ba2de110ac4360c
+implemented_date: 2026-10-21
 owner_repo: both
 roadmap: F-02
 priority: must-have

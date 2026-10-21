@@ -2,6 +2,13 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-21 — Generate the token theme and move to Tailwind v4
+
+- Spec: [specs/feature-f02-tokens-and-theme.md](../specs/feature-f02-tokens-and-theme.md) · Roadmap: F-02
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/3 (3f2218f) + Codex-review follow-up https://github.com/Dienvm/43logistics.vn/pull/4 (137560b); context: https://github.com/Dienvm/logistics-context/pull/9
+- Owner: both
+- Summary: Tailwind 4.3 with a generated `@theme static` (`pnpm tokens` / `tokens:check`), next/font Be Vietnam Pro + Barlow Condensed, 16 token-styled shadcn v4 primitives (44 px targets, full focus ring, transform/opacity motion, reduced motion), dev-only `/dev/tokens/` gallery; `motion` deferred.
+
 ## 2026-10-21 — Upgrade to Next 16 and adopt the module layout
 
 - Spec: [specs/feature-f01-upgrade-and-harness.md](../specs/feature-f01-upgrade-and-harness.md) · Roadmap: F-01
