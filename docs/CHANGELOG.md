@@ -2,6 +2,16 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-21 — Add Lighthouse report and JS budget gate to CI
+
+- Spec: [specs/feature-f08-ci-lighthouse-budget.md](../specs/feature-f08-ci-lighthouse-budget.md) · Roadmap: F-08
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/9 (6a6fd96); context: https://github.com/Dienvm/logistics-context/pull/19, https://github.com/Dienvm/logistics-context/pull/20
+- Owner: both
+- Summary: the `verify` workflow now runs `pnpm perf:report`, with 3 cold Lighthouse mobile runs per route in `data/perf-budget.json` and consent rejected.
+  - It fails the PR when the median app JS exceeds the 134.3 KiB baseline + 50 KiB (ADR 0006); LCP/CLS/TBT and scores are reported only.
+  - The job summary shows the table and the `lighthouse-report` artifact uploads on every run.
+  - Today: +13.9 KiB on `/` and `/en/`. An oversize canary (+110.6 KiB) failed the gate as expected.
+
 ## 2026-10-21 — Generate legacy redirects from the CSV and check them
 
 - Spec: [specs/feature-f07-legacy-redirects-check.md](../specs/feature-f07-legacy-redirects-check.md) · Roadmap: F-07

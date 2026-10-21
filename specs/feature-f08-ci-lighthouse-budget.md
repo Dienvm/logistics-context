@@ -1,9 +1,11 @@
 ---
 title: Add Lighthouse report and JS budget gate to CI
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/f-08-ci-lighthouse-budget
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/9
+implementation_commit: 6a6fd96deb7eeff16862e57f6c53622b641385cc
+implemented_date: 2026-10-21
 owner_repo: both
 roadmap: F-08
 priority: must-have
@@ -140,6 +142,11 @@ Every PR gets a Lighthouse table in its CI run: for each public route, the media
    - the PR's `verify` run: summary table plus artifact (download it and list its contents), with the link recorded;
    - a scratch branch with the step-5 island: a failing run, its artifact downloaded and inspected, the link recorded, then the branch deleted;
    - record the time the step added.
+
+**CI evidence (recorded 2026-10-21):**
+
+- PR run: https://github.com/Dienvm/43logistics.vn/actions/runs/39610675215. The job summary shows the table; the `lighthouse-report` artifact (downloaded) holds `perf-summary.json` plus per-run and script-list files for `/` and `/en/`. Result: 148.2 KiB, +13.9 KiB, PASS. The step adds about 61 s.
+- Oversize canary (draft app PR #10, branch `chore/f08-oversize-canary`, closed and deleted): https://github.com/Dienvm/43logistics.vn/actions/runs/39613254608. A `"use client"` island on `/` imports about 100 KiB gz of generated data, so every run requests 8 scripts instead of 7. The Lighthouse step fails with `/` and `/en/` both reporting `FAIL (+110.6 KiB > 50 KiB budget)`, exit 1. The artifact still uploads and was downloaded and inspected.
 
 **Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `tokens:check`, `i18n:check`, `build`, `check:redirects`, `perf:report`. No consent change; no automated tests (ADR 0004).
 
