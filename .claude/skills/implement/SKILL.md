@@ -10,6 +10,8 @@ argument-hint: "<spec-filename-or-slug> [--review]"
 
 **Context budget:** the target spec + `AGENTS.md` (§3 stack gaps, §4 golden rules, §8 conventions) + a targeted Explore of the affected areas only.
 
+**Run in a fresh session.** Start after `/clear`; the spec file carries everything `/feature-bug` decided. Read sections, not whole files (`grep -n` then a line range), and keep long command output out of the conversation (`| tail -n 40`, or write it to a file and grep it). Don't chain `/code-review` or `/mark-implemented` into the same session.
+
 **Output contract:** working code + PR (LOCAL mode), OR an implementation brief (HANDOFF mode), OR a drift report (REVIEW-ONLY mode). Always followed by a Codex review/debate record.
 
 **Never:**
@@ -604,4 +606,4 @@ cat /tmp/43l-codex-implement-<slug>-table.md >> /tmp/43l-pr-body-<slug>.md
 gh pr edit <url> -R Dienvm/43logistics.vn --body-file /tmp/43l-pr-body-<slug>.md
 ```
 
-**Final line:** `Next: /code-review <slug>, then /mark-implemented <slug> <PR> after merge.`
+**Final line:** `Next: run /clear, then /code-review <slug>; after merge, /clear again and /mark-implemented <slug> <PR>.`

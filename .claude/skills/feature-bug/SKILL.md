@@ -13,11 +13,15 @@ If the user is still exploring options, redirect them to `/proposal` instead.
 
 **Context budget:**
 
-- `AGENTS.md`
+- `AGENTS.md` (already loaded via `CLAUDE.md`; don't re-read it)
 - `docs/context/00-index.md`
-- `docs/context/10-roadmap.md` (the task row)
-- the ADRs in `docs/adr/`
+- `docs/context/10-roadmap.md` (the task row only: `grep -n '<ID>'`, not the whole file)
+- the ADRs the roadmap row or `AGENTS.md` §3 names for this task, plus the status line of the others; not every ADR in full
 - `specs/INDEX.md` and matching existing specs
+
+Read sections, not whole files: locate headings with `grep -n` and read that range with `sed -n` or `Read` `offset`/`limit`. Never `cat` a whole `docs/context/*` file, an ADR or an earlier spec into the conversation. Leave the broad scan to the Step 2b Explore subagent, which returns only a summary.
+
+**Run each skill in a fresh session.** Every turn re-sends the whole conversation, so a spec written after a day of other skills costs 10× more tokens than the same spec after `/clear`. This skill recovers its state from files (AGENTS.md §6) and ends by telling the user to `/clear` before `/implement`; it never chains into `/implement` in the same session.
 
 **Output contract:** `specs/<type>-<slug>.md` + updated `specs/INDEX.md` + a Codex review/debate record.
 
@@ -444,22 +448,22 @@ If the script is missing or fails (missing env vars, network error), print the P
 
 Use the `AskUserQuestion` tool:
 
-- question: "Approve this spec and implement it now?"
+- question: "Approve this spec for implementation?"
 - options:
-  - `Yes — Claude implements now (/implement)`
+  - `Yes — approve; I'll run /implement in a fresh session (Recommended)`
   - `Yes — send to Codex for implementation` (only if `command -v codex` succeeded)
-  - `No — I'll implement later`
+  - `No — not approved yet`
 
 Record the answer. **Don't hand off yet**: Step 11 (Codex review) runs first, and the chosen hand-off executes at the end of Step 11.
 
-If **No**: after Step 11, report "Run `/implement <slug>` when ready."
+If **No**: after Step 11, report "Spec left as draft. When it's ready, run `/clear`, then `/implement <slug>`."
 
 If **Yes** (executed at the end of Step 11):
 
 1. **Set `status: approved`** in the spec file first (Edit tool). This records the user's approval before handoff.
 2. **Update `specs/INDEX.md`**: set the status column to `approved`. If a spec PR exists, commit and push both files to `spec/<slug>`.
 3. **Hand off:**
-   - **Claude:** run `/implement <slug>`.
+   - **Claude:** don't run `/implement` in this session. End with: "Spec approved. Run `/clear`, then `/implement <slug>`." (The fresh session starts from the spec file, not from this conversation.)
    - **Codex:** run in the background from the workspace root:
 
      ```bash
@@ -518,4 +522,4 @@ Ask (AskUserQuestion): "Apply which?" with options `All agreed items` / `Agreed 
 
 ---
 
-**11f — Execute the Step 10 choice.** If the user approved, set `status: approved` and hand off as described in Step 10. If Step 11e changed the spec, ask again before the hand-off.
+**11f — Execute the Step 10 choice.** If the user approved, set `status: approved` and hand off as described in Step 10. If Step 11e changed the spec, ask again before the hand-off. Stop after the hand-off message; don't start the next skill in this session.
