@@ -1,7 +1,7 @@
 ---
 title: Generate the token theme and move to Tailwind v4
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: F-02
 priority: must-have
