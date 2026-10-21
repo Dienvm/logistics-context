@@ -3,6 +3,7 @@ paths:
   - "43logistics.vn/**/*form*.tsx"
   - "43logistics.vn/**/*calculator*.tsx"
   - "43logistics.vn/**/schemas.ts"
+  - "43logistics.vn/**/*-schema.ts"
 ---
 
 # Conditional form patterns
@@ -39,7 +40,7 @@ export const dimensionsSchema = z
 - Hidden means not rendered (or `hidden` + `inert`), never just visually hidden, so screen readers and tab order skip it.
 - When a field appears because of a user action, move focus only if the user expects it. Announce the change with an `aria-live="polite"` region where it matters (e.g. the estimate replaced by "Liên hệ").
 - Conditions driven by **business data** (which routes are inbound, which have public prices) come from the DB via props, never hard-coded lists of route keys.
-- The server ignores fields that aren't valid for the chosen branch; the discriminated union does this.
+- **Inactive-branch fields are stripped, not rejected.** Each union member uses Zod's default strip mode, so fields of the other branch are dropped on the server even if the client forgot to clear them. This is the same input policy as `api-patterns.md`; don't make union members `.strict()`.
 
 ## Keep components small
 

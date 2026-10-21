@@ -29,8 +29,9 @@ export function LeadForm({ routes }: LeadFormProps) {
 }
 ```
 
-- **One schema** in `modules/<m>/application/schemas.ts` (client-safe: no server imports). The client may use it for inline hints; the **server always re-validates**.
-- **Progressive enhancement:** the form works without JS (native `<form action>`). JS adds inline validation and pending state.
+- **One schema** in `modules/<m>/application/schemas.ts` (client-safe: no server imports). The client may use it for inline hints; the **server always re-validates** through `formInput(formData)` (strip policy, `api-patterns.md`).
+- **Progressive enhancement:** the markup is a native `<form action>`, so fields, labels and errors render without JS. Inline validation and pending state need JS.
+- **Turnstile needs JS**, and the server never skips the challenge. Without JS, the form shows a short notice with the Zalo and call links (through `/go/[channel]`) as the fallback contact path.
 - Errors come back as `ActionState.fieldErrors` and are shown next to each field with `aria-describedby`; the first invalid field gets focus.
 - Messages are localised keys (`messages/{vi,en}.json`), never English literals or raw Zod messages.
 - Use `react-hook-form` only for complex admin forms. Public forms use `useActionState`.

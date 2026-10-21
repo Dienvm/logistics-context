@@ -54,7 +54,7 @@ Each artifact type has its own lifecycle (ADR 0003 §2):
 
 - Claims about the architecture match `AGENTS.md` and the accepted ADRs; any intended contradiction is stated with the ADR number.
 - Claims about the current phase or task match `10-roadmap.md`.
-- Paths follow ADR 0002 (root layout, no `src/`, `server/*`, `db/migrations`, `app/theme.css`). Commands exist in `AGENTS.md` §7, or name the roadmap ID that adds them.
+- Paths follow ADR 0002 as amended by ADR 0005 (root layout, no `src/`, `modules/<name>/{domain,application,infrastructure,ui}` with `index.ts`/`client.ts`, `shared/*`, `db/{client.ts,schema.ts,migrations}`, `app/theme.css`). Commands exist in `AGENTS.md` §7, or name the roadmap ID that adds them.
 - No references to approaches the ADRs ruled out (ESLint as primary, GTM-only analytics, tags before consent) without noting that they were ruled out.
 
 **Facts (golden rule 1)**

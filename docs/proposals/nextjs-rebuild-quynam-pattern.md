@@ -70,7 +70,7 @@ The existing sitemap stays. Quý Nam suggests these deltas:
 | **Add** a customer-appreciation / proof page (optional) | `/khach-hang/` | `/en/customers/` | `testimonials` + consented screenshots | Q-12 |
 | **More countries** (AU, CA, CN, UK, DE, FR, EU…) | `/gui-hang-di-{country}/` | `/en/shipping-to-{country}/` | New `routes` rows | Only those confirmed in Q-05/Q-22; the route registry is data, so no code change is needed |
 
-**Shared price-eligibility rule (all price surfaces).** This covers the H1 "từ X/kg", mega menu, route bento, rate preview, `/bang-gia/`, calculator, JSON-LD `Offer` and OG images. One server helper (`server/queries` + `lib/format`) decides, per route and method:
+**Shared price-eligibility rule (all price surfaces).** This covers the H1 "từ X/kg", mega menu, route bento, rate preview, `/bang-gia/`, calculator, JSON-LD `Offer` and OG images. One server helper (`modules/pricing`: the eligibility rule in `domain/`, read through its queries, formatted with `shared/lib/format`) decides, per route and method:
 
 - A rate is **eligible** only if the route has `is_verified = true` and `prices_public = true`, the band has `contact_for_price = false`, and today is inside the band's validity dates.
 - The "from" price is the lowest eligible per-kg band. Flat-price bands (e.g. US 0.5–20 kg) are shown as "từ {price}/{weight}" rather than per kg.

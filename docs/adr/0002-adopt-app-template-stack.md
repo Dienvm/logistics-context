@@ -1,6 +1,6 @@
 # ADR 0002 — Build on the existing app template; reconcile the stack
 
-- Status: Accepted (2026-10-20) · Amended by ADR 0004 (2026-10-21): no Vitest/Playwright/axe-in-Playwright in the initial build phase · Amended by ADR 0005 (2026-10-21): feature modules replace `server/*` and `components/ui` → `shared/ui`
+- Status: Accepted (2026-10-20) · Amended by ADR 0004 (2026-10-21): no Vitest/Playwright/axe-in-Playwright in the initial build phase · Amended by ADR 0005 (2026-10-21): feature modules replace `server/*`, `components/ui` → `shared/ui`, and event definitions move from `lib/tracking/events.ts` to `modules/tracking`
 - Amends: ADR 0001 (decisions 1, 3 and the "no second analytics system" rule in `AGENTS.md`)
 - Context: ADR 0001 and the first context pack were written as if the app would be scaffolded from scratch (`src/`, ESLint, Tailwind v4, GTM only). The app repo `43logistics.vn/` already exists. It was started from McKay Wrigley's Takeoff template: Next.js ^15.3, Tailwind v3, shadcn/ui, framer-motion, Biome, Clerk, Drizzle 0.33 and PostHog, with root-level folders (`app/`, `components/`, `db/`, `actions/`, `lib/`) and a todo/profile demo. The owner's intended stack is "Next.js 15+, Tailwind CSS, shadcn/ui, Framer Motion, PostgreSQL/Supabase/Drizzle/Server Actions, Clerk, PostHog", built with Cursor, V0 and Perplexity. The docs and the code disagreed on folder layout, linting, analytics, animation and versions.
 

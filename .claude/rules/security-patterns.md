@@ -17,13 +17,13 @@ Context: `AGENTS.md` rules 6–7 and 14–15, `06-architecture.md`, proposal §6
 
 ## Server-only boundaries
 
-- `db/client.ts`, every `modules/*/infrastructure/*` file and every module `index.ts` start with `import "server-only"`.
+- `db/client.ts`, every `modules/*/infrastructure/*` file except `schema.ts` (it must load in plain Node for drizzle-kit), and every module `index.ts` start with `import "server-only"`.
 - Client files import only `@/modules/<m>/client` and `shared/*`.
 - Never pass DB rows, internal IDs you don't need, or secrets to client components. Map rows to minimal props.
 
 ## Input and output
 
-- Validate **every** external input with Zod at the boundary: Server Actions, route handlers, webhooks, `searchParams`, cookies. Reject unknown keys on writes (`.strict()`).
+- Validate **every** external input with Zod at the boundary: Server Actions, route handlers, webhooks, `searchParams`, cookies. Follow the input policy in `api-patterns.md`: unknown form keys are stripped, never stored; JSON handlers and webhooks use `.strict()`.
 - Drizzle query builders only; no string-built SQL. If `sql\`\`` is unavoidable, use parameters, never interpolation of user input.
 - Never render user or DB HTML with `dangerouslySetInnerHTML`. CMS rich text renders through a sanitised block renderer. JSON-LD uses the `JsonLd` component, which escapes `</script>`.
 - **No open redirects.** `/go/[channel]` builds the target only from `site_settings` + an allowlist of channels; never redirect to a URL taken from the request.
@@ -36,7 +36,8 @@ Context: `AGENTS.md` rules 6–7 and 14–15, `06-architecture.md`, proposal §6
 
 ## Abuse and privacy
 
-- Public write actions (lead form, contact events): Turnstile, rate limit keyed by IP hash, size limits on every field.
+- **Lead form** (public Server Action): Turnstile verified server-side, rate limit keyed by IP hash, size limits on every field.
+- **`/go/[channel]`** stays a plain link with a 302 (rule 12), with no challenge. Protect it with rate limiting per IP hash, and de-duplicate `contact_events` by `event_id` / short time window. The redirect never waits on the insert.
 - Store a **salted hash** of the IP (`IP_HASH_SALT`), never the raw IP (rule 14).
 - No analytics or ad requests, cookies or `43l_attr` before consent; check through `modules/tracking`.
 - Collect the minimum personal data; never log lead payloads.
