@@ -1,7 +1,7 @@
 ---
 title: Upgrade to Next 16 and adopt the module layout
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: F-01
 priority: critical
