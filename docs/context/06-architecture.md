@@ -213,7 +213,11 @@ Validate with a Zod `env.ts` at boot; never commit `.env*`.
 - **No automated tests in the initial build phase (ADR 0004).** No Vitest, Playwright or `tests/` folder. Keep the price engine, slug/URL, metadata and JSON-LD builders, redirect loader and Zod schemas as pure typed functions so tests can be added later.
 - **Manual verification per PR** (spec's "Manual verification plan"): home → route → calculator → Zalo click (`/go/zalo` 302 + `contact_events` row), lead form happy/error paths, language switch keeps the equivalent page, admin rate edit → public page shows the new price; 360/768/1280 px, keyboard, reduced motion, axe DevTools scan.
 - **SEO checks (manual per page type):** 1 `h1`, canonical, hreflang pairs reciprocal, JSON-LD valid (Rich Results Test); `check:redirects` (script, not a test suite) in CI against the preview deploy.
-- **Scripts kept in CI (not test suites):** gitleaks, `i18n:check`, `check:redirects` (every PR from F-07).
+- **Scripts kept in CI (not test suites):** gitleaks, `i18n:check`, `check:redirects` (every PR from F-07), and `perf:report` (F-08).
+  - `perf:report` runs Lighthouse with 3 mobile runs per route in `43logistics.vn/data/perf-budget.json`.
+  - It **blocks** on the ADR 0006 app-JS budget, an unstable script request set, or a route that can't be measured.
+  - It **reports** LCP/CLS/TBT and the scores in the job summary and the `lighthouse-report` artifact.
+  - Both server-backed steps share `scripts/ci/with-server.sh` (readiness `GET /` = 200, cleanup on exit).
 - **Consent matrix (manual):** initial / accept / selective / withdraw / reload, cookies and storage, server conversions gated; re-run when consent, tracking, `proxy.ts` or leads change (ADR 0004).
 - **Performance:** Lighthouse mobile run manually on the changed page, with LCP/CLS/INP and initial JS (gz, consent rejected) recorded; a budget miss blocks the PR; Lighthouse CI on `/`, one route page and `/lp/sample/` as a report in F-08, with budgets from `AGENTS.md`.
 - **Next.js DevTools MCP** can be enabled for agent debugging (Next 16 feature).

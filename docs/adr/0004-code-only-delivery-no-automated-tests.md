@@ -26,7 +26,7 @@
    - **Performance evidence** (rule 8) for changed public pages, measured on mobile with consent rejected:
      - recorded LCP, CLS and INP (Lighthouse + a manual interaction, or the Web Vitals extension);
      - the initial first-party JS transfer total (gz), framework included.
-     - A budget failure blocks the PR even though Lighthouse CI is only a report.
+     - A budget failure blocks the PR. Since F-08 (owner decision 2026-10-21), CI **blocks automatically on the JS budget** (`data/perf-budget.json`) and only **reports** LCP/CLS/TBT and the scores. The recorded per-PR measurements stay the binding evidence for those.
    - **Consent matrix** (rule 14, `05-seo-and-tracking.md` "Consent"). It is run in S-13 and repeated whenever a change touches consent, tracking, `proxy.ts` or lead processing. It covers:
      - initial state (no GTM/PostHog/ad requests, no `43l_attr`);
      - accept all, and selective grants (analytics only / ads only);
@@ -67,11 +67,11 @@
   1. **Inputs:** every published rate is approved by staff in the admin (`is_verified`, A-02).
   2. **Calculation:** the S-03 worked examples (incl. US 1.3 kg → 1.5 kg, the SG 5/6 kg band edge, volumetric > actual, open-ended and contact-for-price bands) are worked out by hand for each route and match the calculator and rate tables.
   - `is_verified` alone doesn't prove the calculation is right.
-- **Performance budget unchanged** (`AGENTS.md` rule 8). Lighthouse CI is a report in F-08, but the recorded per-PR evidence (Decision 2) is binding.
+- **Performance budget unchanged** (`AGENTS.md` rule 8). F-08 Lighthouse CI gates the app-JS budget per listed route and reports the experience metrics; the recorded per-PR evidence (Decision 2) stays binding for LCP/CLS/INP and the scores.
 - **Accessibility:** WCAG 2.2 AA (rule 10) is still required. Checking it is manual (axe DevTools + keyboard), so it depends on reviewer discipline.
 - **SEO:** the automated "SEO checks in CI" (1 H1, canonical, reciprocal hreflang, JSON-LD parses) become manual checks per page type. `check:redirects` runs on every PR from F-07.
 - **i18n:** `i18n:check` stays in CI. Translation behaviour (fallbacks, the language switch, localized errors) is checked by hand.
 - **Consent/PDP law:** no change to the rules. Verification is the consent matrix in Decision 2.
-- **Cost/ops:** no new tools. CI (F-08) is lint + typecheck + build + gitleaks + `i18n:check` + `check:redirects` (+ optional Lighthouse report). The recurring cost is people's time: the implementer runs the plan, Codex/Claude reviews it, and the owner does L-01.
+- **Cost/ops:** no new tools. CI (F-08) is lint + typecheck + build + gitleaks + `i18n:check` + `check:redirects` + the Lighthouse JS-budget gate with its report. The recurring cost is people's time: the implementer runs the plan, Codex/Claude reviews it, and the owner does L-01.
 - **Process:** `AGENTS.md` §3/§6/§7/§8/§9, `06-architecture.md` "Quality harness", `10-roadmap.md` acceptance criteria and the `/implement`, `/feature-bug`, `/fix-implement`, `/code-review`, `/lesson` and `/mark-implemented` skills are updated in the same change set. `specs/` is empty, so no existing spec needs rewriting.
 - Follow-up roadmap IDs: F-00, F-01, F-03, F-06, F-07, F-08, S-02, S-03, S-07, S-08, S-10, S-13, A-02, L-01.
