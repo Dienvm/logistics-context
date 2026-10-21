@@ -33,7 +33,7 @@ We optimise **only 43logistics.vn**. Context: `docs/context/05-seo-and-tracking.
 ## URLs and redirects
 
 - Slug rules: lowercase, no diacritics, keyword-first, trailing slash; VI at the root, EN under `/en/`.
-- Every row of `data/redirect-map.csv` resolves in **one hop** (`check:redirects`). A slug change in admin creates a redirect row.
+- Every row of `43logistics.vn/data/redirect-map.csv` resolves in **one hop** (`check:redirects`). A slug change in admin creates a redirect row.
 - Non-indexable URLs follow `05-seo-and-tracking.md` (sitemap & robots). `/lp/*`, `/tra-cuu/*`, `/go/*`, `/admin/*` and `/api/*` are `noindex` or disallowed, as are drafts, unpublished translations and dev placeholders. Use page metadata (`robots`) for pages, `robots.ts` `Disallow` for `/admin` and `/api`, and no `noindex` header on `/go/*` (it's a 302). Keep all of them out of `sitemap.ts`.
 - `sitemap.ts` lists only published, indexable URLs with their alternates; `robots.ts` points to it.
 

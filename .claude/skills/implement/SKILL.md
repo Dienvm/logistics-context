@@ -219,7 +219,7 @@ Wait for the result, and use it to inform the implementation plan.
 
 **For context-repo changes (owner_repo `context` or `both`):**
 
-- Make the doc/data edits the ACs require. Keep facts in their single home (`01-business.md`, `data/seed/*`).
+- Make the doc/data edits the ACs require. Keep facts in their single home (`01-business.md`, `43logistics.vn/data/seed/*`).
 - Verify with greps: no dangling references, and row counts match.
 
 **For the app (Next.js):**

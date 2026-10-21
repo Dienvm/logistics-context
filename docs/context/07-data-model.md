@@ -399,4 +399,4 @@ Upload pipeline (server action): validate type/size → convert to WebP/AVIF (sh
 
 ## Seed
 
-`scripts/seed.ts` loads `data/seed/routes.legacy.json` (routes, rates, translations — `is_verified: false`) and `data/seed/site-settings.legacy.json`, plus pages/menus for the IA in `03-information-architecture.md`. Idempotent upserts by `key`.
+`scripts/seed.ts` loads `43logistics.vn/data/seed/routes.legacy.json` (routes, rates, translations — `is_verified: false`) and `43logistics.vn/data/seed/site-settings.legacy.json`, plus pages/menus for the IA in `03-information-architecture.md`. Idempotent upserts by `key`.

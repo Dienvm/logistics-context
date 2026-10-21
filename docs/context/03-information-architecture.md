@@ -9,7 +9,7 @@
 - Inbound routes: `/gui-hang-tu-{country}-ve-viet-nam/` ↔ `/en/{country}-to-vietnam-shipping/`.
 - Blog: `/kinh-nghiem/{slug}/` ↔ `/en/guides/{slug}/`.
 - Ads landing pages: `/lp/{campaign}/` ↔ `/en/lp/{campaign}/` — `noindex, follow`.
-- Old → new mapping: `data/redirect-map.csv` (63 rows: 46 × 301, 9 × 200, 8 × 410).
+- Old → new mapping: `43logistics.vn/data/redirect-map.csv` (63 rows: 46 × 301, 9 × 200, 8 × 410).
 
 ## Sitemap
 

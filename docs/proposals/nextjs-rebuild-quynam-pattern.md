@@ -43,9 +43,9 @@ Principle: **Quý Nam's structure, 43 Logistics' identity.** Quý Nam is a siste
 | Take from **quynam.vn** (structure) | Take from **43 Logistics** (identity and facts) |
 | --- | --- |
 | Sitemap shape and page types: home, route pages, combined price list, calculator, tracking, guides, about, contact, policies | Brand: name "43 Logistics", taglines "Vận chuyển hàng Quốc Tế" and "43 Logistics - Gửi hàng đi nước ngoài!" (`01-business.md`) |
-| Number and kind of pages: about 13 route pages, a long-tail layer (goods × route, city × route), a glossary/how-to blog | Routes, prices, transit times, flight days, surcharges: `routes` / `route_rates` seeded from 43L's own legacy data (`data/seed/routes.legacy.json`), published only after 43L staff verify them (rule 1–2, Q-04) |
+| Number and kind of pages: about 13 route pages, a long-tail layer (goods × route, city × route), a glossary/how-to blog | Routes, prices, transit times, flight days, surcharges: `routes` / `route_rates` seeded from 43L's own legacy data (`43logistics.vn/data/seed/routes.legacy.json`), published only after 43L staff verify them (rule 1–2, Q-04) |
 | Section order on home and route pages (§2) | Contacts, offices, hours: `01-business.md` / `site_settings` (Q-02, Q-03, Q-06) |
-| Feature patterns: price list with a route switcher, calculator inputs (from, to, goods type, kg, L×W×H), tracking lookup, author box, customer-message wall, goods gallery | Colours, type, signature details: crimson `#AC0C2E`, hard offset shadow, 20 px card radius, Barlow Condensed display (`02-legacy-audit.md` "What to keep", `04-design-system.md`, `data/design-tokens.json`) |
+| Feature patterns: price list with a route switcher, calculator inputs (from, to, goods type, kg, L×W×H), tracking lookup, author box, customer-message wall, goods gallery | Colours, type, signature details: crimson `#AC0C2E`, hard offset shadow, 20 px card radius, Barlow Condensed display (`02-legacy-audit.md` "What to keep", `04-design-system.md`, `43logistics.vn/data/design-tokens.json`) |
 | What *not* to do: their weak points in "What quynam.vn does" | Images: 43L's own photos (`SEE_5122…SEE_5184` office/team, 2025 blog photos; `data/media-inventory.csv`: 175 used files), logo from the old site (raster only, 300 × 300 PNG; vector pending Q-11), consented and blurred customer screenshots (Q-12) |
 | | Trust numbers: **none exist yet**. The old site's only counters ("Outlet Office", "Happy Customer", "Local Courier") are theme demo widgets on the Lorem-ipsum About pages (`02-legacy-audit.md` #1), so they are not facts. The stats band stays hidden until 43L gives real numbers (Q-23) |
 | | Process, goods rules, FAQ, policies: 43L's own legacy copy (`legacy-copy/*`), rewritten and confirmed (C-01, C-02, Q-09, Q-10) |
@@ -130,7 +130,7 @@ Hubs, calculator, contact, about, blog, policies and LPs keep their 03 specs. Th
 
 ### 4. Motion catalogue (within `04-design-system.md` rules)
 
-All motion animates only `transform`/`opacity`, respects `prefers-reduced-motion`, never touches the LCP element, and is CSS-first. `motion` (`LazyMotion` + `m`) is allowed **only in the calculator island**, and only after a bundle measurement shows the route page stays under 120 KB gz with consent rejected (`AGENTS.md` rule 8). The mega menu, drawer and action bar use CSS + Radix only.
+All motion animates only `transform`/`opacity`, respects `prefers-reduced-motion`, never touches the LCP element, and is CSS-first. `motion` (`LazyMotion` + `m`) is allowed **only in the calculator island**, and only after a bundle measurement shows the route stays within the ≤ 50 KB gz app budget over the framework baseline with consent rejected (`AGENTS.md` rule 8, ADR 0006). The mega menu, drawer and action bar use CSS + Radix only.
 
 | Moment | Effect | Tech |
 | --- | --- | --- |
@@ -148,7 +148,7 @@ View Transitions between route pages stay out of scope (04 already requires an A
 
 ### 5. SEO focus
 
-- Everything in `05-seo-and-tracking.md` stays mandatory: `generateMetadata`, canonical + reciprocal hreflang, JSON-LD per page type (`Organization`/`LocalBusiness`, `Service` + `Offer` from DB prices, `BreadcrumbList`, `FAQPage`, `BlogPosting`), `sitemap.ts`/`robots.ts`, all 63 rows of `data/redirect-map.csv` resolving in one hop.
+- Everything in `05-seo-and-tracking.md` stays mandatory: `generateMetadata`, canonical + reciprocal hreflang, JSON-LD per page type (`Organization`/`LocalBusiness`, `Service` + `Offer` from DB prices, `BreadcrumbList`, `FAQPage`, `BlogPosting`), `sitemap.ts`/`robots.ts`, all 63 rows of `43logistics.vn/data/redirect-map.csv` resolving in one hop.
 - **Topic clusters copied from Quý Nam's model:** route page (pillar) ↔ goods/city variants ↔ `kinh-nghiem` guides and glossary posts, with automatic "related" blocks driven by the route relationship, so internal links never depend on editors remembering them. `07-data-model.md` already has `posts.route_id` and `categories.route_id`. The variant→route link (e.g. `pages.route_id` + `pages.type`), block validation, editor support and the related-content query are new. They are assigned to F-04 (schema), A-03 (editor) and S-15 (queries/pages).
 - **"Bảng giá {year}"** in the H2 and metadata, with the year and `updated_at` taken from data (never hard-coded).
 - **Quality gate against thin pages:** variant pages need unique copy and their own FAQ, otherwise they stay `noindex` in draft.
@@ -237,7 +237,7 @@ Recorded as **ADR 0004 (accepted 2026-10-21), amending ADR 0002 §4** ("Accessib
 
 ## Consequences
 
-- **Performance budget:** unchanged. LCP < 2.5 s, INP < 200 ms, CLS < 0.1, and first-party JS < 120 KB gz measured on the initial route render with consent rejected (framework included). The motion catalogue is CSS-first, and `motion` is allowed only in the calculator island after a bundle measurement. The screenshot wall and goods gallery are lazy and below the fold, with reserved dimensions (CLS). Removing tests doesn't relax the budget; Lighthouse becomes a manual step instead of a CI gate.
+- **Performance budget:** unchanged. LCP < 2.5 s, INP < 200 ms, CLS < 0.1, and app JS ≤ 50 KB gz over the framework baseline, measured on the initial route render with consent rejected (ADR 0006 replaced the original 120 KB total). The motion catalogue is CSS-first, and `motion` is allowed only in the calculator island after a bundle measurement. The screenshot wall and goods gallery are lazy and below the fold, with reserved dimensions (CLS). Removing tests doesn't relax the budget; Lighthouse becomes a manual step instead of a CI gate.
 - **SEO/redirects:** the new `/bang-gia/` and variant pages add indexable URLs; `redirect-map.csv` needs no change (`/bang-gia/` is new). The variant page type increases editorial load. quynam.vn competes for the same route keywords; we answer with original 43L content, local signals (GBP, NAP, Đà Nẵng intent) and earned links, never with shared or copied content.
 - **Off-page effort:** G-01…G-03 are recurring work (outreach, reviews, monitoring) for the owner or a marketer, not one-off code.
 - **Security:** headers and CSP add a small setup cost and need care with GTM (S-13). The F-00 key rotation is a blocking ops task for the owner.

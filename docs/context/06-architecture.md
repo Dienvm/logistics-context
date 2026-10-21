@@ -98,7 +98,7 @@ const nextConfig: NextConfig = {
 
 Note: in Next 16 `revalidateTag` takes a second `cacheLife` argument; `updateTag` and `refresh` exist only in Server Actions. `params`, `searchParams`, `cookies()`, `headers()` are async.
 
-i18n with Cache Components: pass `locale` explicitly into cached query functions (it becomes part of the cache key); call next-intl's `setRequestLocale(locale)` in layouts/pages for static rendering. `NEEDS CONFIRMATION`: verify the installed next-intl version's guidance for `cacheComponents` before scaffolding (record in an ADR).
+i18n with Cache Components: pass `locale` explicitly into cached query functions (it becomes part of the cache key); call next-intl's `setRequestLocale(locale)` in layouts/pages for static rendering. Compatibility of next-intl with `cacheComponents` is verified in F-03 and recorded in ADR 0006 (Decision 1).
 
 ## `proxy.ts` composition (order matters)
 

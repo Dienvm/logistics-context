@@ -26,7 +26,7 @@ export async function getRouteRates({ routeKey, locale }: { routeKey: string; lo
 }
 ```
 
-- These patterns (`"use cache"`, `cacheLife`, `cacheTag`, `updateTag`) need Next 16 with Cache Components, which arrives in **F-01**. **F-01 comes first:** don't implement module queries or actions before it, and don't write a fallback with older APIs (`AGENTS.md` §3: close the stack gap first). If F-01's compatibility check disables `cacheComponents`, follow the fallback recorded in that ADR.
+- These patterns (`"use cache"`, `cacheLife`, `cacheTag`, `updateTag`) need Next 16 with Cache Components, which arrives in **F-01**. **F-01 comes first:** don't implement module queries or actions before it, and don't write a fallback with older APIs (`AGENTS.md` §3: close the stack gap first). Cache Components is on (ADR 0006). If the F-03/F-05 compatibility checks require a fallback, follow ADR 0006 Decision 1.
 - Pass `locale` explicitly; it becomes part of the cache key. Never read `cookies()`/`headers()` inside a cached function.
 - Return plain serialisable data (domain types), not Drizzle row objects with methods.
 - Select only the columns the caller needs.

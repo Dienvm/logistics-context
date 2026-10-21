@@ -1,6 +1,6 @@
 # ADR 0004 — Code-only delivery: no automated tests in the initial build phase; open questions don't block code
 
-- Status: Accepted (2026-10-21)
+- Status: Accepted (2026-10-21) · Amended by ADR 0006 (2026-10-21): JS budget = framework baseline + ≤ 50 KB gz app JS
 - Amends: ADR 0002 §4 (accessibility checked with axe in Playwright) and the Vitest + Playwright test harness assumed by ADR 0002 / `AGENTS.md` §3; ADR 0003 (spec → implement workflow: test-first `/implement`, test plans in `/feature-bug`, regression tests in `/fix-implement`)
 - Owner repo: both
 - Context: The owner wants the new site built quickly, as code only (proposal `docs/proposals/nextjs-rebuild-quynam-pattern.md` §7; owner instruction 2026-10-21: "bỏ qua unit test và end to end test, không triển khai test trong giai đoạn này"). The existing rules required Vitest unit tests, Playwright e2e tests, axe in Playwright, test-first implementation and regression tests for every fix. Separately, 22 owner questions in `11-open-questions.md` are open. The owner will answer them later and doesn't want them to stop development.
