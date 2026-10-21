@@ -7,9 +7,9 @@
 | Database dump (MariaDB 10.11, 2026-10-18) | Kept by the owner (NOT in this repo — contains user hashes and leads) | Active prefix `wpiw_`; ignore `wp_*` tables |
 | Legacy page copy | `docs/context/legacy-copy/*.md` | Extracted from `post_content`; verbatim, unverified |
 | Media list | `data/media-inventory.csv` | 330 rows; `action = migrate` for 175 used files |
-| Redirect map | `data/redirect-map.csv` | 63 rows |
-| Seed data | `data/seed/routes.legacy.json`, `data/seed/site-settings.legacy.json` | Prices/transit from 2023–2025 pages, `is_verified: false` |
-| Design tokens | `data/design-tokens.json` | `current` + `proposed` |
+| Redirect map | `43logistics.vn/data/redirect-map.csv` | 63 rows |
+| Seed data | `43logistics.vn/data/seed/routes.legacy.json`, `43logistics.vn/data/seed/site-settings.legacy.json` | Prices/transit from 2023–2025 pages, `is_verified: false` |
+| Design tokens | `43logistics.vn/data/design-tokens.json` | `current` + `proposed` |
 | Uploads folder | Ask hosting for a zip of `wp-content/uploads` | Needed for original images (live site can also be fetched over HTTPS) |
 | Public REST API | `https://43logistics.vn/wp-json/wp/v2/` (public at analysis time) | For cross-checking only; will be 410 after launch |
 
@@ -47,7 +47,7 @@ Security: never commit the SQL dump, `wp-config.php`, or exported leads. The old
    - write rows as `draft` — nothing auto-publishes.
 4. **Media:** for each `media-inventory.csv` row with `action = migrate`: download, convert (sharp → WebP + AVIF, max 2560 px), upload to `media/uploads/YYYY/MM/<original-name>.webp`, keep `legacy_url`; generate alt VI/EN (human-reviewed). Banners/tiles with baked-in text are **not** migrated — they are redesigned.
 5. **Rewrite content** using `legacy-copy/*.md` as raw material: fix facts with the owner, unique copy per route (Taiwan ≠ Japan), remove competitor link, fix typos, add EN.
-6. **Redirects:** load `data/redirect-map.csv` into `next.config.ts` `redirects()` + `proxy.ts` (410, legacy IDs) and the `redirects` table.
+6. **Redirects:** load `43logistics.vn/data/redirect-map.csv` into `next.config.ts` `redirects()` + `proxy.ts` (410, legacy IDs) and the `redirects` table.
 7. **Staging QA** (all must pass):
    - `pnpm check:redirects` against staging: every CSV row returns its status, single hop, correct `Location`;
    - crawl staging (Screaming Frog): no 404, one H1 per page, canonical self, hreflang reciprocal, JSON-LD valid;

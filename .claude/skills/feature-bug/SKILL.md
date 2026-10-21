@@ -118,8 +118,8 @@ Use `AskUserQuestion` for structured multiple-choice questions, and fall back to
 
 - "What is explicitly out of scope?" Infer 1–2 likely exclusions, plus "Nothing excluded" and Other.
 - "Does this change the data model (`07-data-model.md`) or migrations?" `Yes (schema + migration)` / `No` / `Not sure`.
-- "Does this affect URLs, redirects, metadata or tracking events (`05`, `data/redirect-map.csv`)?" `Yes` / `No` / `Not sure`.
-- "Does this add client JS to public pages (120 KB budget)?" `Yes — island needed` / `No — server only` / `Not sure`.
+- "Does this affect URLs, redirects, metadata or tracking events (`05`, `43logistics.vn/data/redirect-map.csv`)?" `Yes` / `No` / `Not sure`.
+- "Does this add client JS to public pages (≤ 50 KB gz app JS over the framework baseline, ADR 0006)?" `Yes — island needed` / `No — server only` / `Not sure`.
 - "Priority?" `nice-to-have` / `must-have` / `critical`.
 
 **Batch 3 — Edge cases & acceptance:**

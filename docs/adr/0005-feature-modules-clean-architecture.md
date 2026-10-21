@@ -1,6 +1,6 @@
 # ADR 0005 — Feature modules with clean-architecture layers
 
-- Status: Accepted (2026-10-21)
+- Status: Accepted (2026-10-21) · Amended by ADR 0006 (2026-10-21): the "≤ 120 KB gz" evidence line now means the framework baseline + ≤ 50 KB gz app JS
 - Amends: ADR 0002 §3 (server code in `server/{queries,actions,services}`) and §5 (shadcn primitives in `components/ui`). The root-level layout without `src/` and `@/*` → app root stay.
 - Owner repo: both
 - Context: The owner asked (2026-10-21) for smaller code, a modular architecture and clean-architecture layering before any feature code is written. The layer-first layout from ADR 0002 spreads one business capability across `server/queries`, `server/actions`, `server/services`, `components/blocks`, `lib/*` and `stores/`. For example, pricing would live in five folders, and nothing stops a component from reaching into the DB layer of another feature. After F-00 the app holds only a placeholder page, the shadcn primitives and a few utilities, so changing the layout now costs almost nothing.

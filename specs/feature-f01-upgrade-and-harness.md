@@ -1,7 +1,9 @@
 ---
 title: Upgrade to Next 16 and adopt the module layout
 type: feature
-status: approved
+status: in_implementation
+branch: feat/f-01-upgrade-and-harness
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/2
 owner_repo: both
 roadmap: F-01
 priority: critical
@@ -188,7 +190,7 @@ After this change the app runs on Next 16 / React 19.2+ with Turbopack and Cache
 
 - **Rule 15 (secrets):** `env.server.ts` and `env.public.ts` never log values; `.env.example` unchanged except for any variable genuinely added (none expected).
 - **Rule 6 (server-only DB):** `db/client.ts` imports `server-only`; the build-failure check proves a client import breaks the build.
-- **Rule 8 (JS budget):** removing Clerk/PostHog/framer-motion must not increase first-load JS. Record the before/after first-load JS of `/` from the build output.
+- **Rule 8 (JS budget):** removing Clerk/PostHog/framer-motion adds no app JS. The Next 16 framework itself raised the initial JS from 100.6 to 134.3 KiB; ADR 0006 (decided during implementation) makes that the framework baseline and sets the app budget to ≤ 50 KiB on top. Record the baseline per ADR 0006 Decision 3.
 - **Rule 13 (redirects):** the CSV moves byte-identically, so nothing changes yet (F-07 consumes it).
 - **Stack gaps (`AGENTS.md` §3):** this task closes the Framework, UI runtime, Lint/format and Mutations gaps, and the Validation row moves to Zod 4. Components (Tailwind/shadcn) stays open for F-02.
 
@@ -229,7 +231,7 @@ After this change the app runs on Next 16 / React 19.2+ with Turbopack and Cache
       - Under `prefers-reduced-motion: reduce`, 0 running animations.
       - Lighthouse mobile (arm64 Node): performance ≥ 90, accessibility 100; record LCP, CLS and TBT.
       - INP: "unavailable, no interactive element", as in F-00.
-      - **Initial first-party JS (gz):** sum the `transferSize` of every `/_next/static/**/*.js` request on the initial load of `/` (CDP Network, cache disabled, framework chunks included). Record it against the 120 KB budget and F-00's 100.6 KB transfer.
+      - **Initial first-party JS (gz):** sum the `transferSize` of every `/_next/static/**/*.js` request on the initial load of `/` (CDP Network, cache disabled, framework chunks included). Record it as the framework baseline per ADR 0006 Decision 3 (Lighthouse transferSize; F-00 was 100.6 KiB).
   11. **Data move:**
       - `cmp` each moved file against the context copy in the commit before the deletion → identical;
       - in the context repo, `ls data/` → only `media-inventory.csv`;

@@ -61,7 +61,7 @@ Common rules shown on many pages:
 - New-customer offer: "Bạn là khách hàng mới? Nhận ngay 10% ưu đãi" — `NEEDS CONFIRMATION` that it is still running.
 - Process (4 steps on home): 1 Tiếp nhận & tư vấn → 2 Nhận hàng tại kho, cân kiểm → 3 Đóng gói & thanh toán → 4 Thông quan, vận chuyển, giao hàng. "Người gửi chỉ thanh toán một lần duy nhất và người nhận chỉ nhận hàng!"
 
-> All legacy prices date from Dec 2023 – Jan 2024 except the 2025 blog posts. **Treat every price above as unverified seed data** (`data/seed/routes.legacy.json`, `is_verified = false`). The public site must show `updated_at` next to each rate table.
+> All legacy prices date from Dec 2023 – Jan 2024 except the 2025 blog posts. **Treat every price above as unverified seed data** (`43logistics.vn/data/seed/routes.legacy.json`, `is_verified = false`). The public site must show `updated_at` next to each rate table.
 
 ## Audience (confirmed for the rebuild)
 

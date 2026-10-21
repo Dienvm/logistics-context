@@ -1,6 +1,6 @@
 # 04 — Design system
 
-> Machine-readable tokens: `data/design-tokens.json` (W3C DTCG format; set `current` = extracted from the old site, set `proposed` = the new system). Import into Figma with Tokens Studio. Build to CSS with `pnpm tokens` (Style Dictionary or a small script) → `app/theme.css`.
+> Machine-readable tokens: `43logistics.vn/data/design-tokens.json` (W3C DTCG format; set `current` = extracted from the old site, set `proposed` = the new system). Import into Figma with Tokens Studio. Build to CSS with `pnpm tokens` (Style Dictionary or a small script) → `app/theme.css`.
 
 ## Chosen direction: "Crimson Express" (+ warmth from "Warm Trust")
 
@@ -83,7 +83,7 @@ Forbidden: crimson-300/400 for text, any hex not in the tokens, the old CTA reds
 | exit | cubic-bezier(0.4, 0, 1, 1) | Exits |
 | overshoot | cubic-bezier(0.34, 1.56, 0.64, 1) | Stamp/badge micro-interactions only |
 
-Rules: animate `transform` and `opacity` only; scroll reveals with CSS (`@starting-style`, `animation-timeline: view()` with fallbacks) or a tiny IntersectionObserver hook. **`motion` (Framer Motion, `motion/react`)** is allowed only inside client islands that need orchestrated or gesture animation (calculator "stamp", mobile drawer, admin), loaded with `LazyMotion` + `m` components (`domAnimation` features) — never in Server Components, never on the LCP element, and only on a public page when the island's JS still fits the 120 KB budget (ADR 0002). Respect `prefers-reduced-motion` (global CSS below + `useReducedMotion` for JS animations).
+Rules: animate `transform` and `opacity` only; scroll reveals with CSS (`@starting-style`, `animation-timeline: view()` with fallbacks) or a tiny IntersectionObserver hook. **`motion` (Framer Motion, `motion/react`)** is allowed only inside client islands that need orchestrated or gesture animation (calculator "stamp", mobile drawer, admin), loaded with `LazyMotion` + `m` components (`domAnimation` features) — never in Server Components, never on the LCP element, and only on a public page when the route still fits the ≤ 50 KB gz app JS budget over the framework baseline (ADR 0006). Respect `prefers-reduced-motion` (global CSS below + `useReducedMotion` for JS animations).
 
 ## Components (build in `shared/ui` (shadcn/ui primitives, token-styled) and `modules/<name>/ui` (business components), ADR 0005)
 

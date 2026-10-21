@@ -124,7 +124,7 @@ Follows the patterns in `AGENTS.md` §8:
 
 ### H — Performance, SEO, a11y
 
-- **Client JS:** new `"use client"` boundaries or imports of `motion`, Clerk or TanStack Query on public pages. The 120 KB budget is gzipped first-party JS on the initial route render, framework included, with consent rejected; third-party scripts loaded after consent are reported separately (AGENTS.md §4.8). Also flag unnecessary sequential awaits that could be `Promise.all`.
+- **Client JS:** new `"use client"` boundaries or imports of `motion`, Clerk or TanStack Query on public pages. The JS budget is the framework baseline plus ≤ 50 KB gz app JS per route, measured on the initial route render with consent rejected; third-party scripts loaded after consent are reported separately (AGENTS.md §4.8, ADR 0006). Also flag unnecessary sequential awaits that could be `Promise.all`.
 - **Verification coverage (no automated tests, ADR 0004):** compare the PR's recorded manual verification with the spec's Manual Verification Plan. Flag ACs with no recorded check, unchecked edge cases (band edges, missing translation, no consent, invalid channel), and pure logic (price, URL, metadata, JSON-LD, redirects, Zod) that isn't kept in pure typed functions. Don't flag missing Vitest/Playwright tests, and don't recommend adding them.
 - **Outstanding owner questions:** the PR lists the Q-IDs it depends on, and every unconfirmed fact renders nothing or a marked placeholder (rule 1).
 - **Images and motion:** `next/image` with `sizes`; LCP not animated; transform/opacity only; reduced motion respected.

@@ -44,7 +44,7 @@ The **Target** column is what new code is written for. The **In the app today** 
 | Framework | **Next.js 16** (App Router, Turbopack), `proxy.ts`, `cacheComponents: true`, async `params`/`searchParams`/`cookies()`/`headers()` | `next ^15.3.3`, `next.config.mjs`; no middleware (template `middleware.ts` removed in F-00; `proxy.ts` comes in F-01/F-06) | F-01 |
 | UI runtime | **React 19.2**: Server Components by default, `"use client"` only for interactivity | `react ^19.1` | F-01 |
 | Components | **shadcn/ui** (Radix) in `shared/ui` (ADR 0005), restyled only via tokens | ~50 default-style shadcn components in `components/ui`, mostly unused | F-01 (move), F-02 |
-| Styling | **Tailwind CSS v4**, `@theme` generated into `app/theme.css` from `data/design-tokens.json` | Tailwind 3.4 + `tailwind.config.ts` + `tailwindcss-animate` | F-02 |
+| Styling | **Tailwind CSS v4**, `@theme` generated into `app/theme.css` from `43logistics.vn/data/design-tokens.json` | Tailwind 3.4 + `tailwind.config.ts` + `tailwindcss-animate` | F-02 |
 | Motion | CSS first. **`motion`** (Framer Motion) only inside client islands via `LazyMotion` + `m` | `framer-motion ^11` | F-02 |
 | Mutations | **Server Actions** + Zod, returning `ActionState<T>` (`shared/types/action-state.ts`, extended with `fieldErrors`) | none (template `actions/db/*` removed in F-00); `ActionState<T>` exists without `fieldErrors` | F-01 |
 | Database | **Supabase Postgres via Drizzle, server only** (`db/client.ts` with `server-only`) | `drizzle-orm 0.33`, `db/db.ts` with an empty schema (template todo/profile schema removed in F-00; old migration files remain) | F-04 |
@@ -77,8 +77,9 @@ AI tooling: Cursor, Claude Code and Codex read this file; an agent that opens on
 5. **Server first.** Fetch data in Server Components via each module's cached queries (`modules/*/infrastructure`, `"use cache"` + `cacheTag`). Mutate via Server Actions in `modules/*/actions.ts`, then call `updateTag()`/`revalidateTag(tag, 'max')`.
 6. **Drizzle only on the server.** Never import `@/db` from a Client Component (`db/client.ts` imports `server-only`). Never expose `SUPABASE_SERVICE_ROLE_KEY` or `DATABASE_URL` to the client.
 7. **Authorization is explicit.** Every admin Server Action and route handler calls `requireRole([...])` (Clerk `auth()` + role claim). RLS is enabled on all tables as defense in depth (deny-by-default for `anon`/`authenticated`).
-8. **Performance budget (mobile, 4G)**: LCP < 2.5 s, INP < 200 ms, CLS < 0.1, JS on route pages < 120 KB gz.
-   - Measure the JS budget as first-party JS loaded on the initial route render, with consent **rejected** (framework included). Report third-party tags loaded after consent separately, and keep them deferred.
+8. **Performance budget (mobile, 4G)**: LCP < 2.5 s, INP < 200 ms, CLS < 0.1 (primary gate). JS: **framework baseline + ≤ 50 KB gz of app JS per route** (ADR 0006).
+   - The baseline is the initial JS of the empty placeholder on the current Next/React versions: **134.3 KB gz** (Next 16.4.2 / React 19.3.1). Every Next/React upgrade re-measures it.
+   - Measure with Lighthouse mobile on the production build, consent **rejected**, `noModule` chunks excluded; record baseline, route total and app delta. Report third-party tags loaded after consent separately, and keep them deferred.
    - No carousel above the fold.
    - No Google Maps iframe in the global layout.
    - `next/image` everywhere.
@@ -94,7 +95,7 @@ AI tooling: Cursor, Claude Code and Codex read this file; an agent that opens on
     - No `uppercase` on buttons or menus (uppercase with diacritics hurts legibility).
     - Load fonts with `subsets: ['latin', 'vietnamese']`.
 12. **Track every contact.** Zalo/phone/WhatsApp/Messenger links go through `/go/[channel]`, which logs `contact_events` and then returns a 302. Also push the matching event (once, from `modules/tracking`) to `dataLayer` and, after consent, to PostHog.
-13. **Keep old URLs alive.** Every URL in `data/redirect-map.csv` must resolve as specified (200 / 301 / 410), in one hop.
+13. **Keep old URLs alive.** Every URL in `43logistics.vn/data/redirect-map.csv` must resolve as specified (200 / 301 / 410), in one hop.
 14. **Personal data (Personal Data Protection Law 91/2025/QH15, in force 01/01/2026, and Decree 13/2023 as applicable)**:
     - Forms have a consent checkbox and a privacy policy link.
     - No analytics or ad tags, cookies or requests before consent (Consent Mode basic). `43l_attr` holds ad click IDs, so it needs consent too.
@@ -109,12 +110,12 @@ AI tooling: Cursor, Claude Code and Codex read this file; an agent that opens on
 | Company facts, contacts, audience, voice | `docs/context/01-business.md` |
 | What was wrong with the old site / what to keep | `docs/context/02-legacy-audit.md` |
 | Sitemap, URLs, navigation, page contents | `docs/context/03-information-architecture.md` |
-| Colours, fonts, spacing, components, motion | `docs/context/04-design-system.md` + `data/design-tokens.json` |
+| Colours, fonts, spacing, components, motion | `docs/context/04-design-system.md` + `43logistics.vn/data/design-tokens.json` |
 | Metadata, JSON-LD, sitemap, robots, hreflang, tracking, consent, ads LPs | `docs/context/05-seo-and-tracking.md` |
 | Folder structure, rendering/caching, proxy, auth, state, env | `docs/context/06-architecture.md` |
 | Tables, Drizzle schema, RLS, storage | `docs/context/07-data-model.md` |
 | Locales, slugs, translation workflow | `docs/context/08-i18n.md` |
-| Importing WordPress content, media, redirects | `docs/context/09-migration.md` + `data/*.csv` + `data/seed/*` |
+| Importing WordPress content, media, redirects | `docs/context/09-migration.md` + `43logistics.vn/data/redirect-map.csv` + `data/media-inventory.csv` + `43logistics.vn/data/seed/*` |
 | What to build next, acceptance criteria | `docs/context/10-roadmap.md` |
 | Unknowns that block content | `docs/context/11-open-questions.md` |
 | VI ↔ EN terminology | `docs/context/12-glossary.md` |
@@ -209,10 +210,10 @@ Check availability first with `command -v codex`; if it's missing, skip the step
 | `pnpm lint:fix` / `pnpm format:write` | exists | Biome autofix / format |
 | `pnpm typecheck` | F-01 (today: `pnpm type-check`) | `tsc --noEmit` |
 | `pnpm db:generate` / `pnpm db:migrate` | exists | drizzle-kit (migrations in `db/migrations/`) |
-| `pnpm tokens` | F-02 | Build `app/theme.css` from `data/design-tokens.json` |
+| `pnpm tokens` | F-02 | Build `app/theme.css` from `43logistics.vn/data/design-tokens.json` |
 | `pnpm i18n:check` | F-03 | VI/EN message-key parity |
 | `pnpm db:seed` | F-04 | `tsx scripts/seed.ts` (legacy routes, settings) |
-| `pnpm check:redirects` | F-07 | Verify every row of `data/redirect-map.csv` against a running server |
+| `pnpm check:redirects` | F-07 | Verify every row of `43logistics.vn/data/redirect-map.csv` against a running server |
 
 Keep this table true. When a task adds or renames a script, update its row in the same change.
 
@@ -261,7 +262,7 @@ Keep this table true. When a task adds or renames a script, update its row in th
 - [ ] Works at 360 px, 768 px and 1280 px; keyboard-navigable; reduced-motion checked.
 - [ ] New public page: metadata + canonical + hreflang + JSON-LD validated (Rich Results Test or a schema validator).
 - [ ] No hard-coded business facts; strings in `messages/*` for both VI and EN.
-- [ ] Lighthouse mobile on the changed page: ≥ 90 performance, 100 SEO, ≥ 95 accessibility; recorded LCP/CLS/INP and initial first-party JS (gz) with consent rejected. A budget miss blocks the PR.
+- [ ] Lighthouse mobile on the changed page: ≥ 90 performance, 100 SEO, ≥ 95 accessibility; recorded LCP/CLS/INP and the app JS delta over the framework baseline (≤ 50 KB gz, ADR 0006) with consent rejected. A budget miss blocks the PR.
 - [ ] Consent matrix (ADR 0004) re-run when the change touches consent, tracking, `proxy.ts` or lead processing.
 - [ ] Context updated in the same change set if a decision or fact changed:
   - roadmap checkbox via `/mark-implemented`;

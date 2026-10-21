@@ -73,7 +73,7 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 
 ## Redirects & legacy URLs
 
-- Source of truth: `data/redirect-map.csv` (`old_url,new_url_vi,new_url_en,status_code,notes`).
+- Source of truth: `43logistics.vn/data/redirect-map.csv` (`old_url,new_url_vi,new_url_en,status_code,notes`).
 - Implementation v1: generate `redirects()` in `next.config.ts` from the CSV at build (≈50 rules, all **301** — use `statusCode: 301`, not `permanent: true`, which emits 308), plus `rewrites()` for `/wp-content/uploads/:path*` → Supabase Storage public URL (same path, 200).
 - 410 rows (`/tieu-de/`, `/portfolio/*`, `/wp-admin/*`, `/wp-login.php`, `/xmlrpc.php`, `/wp-json/*`): handled in `proxy.ts` returning `new NextResponse(null, { status: 410 })`.
 - Old query URLs `/?page_id={id}`, `/?p={id}` → map WP IDs (580, 705, 834, 836, 837, 838, 851, 866, 3596, 694, 3570, 3587) to new URLs in `proxy.ts`.
@@ -87,7 +87,7 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 - LCP image: `next/image` with `priority`, correct `sizes`, AVIF/WebP, ≤ 150 KB at 1280 px wide.
 - Fonts: 2 families, `display: swap`, subsets latin + vietnamese, preload via `next/font`.
 - Third-party: GTM loaded with `@next/third-parties/google` `GoogleTagManager` only after the user grants ads consent (basic mode: no GTM request before that); PostHog initialised lazily only after analytics consent (no `posthog.init` at module load); no Maps iframe (static map image + link); no chat widget scripts.
-- Budgets: JS ≤ 120 KB gz on route pages; CLS < 0.1 (reserve space for sticky bar and images).
+- Budgets (ADR 0006): framework baseline (134.3 KB gz on Next 16.4.2 / React 19.3.1) + ≤ 50 KB gz app JS per route; LCP < 2.5 s, INP < 200 ms, CLS < 0.1 (reserve space for sticky bar and images).
 
 ## Tracking plan
 
