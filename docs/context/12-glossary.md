@@ -47,6 +47,8 @@ Use these terms consistently in UI strings, content and machine-translation prom
 | Ưu đãi | Offer / discount | |
 | Liên hệ ngay | Contact us now | Prefer specific CTA: "Chat on Zalo" |
 | Chat Zalo | Chat on Zalo | Keep "Zalo" untranslated |
+| Gọi | Call | Secondary contact CTA (button label) |
+| Liên hệ (in place of a price) | Contact us for a quote | Shown when a route has no eligible public rate |
 | Kinh nghiệm (gửi hàng) | Shipping guides | Blog section name |
 | Quy định gửi & nhận hàng | Shipping terms | |
 | Chính sách bảo mật | Privacy policy | |

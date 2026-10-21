@@ -85,7 +85,7 @@ Forbidden: crimson-300/400 for text, any hex not in the tokens, the old CTA reds
 
 Rules: animate `transform` and `opacity` only; scroll reveals with CSS (`@starting-style`, `animation-timeline: view()` with fallbacks) or a tiny IntersectionObserver hook. **`motion` (Framer Motion, `motion/react`)** is allowed only inside client islands that need orchestrated or gesture animation (calculator "stamp", mobile drawer, admin), loaded with `LazyMotion` + `m` components (`domAnimation` features) — never in Server Components, never on the LCP element, and only on a public page when the island's JS still fits the 120 KB budget (ADR 0002). Respect `prefers-reduced-motion` (global CSS below + `useReducedMotion` for JS animations).
 
-## Components (build in `components/ui` (shadcn/ui primitives, token-styled) and `components/blocks`)
+## Components (build in `shared/ui` (shadcn/ui primitives, token-styled) and `modules/<name>/ui` (business components), ADR 0005)
 
 Primitives come from **shadcn/ui** (Radix under the hood) and are restyled only through token CSS variables — keep their ARIA/keyboard behaviour, delete generated components no task uses. V0 drafts are mapped to these tokens before merge.
 

@@ -234,7 +234,7 @@ updated: <today YYYY-MM-DD>
 ### Affected Areas
 | Repo | Layer | File / Path (likely) |
 |------|-------|----------------------|
-| app | server/queries | server/queries/routes.ts |
+| app | module infrastructure | modules/routes/infrastructure/queries.ts |
 | app | page | app/[locale]/(site)/[slug]/page.tsx |
 | context | doc | docs/context/<file>.md |
 

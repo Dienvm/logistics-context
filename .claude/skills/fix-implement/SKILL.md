@@ -99,9 +99,9 @@ Output to the user:
 
 | # | File | Spec Requirement | Actual Behavior | Severity |
 |---|------|-----------------|-----------------|----------|
-| 1 | components/blocks/rate-table.tsx:42 | Prices only from route_rates (AC 2, rule 2) | 75.000 đ hard-coded | Critical |
+| 1 | modules/pricing/ui/rate-table.tsx:42 | Prices only from route_rates (AC 2, rule 2) | 75.000 đ hard-coded | Critical |
 | 2 | app/go/[channel]/route.ts:18 | 302 never waits on tracking (05) | awaits DB insert before redirect | High |
-| 3 | lib/format/price.ts:12 | 1.3 kg rounds to 1.5 kg for US (manual verification plan) | rounds to 1.0 kg | Medium |
+| 3 | modules/pricing/domain/chargeable-weight.ts:12 | 1.3 kg rounds to 1.5 kg for US (manual verification plan) | rounds to 1.0 kg | Medium |
 ```
 
 Severity:
