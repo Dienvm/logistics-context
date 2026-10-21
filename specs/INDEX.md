@@ -8,3 +8,4 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
+| 2026-10-21 | feature | [feature-f00-security-template-cleanup.md](feature-f00-security-template-cleanup.md) | Untrack secrets and strip the demo template | F-00 | app | draft |
