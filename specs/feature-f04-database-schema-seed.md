@@ -1,7 +1,9 @@
 ---
 title: Create the Supabase schema, migrations and seed
 type: feature
-status: approved
+status: in_implementation
+branch: feat/f-04-database-schema-seed
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/6
 owner_repo: both
 roadmap: F-04
 priority: must-have
@@ -92,7 +94,7 @@ Nothing is published by the seed. Public pages keep showing placeholders until o
 - [ ] Given a fresh migrated database, then after the seed:
   - **routes:** `routes` = **10** rows (**8** `is_active = true`; `my-vn` and `th-vn` inactive), **all `is_verified = false`**; `route_translations` = 20 (VI + EN per route); `route_rates` = the number of rate bands in the JSON, each satisfying `route_rates_price_ck`;
   - **settings:** `site_settings` = one row per legacy key (`company`, `contact`, `offices`, `hours`, `social`, `tracking`, `offers`, `pricingRules`), **all `is_verified = false`**;
-  - **pages:** exactly the **20 pages** of the manifest below, all `status = 'draft'`, with **40** `page_translations` (VI + EN). Route pages are linked through `pages.route_id`;
+  - **pages:** exactly the **22 pages** of the manifest below, all `status = 'draft'`, with **44** `page_translations` (VI + EN). Route pages are linked through `pages.route_id`;
   - **menus:** exactly the menu items of the manifest below, with VI + EN labels (no external URLs).
 
   **Page manifest** (`data/seed/pages.json`; slugs from `03`, titles = the `03` sitemap names, EN from `12-glossary.md`; `title` and `h1` are both seeded with the name, and editors rewrite them):
