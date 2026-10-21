@@ -39,7 +39,7 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
   - no `pathnames` yet (see Scope).
 
   `Locale` is exported as a type derived from `routing.locales`, never a bare `string` (`type-definitions.md`).
-- [ ] Given `shared/i18n/request.ts`, then `getRequestConfig` resolves the locale from an explicit `locale` argument, else `rootParams.locale()` (`next/root-params`), validates it with `hasLocale`, falls back to `defaultLocale`, and loads `messages/<locale>.json`. `setRequestLocale` is not called anywhere in the app.
+- [ ] Given `shared/i18n/request.ts`, then `getRequestConfig` resolves the locale from an explicit `locale` argument, else `rootParams.locale()` (`next/root-params`), validates it with `hasLocale`, falls back to `defaultLocale`, and loads `messages/<locale>.json`. `setRequestLocale` is not called anywhere in the app. **Permitted fallback:** if `next/root-params` fails under `cacheComponents`, the ADR 0006 fallback (pass `locale` from `params` explicitly) is allowed, and `setRequestLocale` only after that also fails. Either needs the same gate evidence (every Cache Components gate AC passes) plus the failure output and reason recorded in ADR 0006 and the PR.
 - [ ] Given `shared/i18n/navigation.ts`, then it exports `Link`, `redirect`, `usePathname`, `useRouter` and `getPathname` from `createNavigation(routing)`. App code uses these for locale-aware links.
 
 **Routing (`proxy.ts`, minimal)**
@@ -48,11 +48,23 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
 - [ ] Given a production build (`pnpm build && pnpm start`):
   - `/` → **200**, `<html lang="vi">`, Vietnamese placeholder text;
   - `/en/` → **200**, `<html lang="en">`, English placeholder text;
-  - `/vi/` → reaches `/` in **one** redirect (status recorded);
-  - `/en` → reaches `/en/` in **one** redirect (status recorded);
-  - `/fr/` and `/en/khong-co/` → **404**. The 404 page renders `lang` and text in the matching locale (`vi` for `/fr/`).
+  - `/vi/` and `/vi` → reach `/` in **at most one** redirect;
+  - `/en` → reaches `/en/` in **one** redirect;
+  - `/en?utm_source=x` → reaches `/en/?utm_source=x` with the query string preserved;
+  - for each, the redirect count, final URL and final status are recorded from the full chain (`curl -sL -w '%{num_redirects} %{url_effective} %{http_code}'`), not from the first response only.
+- [ ] Given an **unknown path under a locale** (`/khong-co/`, `/en/khong-co/`, and `/fr/`, which `as-needed` treats as a Vietnamese path), then the response is **404** with the localized not-found page: `lang`, one `<h1>` and text in that locale (`vi` for `/khong-co/` and `/fr/`).
+- [ ] Given a request that reaches `[locale]` with an **invalid root parameter** (a path the matcher excludes, e.g. `/missing.txt`), then the response is **404** from `app/global-not-found.tsx` (enabled with `experimental.globalNotFound`, per the bundled Next docs for dynamic root layouts):
+  - `<html lang="vi">`, Vietnamese text from `messages/vi.json`;
+  - it imports `globals.css` and the fonts itself, because it bypasses the layout;
+  - it has a link home.
 - [ ] Given a request to `/` with `Accept-Language: en-US,en;q=0.9`, then the response is **200 Vietnamese**, with no redirect (no auto redirect).
 - [ ] Given any request above, then the response has **no `Set-Cookie`** header and **no `Link` hreflang header**.
+- [ ] Given the **consent matrix** (AGENTS §9; triggered by `proxy.ts`), reduced to what exists before S-13, then on initial load of `/` and `/en/`, switcher navigation in both directions and a reload:
+  - **0** requests to any third-party or analytics host;
+  - **0** cookies (`document.cookie` and CDP `Network.getCookies`);
+  - **0** `localStorage` / `sessionStorage` keys.
+
+  The accept, selective and withdraw rows are recorded as "n/a until S-13 (no consent UI or tags exist)".
 
 **Layouts, pages and messages**
 
@@ -75,7 +87,7 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
 **Language switcher (minimal, placeholder only)**
 
 - [ ] Given the placeholder page, then it shows a two-link switcher ("Tiếng Việt" / "English", from messages):
-  - built with the next-intl `Link` from `shared/i18n/navigation.ts`;
+  - built with the next-intl `Link` from `shared/i18n/navigation.ts`. **Permitted fallback:** if that `Link` breaks prerendering, use `next/link` with hrefs from `getPathname`, with the prerender error recorded in the PR; the client-navigation gate AC must still pass;
   - each link has `hrefLang` and `lang`, and the current locale's link has `aria-current="page"`;
   - each link has a ≥ 44 × 44 px hit area and a visible focus ring;
   - names, not flags.
@@ -102,11 +114,14 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
 
 **Budget and accessibility**
 
-- [ ] Given Lighthouse 12.8.2 mobile on the production build for `/` and `/en/` (consent n/a), then:
+- [ ] Given Lighthouse 12.8.2 mobile on the production build for `/` and `/en/` (no consent cookie), 3 runs each, then the medians meet the rule 8 gates:
+  - **LCP < 2.5 s and CLS < 0.1**;
   - accessibility ≥ 95, performance ≥ 90;
   - app JS delta over the 134.3 KiB baseline ≤ 50 KiB, with the switcher's cost noted;
-  - LCP/CLS recorded as a 3-run median (F-02 showed run-to-run variance);
   - SEO is recorded but not gated, since the placeholder is deliberately `noindex`.
+
+  `main` is measured the same way before the change. If `main` already misses the LCP gate (F-02 measured medians of 2.47 s and 2.85 s, driven by 13 preloaded font files), F-03 brings it under the gate by trimming font preloads or weights in `app/[locale]/layout.tsx`, with before/after medians in the PR. That keeps the fonts' `latin` + `vietnamese` subsets and the weights the type styles use.
+- [ ] Given the switcher click (`/` → `/en/`) on a throttled mobile profile (CDP: 4× CPU slowdown), then **INP < 200 ms**. It is measured with the `event` PerformanceObserver (`durationThreshold: 16`) or the Web Vitals library, as the max interaction duration over 3 clicks, and recorded with the method.
 - [ ] Given axe-core at 360 and 1280 px on `/`, `/en/` and the 404 page, then there are 0 serious/critical issues. A keyboard pass reaches both switcher links with a visible ring.
 
 ### Scope
@@ -135,7 +150,7 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
 | Repo | Layer | File / Path |
 |------|-------|-------------|
 | app | config | `package.json` (`next-intl`, `i18n:check`), `pnpm-lock.yaml`, `next.config.ts` |
-| app | routing | `proxy.ts` (new, minimal) |
+| app | routing | `proxy.ts` (new, minimal); `app/global-not-found.tsx` (new) + `experimental.globalNotFound` in `next.config.ts` |
 | app | shared | `shared/i18n/routing.ts`, `shared/i18n/request.ts`, `shared/i18n/navigation.ts`, `shared/i18n/ui/locale-switcher.tsx` (new) |
 | app | app layer | `app/layout.tsx` (deleted) → `app/[locale]/layout.tsx`; `app/page.tsx` → `app/[locale]/page.tsx`; `app/[locale]/not-found.tsx`, `app/[locale]/[...rest]/page.tsx` (new); `app/dev/tokens/**` → `app/[locale]/dev/tokens/**` |
 | app | messages | `messages/vi.json`, `messages/en.json` (new) |
@@ -144,7 +159,8 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
 | app | docs | `AGENTS.md` (stack + commands lines), `README.md` (scripts) |
 | app | lint config | `.dependency-cruiser.cjs` / `biome.json` only if the new folders need entries |
 | context | docs | `docs/context/08-i18n.md`, `docs/context/06-architecture.md`, `docs/adr/0006-*.md` (gate row), `.claude/rules/module-structure.md` |
-| context | lifecycle | `AGENTS.md` §3 i18n row and §7 `i18n:check` row (via `/mark-implemented`) |
+| context | docs | `docs/context/10-roadmap.md` (F-06 row wording: composes around the F-03 proxy) |
+| context | lifecycle | `AGENTS.md` §3 i18n and Framework rows, §7 `i18n:check` row (via `/mark-implemented`) |
 
 ### Golden-rule checks
 
@@ -162,15 +178,16 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
 - **Depends on:** F-01 (Next 16.4.2, Cache Components on) and F-02 (theme, fonts, `shared/ui`). Both are done.
 - **Stack gaps:**
   - This task closes the `i18n` row of `AGENTS.md` §3 and the `pnpm i18n:check` row of §7.
-  - It introduces `proxy.ts` with next-intl only; the §3 Framework row keeps "`proxy.ts` composition F-06".
+  - It introduces `proxy.ts` with next-intl only, because `as-needed` routing can't work without it. This is the i18n task's own capability, not an opportunistic close (§3).
+  - The §3 Framework row becomes "`proxy.ts` (next-intl only) F-03; composition F-06", and the F-06 roadmap row is reworded from creating `proxy.ts` to composing the 410 rules, legacy IDs, attribution and Clerk around the existing next-intl proxy. F-06 is not marked complete.
 - **Blocked by questions:** none. Q-16 (MT provider) concerns the translation workflow, which is out of scope.
 - **Risks:**
   - **Root layout move:** `app/layout.tsx` disappears, so every route must live under `[locale]`. A route that must stay outside (e.g. a future `/api` or `/go`) needs its own handling. Route handlers don't need layouts, and the matcher already excludes them.
   - **Root-params is new:**
     - If `rootParams.locale()` fails under `cacheComponents` (dynamic-API error, `undefined` locale), apply the ADR 0006 fallback: pass `locale` explicitly from `params`.
     - Record what happened. `setRequestLocale` is the last resort, and only with a recorded reason.
-  - **next-intl `Link` under prerendering:** reported to cause prerender errors in some setups. If it does, record the error and use `next/link` with `getPathname` for the two switcher hrefs.
-  - **404 for an invalid locale** happens in the root layout. The localized `not-found.tsx` behaviour for `/fr/` must be observed, not assumed. If Next needs a `global-not-found` for this case, check the bundled docs in `node_modules/next/dist/docs/` first.
+  - **next-intl `Link` under prerendering:** reported to cause prerender errors in some setups. The switcher AC defines the permitted fallback.
+  - **`global-not-found` is experimental** in Next 16.4 (`experimental.globalNotFound`). If it misbehaves under `cacheComponents`, record it. The invalid-root-parameter AC may then be met by a matcher or proxy rule that returns the localized 404, with a reason in the PR.
   - **CI cost:** `build` adds a few minutes per PR. Caching the pnpm store keeps it reasonable.
 
 ### Manual Verification Plan
@@ -188,7 +205,7 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
    - change an ICU argument name in one locale → exit 1;
    - revert each edit → exit 0.
 3. Run `NEXT_PUBLIC_SITE_URL=http://localhost:3100 pnpm build && pnpm start -p 3100` (port checked free first). Then:
-   - `curl -sI` each URL in the routing AC, recording status, `Location`, `Set-Cookie` (must be absent) and `Link` (must be absent);
+   - for each URL in the routing ACs, run `curl -s -o /dev/null -L -w '%{num_redirects} %{url_effective} %{http_code}'` for the chain, and `curl -sI` for the first response's `Set-Cookie` (must be absent) and `Link` (must be absent);
    - `curl -s -H 'Accept-Language: en-US,en;q=0.9' http://localhost:3100/` → 200 VI;
    - for `/` and `/en/`: grep `<html lang=`, `<h1>`, canonical, the three `hreflang` links (absolute, trailing slash, reciprocal) and the robots meta.
 4. Browser over CDP, production build:
@@ -196,12 +213,13 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
    - **two isolated contexts** (`/` and `/en/`) loaded alternately three times: each always shows its own locale;
    - **keyboard:** Tab reaches both switcher links with a visible ring; check their hit-area sizes.
 5. Run axe-core at 360 and 1280 px on `/`, `/en/` and `/en/khong-co/`: 0 serious/critical.
-6. Run Lighthouse 12.8.2 mobile on `/` and `/en/`, 3 runs each. Record medians (LCP, CLS, performance, accessibility) and the Script `transferSize` delta over 134.3 KiB.
+6. Run Lighthouse 12.8.2 mobile, 3 runs each, on `main` before the change and on `/` and `/en/` after it. Record medians (LCP, CLS, performance, accessibility) and the Script `transferSize` delta over 134.3 KiB. The LCP and CLS gates apply to the medians.
 7. Check that `/dev/tokens/` returns 200 under `pnpm dev`, then 404 in production.
-8. CI: the `verify` workflow is green on the PR. Record the failing-run evidence from the CI AC.
-9. Fill in ADR 0006's F-03 gate row and update `08`/`06` with the observed results.
+8. Measure INP for the switcher (4× CPU throttle, 3 clicks), run the reduced consent matrix (requests, cookies, storage after load, navigation and reload), and request `/missing.txt` → 404 global not-found, VI.
+9. CI: the `verify` workflow is green on the PR. Record the failing-run evidence from the CI AC.
+10. Fill in ADR 0006's F-03 gate row and update `08`/`06` with the observed results.
 
-**Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `tokens:check`, `i18n:check`, `build`. The consent matrix doesn't apply (no consent or tracking change; no cookie is added). No automated tests (ADR 0004).
+**Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `tokens:check`, `i18n:check`, `build`. No automated tests (ADR 0004).
 
 ### Implementation Hints
 
@@ -212,17 +230,17 @@ A visitor opening `/` gets the Vietnamese placeholder with `<html lang="vi">`. `
   // shared/i18n/request.ts
   import { hasLocale } from "next-intl";
   import { getRequestConfig } from "next-intl/server";
-  import * as rootParams from "next/root-params";
+  import { locale as rootLocale } from "next/root-params"; // getter named after the [locale] segment
   import { routing } from "./routing";
 
   export default getRequestConfig(async ({ locale }) => {
-    const candidate = locale ?? (await rootParams.locale());
+    const candidate = locale ?? (await rootLocale());
     const resolved = hasLocale(routing.locales, candidate) ? candidate : routing.defaultLocale;
     return { locale: resolved, messages: (await import(`../../messages/${resolved}.json`)).default };
   });
   ```
 
-  Confirm the exact `next/root-params` export shape against the bundled docs before relying on this sketch.
+  The export shape is from `node_modules/next/dist/docs/01-app/03-api-reference/04-functions/next-root-params.md`. Types are generated by `next dev`/`next build`/`next typegen`. `next/root-params` can't be used in Client Components, Server Actions or Route Handlers.
 - `generateMetadata` gets the locale from `params` (async) and passes it explicitly: `getTranslations({ locale, namespace: "metadata" })`.
 - Only add `NextIntlClientProvider` to the layout if a client component needs messages. The server-rendered switcher shouldn't need it, and adding it can ship the whole message file to the client: measure.
 - `check-i18n.ts` is a pure function plus a thin CLI. Keep the diff logic (flatten keys, extract ICU argument names) pure and typed so it can be tested later (ADR 0004). It reads files from `messages/` with `node:fs`.
