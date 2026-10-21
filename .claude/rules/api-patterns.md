@@ -26,7 +26,7 @@ export async function getRouteRates({ routeKey, locale }: { routeKey: string; lo
 }
 ```
 
-- `"use cache"`, `cacheLife` and `cacheTag` require Cache Components (F-01). Before F-01, write a plain async function, keep the same signature and add the cache lines in F-01. Don't hack around the gap.
+- These patterns (`"use cache"`, `cacheLife`, `cacheTag`, `updateTag`) need Next 16 with Cache Components, which arrives in **F-01**. **F-01 comes first:** don't implement module queries or actions before it, and don't write a fallback with older APIs (`AGENTS.md` §3: close the stack gap first). If F-01's compatibility check disables `cacheComponents`, follow the fallback recorded in that ADR.
 - Pass `locale` explicitly; it becomes part of the cache key. Never read `cookies()`/`headers()` inside a cached function.
 - Return plain serialisable data (domain types), not Drizzle row objects with methods.
 - Select only the columns the caller needs.
@@ -38,18 +38,22 @@ export async function getRouteRates({ routeKey, locale }: { routeKey: string; lo
 "use server";
 export async function updateRateAction(_prev: ActionState<Rate> | null, formData: FormData): Promise<ActionState<Rate>> {
   await requireRole(["admin", "editor"]);                       // admin actions: first line
-  const parsed = rateInputSchema.safeParse(Object.fromEntries(formData));
+  const parsed = rateInputSchema.safeParse(formInput(formData));  // drops $ACTION_* and security fields
   if (!parsed.success) return invalid(parsed.error);           // → fieldErrors
   const rate = await updateRate(parsed.data);                   // application use case
-  updateTag(routeTag(rate.routeKey));                           // after F-01; revalidateTag(tag) before
+  updateTag(routeTag(rate.routeKey));
   return ok(rate);
 }
 ```
 
 - An action is thin: authorise → validate (Zod) → call **one** use case → invalidate tags → return `ActionState<T>`.
+- **Input policy (one rule everywhere):**
+  - `formInput(formData)` from `shared/lib/form-input.ts` builds the business object and drops framework fields (`$ACTION_*`) and security fields (`cf-turnstile-response`, read separately).
+  - Business schemas use Zod's default **strip** mode: unknown keys are removed and never reach the DB. Don't use `.passthrough()`.
+  - `.strict()` is only for JSON route handlers and webhooks, where the full payload shape is known.
 - Return `ActionState<T>` (`shared/types/action-state.ts`); never throw validation errors to the client. Unexpected errors are logged server-side and returned as a generic, localised message.
 - Side effects that don't affect the response (conversions, notifications) go in `after()`.
-- Public actions (lead form) add Turnstile + rate limiting; see `security-patterns.md`.
+- The public lead-form action adds Turnstile + rate limiting; see `security-patterns.md`.
 
 ## Route handlers (`app/**/route.ts`)
 

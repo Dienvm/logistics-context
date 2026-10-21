@@ -7,7 +7,7 @@ paths:
 
 # Hook patterns
 
-Hooks exist only in client code. Server Components don't use hooks; they call functions.
+React state, effect and browser hooks exist only in client code. Server Components call functions instead. **Exception:** next-intl's server-compatible hooks (`useTranslations`, `useLocale`, `useFormatter`) work in non-async Server Components. Use `getTranslations`/`getLocale` in async ones. Don't add `"use client"` just to translate text.
 
 ## Where hooks live
 
@@ -22,7 +22,7 @@ File `use-quote-estimate.ts` exports `useQuoteEstimate`. One hook per file.
 
 - **A hook wraps behaviour, not markup.** It returns data and callbacks; components render.
 - **Keep the logic pure.** Put the calculation in `domain/` (e.g. `estimateQuote()`); the hook only wires state to it, so the logic stays testable later (ADR 0004 Decision 3).
-- **No data fetching in public-site hooks.** Public pages get data from Server Components as props. TanStack Query hooks exist only in admin (`state-patterns.md`).
+- **No data fetching in public-site hooks.** Public pages get data from Server Components as props. TanStack Query hooks exist in admin, plus the single documented exception (`state-patterns.md`).
 - **Effects are the last resort.** Derive values during render. Use `useEffect` only to sync with something outside React (scroll, `matchMedia`, `dataLayer`), and always return a cleanup.
 - Stable dependencies: list every dependency. Don't silence the hooks lint rule; restructure instead.
 - Event subscriptions use `useSyncExternalStore` (e.g. scroll position, media queries), which avoids tearing and SSR mismatches.

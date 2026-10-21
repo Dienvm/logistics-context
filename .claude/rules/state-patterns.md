@@ -3,6 +3,7 @@ paths:
   - "43logistics.vn/**/*store*.ts"
   - "43logistics.vn/**/stores/**/*.ts"
   - "43logistics.vn/**/*query*.ts"
+  - "43logistics.vn/**/*queries*.ts"
   - "43logistics.vn/app/admin/**/*.tsx"
   - "43logistics.vn/**/*-provider.tsx"
 ---
@@ -18,7 +19,7 @@ Pick the smallest tool that fits. Context: `06-architecture.md` "State managemen
 | Filters/pagination visible in the URL | `searchParams` (shareable, SEO-safe) |
 | Local UI state of one component | `useState` / `useReducer` |
 | UI state shared by distant components (mobile nav, calculator inputs, consent, dismissed banners) | **Zustand** |
-| Async server data in admin screens | **TanStack Query** (admin only) |
+| Async server data in admin screens | **TanStack Query** (admin; see the one exception below) |
 
 ## Zustand
 
@@ -28,9 +29,10 @@ Pick the smallest tool that fits. Context: `06-architecture.md` "State managemen
 - `persist` only for consent and dismissed banners; version the persisted shape, and never persist personal data.
 - SSR-safe: hydrate persisted state on the client only; render a neutral state on the server (no hydration mismatch, no CLS).
 
-## TanStack Query (admin only)
+## TanStack Query (admin, plus one exception)
 
-- `QueryClientProvider` lives only in `app/admin/layout.tsx`. Public pages never ship it.
+- `QueryClientProvider` lives in `app/admin/layout.tsx`.
+- **Only exception** (`AGENTS.md` §3, `06-architecture.md`): the calculator island, **if** it ever needs live data instead of build-time rates. That needs a spec, and its JS cost is measured against the 120 KB budget. No other public page ships TanStack Query.
 - Query keys come from a factory per module: `leadKeys.list(filters)`, `leadKeys.detail(id)`. No inline arrays.
 - Fetchers call `/api/admin/*` route handlers, which call `requireRole`.
 - Mutations go through Server Actions; on success, `invalidateQueries` with the module's key factory.

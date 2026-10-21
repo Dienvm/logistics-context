@@ -79,7 +79,7 @@ Spawn an **Explore subagent** (subagent_type: `Explore`, thoroughness: `medium`)
 >
 > **App scan (paths + grep only — do NOT read file contents unless specified):**
 > 9. Check if ./43logistics.vn/package.json exists. If yes:
->    - List: app/, components/, server/, db/, lib/, hooks/, stores/, messages/, scripts/, tests/ (one level deep, paths only)
+>    - List the actual top-level folders (`ls`), then one level of: app/, modules/, shared/, db/, messages/, scripts/, plus the pre-F-01 template folders components/, lib/, hooks/, types/ if they still exist (paths only). Mark template paths as current and ADR 0005 paths as target
 >    - Grep `<topic keywords>` across **/*.ts and **/*.tsx (exclude node_modules, .next) — report matching file paths and line numbers only
 >    - Report the installed versions of next, react, tailwindcss, drizzle-orm, @clerk/nextjs, posthog-js from package.json
 > 10. AGENTS.md §3 — which 'In the app today' gaps does `<topic>` depend on?
