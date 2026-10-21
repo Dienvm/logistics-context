@@ -2,6 +2,17 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-21 — Compose proxy.ts for gone, legacy, attribution and admin
+
+- Spec: [specs/feature-f06-proxy-composition.md](../specs/feature-f06-proxy-composition.md) · Roadmap: F-06
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/7 (297f784); context: https://github.com/Dienvm/logistics-context/pull/15, https://github.com/Dienvm/logistics-context/pull/16
+- Owner: both
+- Summary: `proxy.ts` runs one pure planner:
+  - 410 for retired WordPress paths;
+  - `/admin` 404 until F-05;
+  - one redirect combining the legacy `?page_id`/`?p` (21 sourced IDs), the locale prefix and the trailing slash, which fixes F-03's `/vi` two-hop;
+  - then next-intl, with `43l_attr` set only under the new `43l_consent` contract (HttpOnly, hostname-only referrer, byte-capped).
+
 ## 2026-10-21 — Add next-intl locale routing with VI root and /en
 
 - Spec: [specs/feature-f03-i18n-routing.md](../specs/feature-f03-i18n-routing.md) · Roadmap: F-03

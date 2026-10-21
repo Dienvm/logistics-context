@@ -1,9 +1,11 @@
 ---
 title: Compose proxy.ts for gone, legacy, attribution and admin
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/f-06-proxy-composition
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/7
+implementation_commit: 297f784511bf927058de22fad29d6a8fe09ee168
+implemented_date: 2026-10-21
 owner_repo: both
 roadmap: F-06
 priority: must-have
