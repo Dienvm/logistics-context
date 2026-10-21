@@ -214,6 +214,7 @@ Check availability first with `command -v codex`; if it's missing, skip the step
 | `pnpm tokens` / `pnpm tokens:check` | exists | Build `app/theme.css` from `43logistics.vn/data/design-tokens.json` / exit 1 if it is out of date |
 | `pnpm i18n:check` | exists | Every `messages/*.json` matches `vi.json` in keys and ICU arguments |
 | `pnpm db:seed` | exists | `tsx scripts/seed.ts`: idempotent, one transaction; routes, rates, settings (unverified), IA pages and menus (draft); requires `DATABASE_URL_DIRECT` |
+| `pnpm perf:report` | exists | Lighthouse 3-run medians per route in `43logistics.vn/data/perf-budget.json`; exits 1 when app JS > baseline + 50 KiB (ADR 0006), unstable, or unmeasurable; CI job summary + `lighthouse-report` artifact |
 | `pnpm check:redirects` | exists | Verify every row of `43logistics.vn/data/redirect-map.csv` against a running server (`--strict` at L-01, `--host-checks` at L-02); runs in the `verify` CI workflow |
 
 Keep this table true. When a task adds or renames a script, update its row in the same change.
@@ -264,6 +265,8 @@ Keep this table true. When a task adds or renames a script, update its row in th
 - [ ] New public page: metadata + canonical + hreflang + JSON-LD validated (Rich Results Test or a schema validator).
 - [ ] No hard-coded business facts; strings in `messages/*` for both VI and EN.
 - [ ] Lighthouse mobile on the changed page: ≥ 90 performance, 100 SEO, ≥ 95 accessibility; recorded LCP/CLS/INP and the app JS delta over the framework baseline (≤ 50 KB gz, ADR 0006) with consent rejected. A budget miss blocks the PR.
+  - CI (F-08) **enforces the JS budget** for every route in `43logistics.vn/data/perf-budget.json`; add new public routes there.
+  - CI also **reports** LCP/CLS/TBT and the scores, which don't block; the manual measurement above stays the binding evidence for them.
 - [ ] Consent matrix (ADR 0004) re-run when the change touches consent, tracking, `proxy.ts` or lead processing.
 - [ ] Context updated in the same change set if a decision or fact changed:
   - roadmap checkbox via `/mark-implemented`;

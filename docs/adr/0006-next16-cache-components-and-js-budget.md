@@ -76,6 +76,7 @@
 - **Performance:**
   - The ceiling for a public route is now about 184 KiB of initial JS (134.3 + 50), up from 120.
   - Mobile experience is guarded by the unchanged LCP/INP/CLS gates. The F-01 placeholder scored Lighthouse performance 99, LCP 2.1 s, CLS 0, TBT 40 ms; INP is unmeasured there (no interactive element).
+- **CI enforcement (F-08):** `pnpm perf:report` in the `verify` workflow measures every route in `43logistics.vn/data/perf-budget.json` with this ADR's method (3 cold mobile runs, consent rejected, requested `Script` `transferSize`). It fails the PR when the median app delta exceeds 50 KiB, when the script request set differs between runs, or when a route can't be measured. LCP/CLS/TBT and the scores are reported only. `perf-budget.json` is the CI copy of the baseline, and an upgrade PR updates it together with this ADR.
 - **Reconsideration trigger:**
   - If a Next/React upgrade raises the baseline by **more than 10 KiB**, that PR needs an explicit owner decision (accept, defer the upgrade, or cut app budget), not just a number update.
   - If any route's LCP or INP target fails twice in a row, revisit the 50 KiB allowance.

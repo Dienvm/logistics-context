@@ -1,7 +1,9 @@
 ---
 title: Add Lighthouse report and JS budget gate to CI
 type: feature
-status: approved
+status: in_implementation
+branch: feat/f-08-ci-lighthouse-budget
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/9
 owner_repo: both
 roadmap: F-08
 priority: must-have
