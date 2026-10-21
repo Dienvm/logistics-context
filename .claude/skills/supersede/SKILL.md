@@ -1,6 +1,6 @@
 ---
 name: supersede
-description: Safely update lifecycle metadata when one doc supersedes another (proposals or ADRs). Updates front matter / status lines, superseded_by chains, docs/context/00-index.md, reports broken references, then has Codex verify and debate the chain. Use when a new proposal or ADR wins over an old one.
+description: Safely update lifecycle metadata when one doc supersedes another (proposals or ADRs). Updates front matter / status lines, superseded_by chains, docs/context/00-index.md, reports broken references. Use when a new proposal or ADR wins over an old one.
 argument-hint: "<old-doc-filename> <winning-doc-filename>"
 ---
 
@@ -15,8 +15,7 @@ Your job:
 1. mark the old doc as superseded;
 2. update the winning doc's status if needed;
 3. fix the navigation in `docs/context/00-index.md`;
-4. check for broken references;
-5. have Codex verify the chain.
+4. check for broken references.
 
 **Context budget:** besides the AGENTS.md §6 state recovery, read ONLY the files listed in each step. Don't load all proposals out of habit.
 
@@ -105,46 +104,4 @@ Report every file that still links to or names the old doc. Don't auto-fix them;
 - Winning doc: <filename> → status: <new status>
 - Index: docs/context/00-index.md updated
 - References to old doc found in: <list or "none">
-```
-
----
-
-## Step 8 — Codex review, verify & debate
-
-**8a — Availability:** run `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found" and stop.
-
-**8b — Round 1, Codex reviews** (read-only; run it in the background and wait for the notification):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-supersede-<old-slug>-r1.md \
-  "Verify the supersession <old-doc> → <winning-doc>. Check: (1) old doc status/superseded_by (or ADR status line) is correct and points to an existing file; (2) winner is not itself superseded/archived and no loop exists; (3) docs/context/00-index.md matches both files' status; (4) does the winner actually cover what the old doc decided, or is anything dropped?; (5) remaining references to the old doc in AGENTS.md, docs, specs, lessons, .claude/skills that would mislead an agent. Do NOT edit files. Return numbered findings: severity, file:line, issue, fix." </dev/null
-```
-
-**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.
-
-**8c — Claude verifies:** check each finding. Write `/tmp/43l-codex-supersede-<old-slug>-verdicts.md`, with one line per finding: `#N accept | partial | reject — <evidence>`.
-
-**8d — Round 2, debate** (only if any verdict is `partial` or `reject`):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-supersede-<old-slug>-r2.md \
-  "Round 2. Your findings: /tmp/43l-codex-supersede-<old-slug>-r1.md. Claude's verdicts: /tmp/43l-codex-supersede-<old-slug>-verdicts.md. For each partial/reject item: concede, or rebut with file:line evidence in ≤3 sentences. Do NOT edit files." </dev/null
-```
-
-Stop after 2 rounds. Items still disputed go to the user.
-
-**8e — Resolve with the user.** Show this table:
-
-```
-| # | Codex finding | Claude verdict | After debate | Proposed edit |
-```
-
-Apply only the edits the user approves. Reference fixes in other docs stay the user's decision (Step 6).
-
-Final line:
-
-```
-Codex debate: N items | agreed N | conceded by Codex N | disputed → user N
 ```

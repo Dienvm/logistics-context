@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Create an Architecture Decision Record in docs/adr/. Gated — requires a real decision with context, chosen option, and consequences; then Codex reviews, verifies and debates it. If you can't answer all three, use /proposal instead.
+description: Create an Architecture Decision Record in docs/adr/. Gated — requires a real decision with context, chosen option, and consequences. If you can't answer all three, use /proposal instead.
 argument-hint: "<decision-title>"
 ---
 
@@ -109,46 +109,4 @@ Match the format of the existing ADRs (`0001`–`0003`):
 - Amends/Supersedes: <ADR or none>
 - Index: docs/context/00-index.md updated
 - Propagated to: <files edited, or "none needed">
-```
-
----
-
-## Step 7 — Codex review, verify & debate
-
-**7a — Availability:** run `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found" and stop.
-
-**7b — Round 1, Codex reviews** (read-only; run it in the background and wait for the notification):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-adr-<NNNN>-r1.md \
-  "Critique docs/adr/<NNNN>-<slug>.md as a skeptical architect. Check: (1) the decision is specific and testable; (2) alternatives are real and fairly rejected; (3) consequences cover performance budget, consent/PDP law, SEO/redirects, i18n, cost/ops where relevant; (4) contradictions with AGENTS.md, other ADRs, docs/context/*, .claude/skills/* — list every file still stating the old decision; (5) claims about the installed app (43logistics.vn/package.json) are true; (6) amended/superseded ADR status lines are updated. Do NOT read .env or wordpress-site/. Do NOT edit files. Return numbered findings: severity, file:line, issue, fix." </dev/null
-```
-
-**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.
-
-**7c — Claude verifies:** check each finding. Write `/tmp/43l-codex-adr-<NNNN>-verdicts.md`, with one line per finding: `#N accept | partial | reject — <evidence>`.
-
-**7d — Round 2, debate** (only if any verdict is `partial` or `reject`):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-adr-<NNNN>-r2.md \
-  "Round 2. Your findings: /tmp/43l-codex-adr-<NNNN>-r1.md. Claude's verdicts: /tmp/43l-codex-adr-<NNNN>-verdicts.md. For each partial/reject item: concede, or rebut with file:line evidence in ≤3 sentences. Do NOT edit files." </dev/null
-```
-
-Stop after 2 rounds. Items still disputed go to the user.
-
-**7e — Resolve with the user.** Show this table:
-
-```
-| # | Codex finding | Claude verdict | After debate | Proposed edit |
-```
-
-Ask (AskUserQuestion; plain text when Codex runs this skill): "Apply which?" with options `All agreed` / `Agreed + disputed` / `Specific numbers` / `None`. Apply the chosen edits to the ADR and the propagated files.
-
-Final line:
-
-```
-Codex debate: N items | agreed N | conceded by Codex N | disputed → user N
 ```

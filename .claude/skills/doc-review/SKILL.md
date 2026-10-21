@@ -1,6 +1,6 @@
 ---
 name: doc-review
-description: Review docs for quality and consistency. Single-file mode gives detailed findings on one proposal, ADR, spec or docs/context file. Audit mode (--audit) scans all current docs for lifecycle risks. Both modes end with a Codex review/verify/debate pass. Use after writing a proposal or before marking a doc as current.
+description: Review docs for quality and consistency. Single-file mode gives detailed findings on one proposal, ADR, spec or docs/context file. Audit mode (--audit) scans all current docs for lifecycle risks. Use after writing a proposal or before marking a doc as current.
 argument-hint: "<filename> | --audit"
 ---
 
@@ -13,7 +13,7 @@ There are two modes, depending on the argument:
 - `$ARGUMENTS` = a filename: **single-doc mode**, a deep review of one doc.
 - `$ARGUMENTS` = `--audit`: **audit mode**, a risk inventory across all current proposals, ADRs and specs. For whole-workspace integrity (docs ↔ app ↔ skills), use `/context-audit`.
 
-**Project mapping (sample → this repo):** `docs/discussions/` → `docs/proposals/` · `docs/v0.2/` → `docs/adr/` · `docs/INDEX.md` → `docs/context/00-index.md` · BLUEPRINT.md / UPDATE-PLAN.md → `AGENTS.md` + ADRs / `10-roadmap.md` · Codex bridge → `codex exec`.
+**Project mapping (sample → this repo):** `docs/discussions/` → `docs/proposals/` · `docs/v0.2/` → `docs/adr/` · `docs/INDEX.md` → `docs/context/00-index.md` · BLUEPRINT.md / UPDATE-PLAN.md → `AGENTS.md` + ADRs / `10-roadmap.md`.
 
 ---
 
@@ -112,52 +112,15 @@ Tell the user one line:
 Review complete → /tmp/43l-doc-review-findings.md  |  Total: N | 🔴 N | 🟡 N | 🟢 N
 ```
 
-Don't apply anything yet. Step 6 runs first, so the user decides on the merged findings.
+Don't apply anything yet; Step 6 asks the user first.
 
-### Step 6 — Codex review, verify & debate
+### Step 6 — Apply
 
-**6a — Availability:** run `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found" and go to 6e with Claude's findings only.
-
-**6b — Round 1, Codex reviews** (read-only; run it in the background and wait for the notification):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-doc-review-<slug>-r1.md \
-  "Read /tmp/43l-doc-review-findings.md and <file>. For each finding, assess: is it correct? Is the suggested fix appropriate? Return a verdict per finding (agree / disagree with reason). Then list important issues that were MISSED (contradictions with AGENTS.md/ADRs, invented or unconfirmed facts, stale paths, missing consequences). Do NOT read .env or wordpress-site/. Do NOT rewrite the doc. Return numbered items: type (verdict-on-#N | missed), severity, location, issue, suggestion." </dev/null
-```
-
-**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or continue with Claude's findings only. Apply the same check after round 2.
-
-**6c — Claude verifies:** check each item. Write `/tmp/43l-codex-doc-review-<slug>-verdicts.md`, with one line per item: `#N accept | partial | reject — <evidence>`.
-
-**6d — Round 2, debate** (only if any verdict is `partial` or `reject`):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-doc-review-<slug>-r2.md \
-  "Round 2. Your items: /tmp/43l-codex-doc-review-<slug>-r1.md. Claude's verdicts: /tmp/43l-codex-doc-review-<slug>-verdicts.md. For each partial/reject item: concede, or rebut with evidence in ≤3 sentences. Do NOT edit files." </dev/null
-```
-
-Stop after 2 rounds.
-
-**6e — Reconcile, then apply.**
-
-1. Rewrite the findings file as a revised, numbered list:
-   - drop Claude findings that the debate disproved;
-   - correct the severity or suggestion of findings that were partially accepted;
-   - add the agreed "missed" items;
-   - mark the disputed items `⚖️`.
-2. Show the revised list, then ask: "Apply any findings? (yes / specific numbers / no)".
-3. Apply with the Edit tool, routing by type:
+1. Ask: "Apply any findings? (yes / specific numbers / no)".
+2. Apply with the Edit tool, routing by type:
    - lifecycle changes (supersession, `implemented`) go through their owning skill (`/supersede`, `/mark-implemented`), never by direct edits;
    - content and metadata fixes are edited directly.
-4. After applying, re-check **each** applied finding against its evidence (not just the front matter), and report: applied N, verified N.
-
-Final line:
-
-```
-Codex debate: N items | agreed N | conceded by Codex N | disputed → user N
-```
+3. After applying, re-check **each** applied finding against its evidence (not just the front matter), and report: applied N, verified N.
 
 ---
 
@@ -208,11 +171,3 @@ Write to `/tmp/43l-doc-audit.md`:
 ```
 
 Don't rewrite any docs in audit mode; output the risks and recommended commands only.
-
-### Step 5 — Codex review, verify & debate
-
-Follow the single-doc Step 6 protocol with these changes:
-
-- Name the files `/tmp/43l-codex-doc-audit-r1.md`, `/tmp/43l-codex-doc-audit-verdicts.md` and `/tmp/43l-codex-doc-audit-r2.md`.
-- Use this round-1 prompt: *"Independently scan front matter/status of docs/proposals, docs/adr, specs and the indexes; then for each row of /tmp/43l-doc-audit.md agree/disagree with evidence and list missed lifecycle risks. Do NOT edit files."*
-- End by merging the agreed items into `/tmp/43l-doc-audit.md`, marking disputed rows `⚖️`, and printing the debate summary line. Make no doc edits.

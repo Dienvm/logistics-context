@@ -1,6 +1,6 @@
 ---
 name: fix-implement
-description: Fix an incorrect 43logistics.vn implementation by comparing it against the original spec, building a discrepancy table, interviewing the user, logging lessons, fixing, then having Codex review, verify and debate the fixes. Use when implementation doesn't match spec, "code sai", "không đúng spec", "làm lại cho đúng", or acceptance criteria are failing.
+description: Fix an incorrect 43logistics.vn implementation by comparing it against the original spec, building a discrepancy table, interviewing the user, logging lessons and fixing. Use when implementation doesn't match spec, "code sai", "không đúng spec", "làm lại cho đúng", or acceptance criteria are failing.
 argument-hint: "<spec-filename-or-slug>"
 ---
 
@@ -12,7 +12,7 @@ You are fixing code that was implemented but doesn't satisfy its spec.
 
 **Context budget:** target spec + `AGENTS.md` (§3–4, §8) + affected source files only.
 
-**Output contract:** discrepancy table → interview → fixes → lesson log → Codex debate record.
+**Output contract:** discrepancy table → interview → fixes → lesson log.
 
 **Never:**
 
@@ -29,7 +29,6 @@ You are fixing code that was implemented but doesn't satisfy its spec.
 | `../foresent-robot`, `../foresent-rules` | `43logistics.vn/` (app) · context workspace (docs/data only) |
 | `yarn test` / `yarn lint` / validator | `$LINT` / `$TYPECHECK` / `$BUILD`, resolved from `43logistics.vn/package.json` (no test suites, ADR 0004) |
 | Fixture YAML case | Manual verification step / seed data |
-| Codex bridge | `codex exec` |
 
 ---
 
@@ -255,60 +254,5 @@ Checks + manual verification: ✅ N/N | ❌ <errors> | not available — <reason
 Lesson file: lessons/<filename>.md (status: open | resolved)
 
 Remaining open: <any skipped rows>
-Next: Step 8 (Codex), then /code-review <spec-slug> to verify all acceptance criteria now pass.
-```
-
----
-
-## Step 8 — Codex review, verify & debate
-
-**8a — Availability:** run `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found" and stop.
-
-**8b — Round 1, Codex reviews** (read-only; run it in the background and wait for the notification):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-fix-implement-<slug>-r1.md \
-  "Verify the correction pass for specs/<file>. Discrepancy table: <paste or path>. APPLIED: fix diff = git $R diff $BASE..$FIX_BRANCH -- . ':(exclude).env*' ':(exclude)**/.env*' plus any uncommitted changes (git $R diff HEAD with the same excludes). BRIEF: review /tmp/43l-fix-brief-<slug>.md only — no diff exists. For each discrepancy row: fixed correctly / incomplete / regressed / not attempted, with file:line. Check that each Critical/High row has a recorded before/after manual verification (no regression tests, ADR 0004). List any new discrepancy against the spec or AGENTS.md §4. Check lesson categories in lessons/<file> are accurate. Never print .env* contents. Do NOT edit files. Return numbered items: severity, file:line, issue, fix." </dev/null
-```
-
-**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.
-
-**8c — Claude verifies:** check each item against the code and the recorded before/after manual evidence. Write `/tmp/43l-codex-fix-implement-<slug>-verdicts.md`, with one line per item: `#N accept | partial | reject — <evidence>`.
-
-**8d — Round 2, debate** (only if any verdict is `partial` or `reject`):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-fix-implement-<slug>-r2.md \
-  "Round 2. Your items: /tmp/43l-codex-fix-implement-<slug>-r1.md. Claude's verdicts: /tmp/43l-codex-fix-implement-<slug>-verdicts.md. For each partial/reject item: concede, or rebut with file:line evidence in ≤3 sentences. Do NOT edit files." </dev/null
-```
-
-Stop after 2 rounds. Items still disputed go to the user.
-
-**8e — Resolve with the user.** Show this table:
-
-```
-| # | Codex item | Claude verdict | After debate | Action |
-```
-
-Ask (AskUserQuestion): "Act on which?" with options `All agreed` / `Agreed + disputed` / `Specific numbers` / `None`.
-
-- **APPLIED mode:** add the accepted items as new discrepancy rows and fix them with Step 5a. Update the lesson (rows, categories, `status`) and its INDEX row.
-- **BRIEF mode:** update only the brief.
-
-**8f — Final fix check** (APPLIED mode, only if 8e led to fixes): capture `BASE2` before those fixes, then run one more read-only pass:
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-fix-implement-<slug>-fixcheck.md \
-  "Verify only the fixes made after the debate: git $R diff $BASE2..$FIX_BRANCH -- . ':(exclude).env*' ':(exclude)**/.env*'. For each: correct / incomplete / regressed, with file:line. Do NOT edit files." </dev/null
-```
-
-Report its result. Anything incomplete or regressed goes back to the user; don't start an extra debate round.
-
-Final line:
-
-```
-Codex debate: N items | agreed N | conceded by Codex N | disputed → user N
+Next: /code-review <spec-slug> to verify all acceptance criteria now pass.
 ```
