@@ -1,6 +1,6 @@
 # ADR 0003 — Context workspace + app repo, with a spec/lesson workflow
 
-- Status: Accepted (2026-10-20) · Amended by ADR 0004 (2026-10-21): code-only delivery (no test-first / regression tests), open questions don't block tasks
+- Status: Accepted (2026-10-20) · Amended by ADR 0004 (2026-10-21): code-only delivery (no test-first / regression tests), open questions don't block tasks · Amended 2026-10-21: Codex debate only in `/feature-bug`, `/implement`, `/proposal`, `/code-review` (Decision 6)
 - Context: The project is split into a context workspace (this folder: AGENTS.md, `docs/`, `data/`, agent skills) and the app repo `43logistics.vn/` (`github.com/Dienvm/43logistics.vn`, declared as a submodule in `.gitmodules`). The agent skills in `.claude/skills` were copied from another project's context repo (Unicity "Foresent robot"). They referenced files, repos and scripts that don't exist here: `docs/v0.2/BLUEPRINT.md`, `foresent-rules`/`foresent-robot`, `yarn`, a Telegram notifier, a submodule preflight script and a tmux Claude↔Codex bridge. Agents following them would stall or invent paths.
 
 ## Decisions
@@ -29,7 +29,7 @@
 5. **The Codex second opinion uses the `codex` CLI** (`codex exec -s read-only …`), not a tmux bridge. Codex reads the same skills through the `.agents/skills → .claude/skills` symlink and the same rules through `AGENTS.md`.
 6. **Skills follow the sample structure in `refer-docs/skills/`** (same steps, numbering, templates and report formats, with project substitutions), amended 2026-10-20 at the owner's request:
    - The notification step stays at its sample position, but runs only if `scripts/notify-telegram.sh` exists. Otherwise the agent reports the PR or spec link.
-   - Every skill ends with a **Codex review → Claude verify → Codex debate** step (at most 2 rounds), with disputed items decided by the user.
+   - `/feature-bug`, `/implement`, `/proposal` and `/code-review` end with a **Codex review → Claude verify → Codex debate** step (at most 2 rounds), with disputed items decided by the user. Amended 2026-10-21 at the owner's request: the other skills (`/adr`, `/doc-review`, `/supersede`, `/context-audit`, `/fix-implement`, `/lesson`, `/mark-implemented`) and plain prompts no longer run Codex, because the loop took too long for low-risk metadata and review steps.
 7. **AGENTS.md is canonical; CLAUDE.md imports it** (`@AGENTS.md`). This is the reverse of the source project, because Codex, Cursor and Copilot read AGENTS.md natively.
 
 ## Alternatives considered

@@ -1,6 +1,6 @@
 ---
 name: lesson
-description: Record a lesson learned that changes future process, rules, docs or skills. Triggered manually OR auto-drafted by /implement, /code-review, /fix-implement on failure. Requires a concrete follow-up action; Codex reviews, verifies and debates the lesson before it is final.
+description: Record a lesson learned that changes future process, rules, docs or skills. Triggered manually OR auto-drafted by /implement, /code-review, /fix-implement on failure. Requires a concrete follow-up action.
 argument-hint: "<short-slug>"
 ---
 
@@ -14,7 +14,7 @@ If there is no follow-up action, append a note to the related spec or to `/tmp/4
 
 **Context budget:** the user's description, OR `/tmp/43l-lesson-draft-<slug>.md` if it was auto-generated, plus the related spec (if any) and the `lessons/INDEX.md` table.
 
-**Output contract:** `lessons/YYYY-MM-DD-<slug>.md` + a `lessons/INDEX.md` row + a Codex debate record. Alternatively, a redirect to a spec annotation.
+**Output contract:** `lessons/YYYY-MM-DD-<slug>.md` + a `lessons/INDEX.md` row. Alternatively, a redirect to a spec annotation.
 
 **Project mapping (sample → this repo):** follow-up targets are `AGENTS.md`, `docs/context/*`, `docs/adr/*`, `.claude/skills/*`, app tests, and `docs/context/11-open-questions.md` (Q-IDs). There is no rule-bundle repo.
 
@@ -117,46 +117,4 @@ If `related_spec` is not N/A, read that spec file and add a line to its **Relate
 - Linked to spec: <spec or N/A>
 
 Next: complete the follow-up action, then set status: resolved in the lesson file and its INDEX row.
-```
-
----
-
-## Step 5 — Codex review, verify & debate
-
-**5a — Availability:** run `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found" and stop.
-
-**5b — Round 1, Codex reviews** (read-only; run it in the background and wait for the notification):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-lesson-<slug>-r1.md \
-  "Review lessons/<filename>.md. Check: (1) the root cause is supported by the evidence (spec, findings, diff) — not a guess; (2) the follow-up action is concrete, targets a real file/skill/process, and would actually prevent recurrence; (3) categories match the lessons/INDEX.md vocabulary; (4) an existing lesson or AGENTS.md rule already covers this (duplicate?); (5) the related spec link is correct. Do NOT edit files. Return numbered findings: severity, location, issue, fix." </dev/null
-```
-
-**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.
-
-**5c — Claude verifies:** check each finding. Write `/tmp/43l-codex-lesson-<slug>-verdicts.md`, with one line per finding: `#N accept | partial | reject — <evidence>`.
-
-**5d — Round 2, debate** (only if any verdict is `partial` or `reject`):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-lesson-<slug>-r2.md \
-  "Round 2. Your findings: /tmp/43l-codex-lesson-<slug>-r1.md. Claude's verdicts: /tmp/43l-codex-lesson-<slug>-verdicts.md. For each partial/reject item: concede, or rebut with evidence in ≤3 sentences. Do NOT edit files." </dev/null
-```
-
-Stop after 2 rounds. Items still disputed go to the user.
-
-**5e — Resolve with the user.** Show this table:
-
-```
-| # | Codex finding | Claude verdict | After debate | Proposed edit |
-```
-
-Apply only the edits the user approves, to the lesson file, its INDEX row and the related spec's backlink. If `related_spec` changes or two lessons are merged, update or remove the old spec backlink too. Afterwards, check that every backlink points to an existing lesson file. If Codex shows it's a duplicate of an existing lesson, offer to merge the two instead of keeping both.
-
-Final line:
-
-```
-Codex debate: N items | agreed N | conceded by Codex N | disputed → user N
 ```

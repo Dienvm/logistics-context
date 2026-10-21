@@ -182,11 +182,11 @@ repo health → /context-audit · /doc-review --audit
 - **State recovery:** do the §6 state recovery before the skill's own context budget. A skill's "read only…" limits apply on top of it.
 - **Placeholders:** every `<placeholder>` in a skill's commands must be substituted with a validated value and passed as a quoted variable. Example: `SLUG='consent-banner'; OUT="/tmp/43l-codex-proposal-$SLUG-r1.md"`. Never run a command that still contains `<` or `>`.
 - **Long runs:** Claude Code uses the Bash tool's background mode (`run_in_background`) and waits for the completion notification. Codex, and any other agent without background tasks, runs the same command synchronously.
-- **Codex review step:** every skill ends with Codex review → Claude verify → Codex debate (at most 2 rounds), as ADR 0003 §6 requires. A missing CLI, a non-zero exit, or a missing or stale output file is reported, never silently skipped.
+- **Codex review step (only `/feature-bug`, `/implement`, `/proposal`, `/code-review`):** these four skills end with Codex review → Claude verify → Codex debate (at most 2 rounds), as ADR 0003 §6 requires (amended 2026-10-21). A missing CLI, a non-zero exit, or a missing or stale output file is reported, never silently skipped. Every other skill, and every plain question or prompt, is handled by Claude alone with no Codex pass (owner decision 2026-10-21: the review loop was too slow for low-risk steps).
 
 ### Second opinion from Codex
 
-Skills that ask for a critique run Codex non-interactively and read-only:
+Those four skills run Codex non-interactively and read-only:
 
 ```bash
 codex exec -s read-only --skip-git-repo-check -C "$PWD" -o /tmp/43l-codex-<topic>.md "<prompt>"

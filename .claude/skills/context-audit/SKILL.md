@@ -1,6 +1,6 @@
 ---
 name: context-audit
-description: Repository memory integrity check for the 43logistics.vn workspace. Finds contradictions between AGENTS.md, ADRs, docs/context, data, skills, specs and the actual app code; broken supersession chains; duplicate current docs; missing index pointers; stale references. Outputs a risk inventory with recommended commands, cross-checked and debated with Codex — does not rewrite docs.
+description: Repository memory integrity check for the 43logistics.vn workspace. Finds contradictions between AGENTS.md, ADRs, docs/context, data, skills, specs and the actual app code; broken supersession chains; duplicate current docs; missing index pointers; stale references. Outputs a risk inventory with recommended commands — does not rewrite docs.
 ---
 
 # Context Audit — Repository Memory Integrity
@@ -11,7 +11,7 @@ You are checking whether this workspace's docs, as a whole, give consistent and 
 
 This is different from `/doc-review`. You are not checking one doc's quality; you are checking whether **the workspace as a memory system contradicts itself, or contradicts the app it describes**.
 
-**Output:** a risk inventory with recommended commands, plus a Codex debate record. Do NOT rewrite any docs.
+**Output:** a risk inventory with recommended commands. Do NOT rewrite any docs.
 
 **Project mapping (sample → this repo):**
 
@@ -172,41 +172,3 @@ Severity guide:
 - 🔴 **High:** an agent or team member reading the workspace would get conflicting signals, false stack claims or broken references; or a secret or personal data is exposed.
 - 🟡 **Medium:** a gap or inconsistency that could confuse but doesn't directly contradict.
 - 🟢 **Low:** housekeeping, no immediate impact on guidance.
-
----
-
-## Step 5 — Codex review, verify & debate
-
-Codex audits independently. Then the two inventories are reconciled.
-
-**5a — Availability:** run `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found" and stop.
-
-**5b — Round 1, Codex audits** (read-only; run it in the background and wait for the notification):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-context-audit-r1.md \
-  "Independently audit this workspace as an AI-agent memory system: AGENTS.md, CLAUDE.md, docs/adr, docs/proposals, docs/context, specs, lessons, data, .claude/skills, and 43logistics.vn/package.json + config files. Then compare with Claude's inventory at /tmp/43l-context-audit.md: for each Claude row agree/disagree (with evidence, and severity change if any), and list risks Claude MISSED. Path-only checks for secrets — never print .env* or wordpress-site/ contents. Do NOT edit files. Return numbered items: type (verdict-on-#N | missed), severity, file:line, issue, recommended command." </dev/null
-```
-
-**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.
-
-**5c — Claude verifies:** check each item. Write `/tmp/43l-codex-context-audit-verdicts.md`, with one line per item: `#N accept | partial | reject — <evidence>`.
-
-**5d — Round 2, debate** (only if any verdict is `partial` or `reject`):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-context-audit-r2.md \
-  "Round 2. Your items: /tmp/43l-codex-context-audit-r1.md. Claude's verdicts: /tmp/43l-codex-context-audit-verdicts.md. For each partial/reject item: concede, or rebut with file:line evidence in ≤3 sentences. Do NOT edit files." </dev/null
-```
-
-Stop after 2 rounds.
-
-**5e — Merge.** Add the accepted "missed" items to `/tmp/43l-context-audit.md`, and adjust severities that were agreed. Mark disputed rows `⚖️ disputed` for the user to decide. Show the final inventory with this line:
-
-```
-Codex debate: N items | agreed N | conceded by Codex N | disputed → user N
-```
-
-Still no doc edits: the user runs the recommended commands.

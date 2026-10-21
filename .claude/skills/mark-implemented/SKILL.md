@@ -1,6 +1,6 @@
 ---
 name: mark-implemented
-description: Mark a spec as implemented after verifying evidence. Requires a merged app PR link, passing checks, and a changelog decision; ticks the roadmap task and updates AGENTS.md rows the work closed; Codex independently verifies the evidence and debates before anything is pushed. The only skill that updates spec status to implemented.
+description: Mark a spec as implemented after verifying evidence. Requires a merged app PR link, passing checks, and a changelog decision; ticks the roadmap task and updates AGENTS.md rows the work closed. The only skill that updates spec status to implemented.
 argument-hint: "<spec-slug> <pr-link>"
 ---
 
@@ -18,7 +18,7 @@ Other skills (implement, code-review) may recommend running it. They never run i
 - the spec's row in `10-roadmap.md`
 - `AGENTS.md` §3 and §7
 
-**Output contract:** updated spec front matter + roadmap tick + index + optional changelog entry + Codex verification record + a commit (pushed only after Step 7 passes).
+**Output contract:** updated spec front matter + roadmap tick + index + optional changelog entry + a commit, pushed in Step 7.
 
 **Project mapping (sample → this repo):** "master" → `main` · release/publish (S3/current.json) → deploy to preview/production (Vercel, Q-15) · cross-repo digest → `docs/CHANGELOG.md` · ADR-001 submodule rule → bump the `43logistics.vn` submodule pointer in its own commit, never in this one.
 
@@ -146,7 +146,7 @@ git commit -m "spec(<slug>): mark implemented (<owner repo> PR <ref>)"
 MI_COMMIT=$(git rev-parse HEAD)                                # record that THIS run created this commit
 ```
 
-**Don't push yet:** the push happens at the end of Step 7, after Codex has verified the evidence.
+The push happens in Step 7, after the Step 6 report.
 
 Stage only the touched doc files. Never use `git add -A`, and never include a submodule pointer bump (that goes in a separate commit). If the workspace isn't a git repo, say "Commit skipped: context workspace is not a git repo (ADR 0003)".
 
@@ -169,59 +169,14 @@ Stage only the touched doc files. Never use `git add -A`, and never include a su
 
 ---
 
-## Step 7 — Codex review, verify & debate
+## Step 7 — Push
 
-Codex independently re-checks the evidence before the change is pushed.
+Do this only if the context workspace has a remote (`git remote get-url origin`):
 
-**7a — Availability:** run `command -v codex`. If it's missing, report "Codex review skipped: codex CLI not found", ask the user whether to push anyway, and go to 7f.
-
-**7b — Round 1, Codex verifies** (read-only; run it in the background and wait for the notification):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-mark-implemented-<slug>-r1.md \
-  "Independently verify that specs/<file> may be marked implemented. Run: gh pr view <link> --json state,mergedAt,baseRefName,mergeCommit and gh pr checks <link>. Check: (1) PR merged into main and the recorded SHA matches; (2) checks passed (or the waiver is justified); (3) every acceptance criterion in the spec is evidenced by the merged diff, the required checks and the recorded manual verification results (no test suites, ADR 0004) — list any that are not; (4) roadmap row, specs/INDEX.md, AGENTS.md §3/§7 edits (git show HEAD) are correct and match 43logistics.vn/package.json; (5) the commit touches only these metadata files. Never print .env* contents. Do NOT edit files. Return numbered findings: severity, file:line, issue, fix." </dev/null
-```
-
-**Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry, or to push without it. Apply the same check after round 2.
-
-**7c — Claude verifies:** check each finding. Write `/tmp/43l-codex-mark-implemented-<slug>-verdicts.md`, with one line per finding: `#N accept | partial | reject — <evidence>`.
-
-**7d — Round 2, debate** (only if any verdict is `partial` or `reject`):
-
-```bash
-codex exec -s read-only --skip-git-repo-check -C "$PWD" \
-  -o /tmp/43l-codex-mark-implemented-<slug>-r2.md \
-  "Round 2. Your findings: /tmp/43l-codex-mark-implemented-<slug>-r1.md. Claude's verdicts: /tmp/43l-codex-mark-implemented-<slug>-verdicts.md. For each partial/reject item: concede, or rebut with evidence in ≤3 sentences. Do NOT edit files." </dev/null
-```
-
-Stop after 2 rounds. Items still disputed go to the user.
-
-**7e — Resolve with the user.** Show this table:
-
-```
-| # | Codex finding | Claude verdict | After debate | Action |
-```
-
-Ask the user (AskUserQuestion) which items to act on. Nothing is corrected, rolled back or pushed without that answer.
-
-- **User accepts that an AC isn't met, or that the PR isn't merged:**
-  1. Only if this run created the commit (`MI_COMMIT` is set and `git rev-parse HEAD` equals it), run `git revert --no-edit "$MI_COMMIT"`. This is safe and keeps the history and your pre-existing edits intact.
-  2. If no commit was made, undo only this run's edits to the files it touched; leave the user's earlier hunks alone.
-  3. Stop and recommend `/fix-implement <slug>`.
-- **User accepts metadata corrections:** amend `MI_COMMIT` (`git commit --amend`; it hasn't been pushed).
-- **Any blocking item still unresolved or disputed:** don't push.
-
-**7f — Push.** Do this only if the context workspace has a remote (`git remote get-url origin`):
-
-1. Run `git fetch origin`. Confirm that `git rev-parse HEAD~1` equals `git rev-parse origin/main`, so this is the only unpushed commit. If it isn't, stop and list `git log --oneline origin/main..HEAD`. Earlier commits (for example a submodule-pointer bump) must be pushed first, through their own PR or with the user's OK. Then re-run 7f.
+1. Run `git fetch origin`. Confirm that `git rev-parse HEAD~1` equals `git rev-parse origin/main`, so this is the only unpushed commit. If it isn't, stop and list `git log --oneline origin/main..HEAD`. Earlier commits (for example a submodule-pointer bump) must be pushed first, through their own PR or with the user's OK. Then re-run this step.
 2. Run `git push origin HEAD:main`.
 3. If the push is rejected (branch protection), push a branch and open a PR instead.
 
 If there's no remote, report "Push skipped: no remote (ADR 0003)".
 
-Final line:
-
-```
-Codex debate: N items | agreed N | conceded by Codex N | disputed → user N · Push: <done | skipped — reason>
-```
+If the evidence turns out wrong after the commit (an AC not met, PR not merged) and it hasn't been pushed, revert only this run's commit (`git revert --no-edit "$MI_COMMIT"`, only if `git rev-parse HEAD` equals it) and recommend `/fix-implement <slug>`.
