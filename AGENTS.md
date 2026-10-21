@@ -41,16 +41,16 @@ The **Target** column is what new code is written for. The **In the app today** 
 
 | Layer | Target | In the app today | Closed by |
 | --- | --- | --- | --- |
-| Framework | **Next.js 16** (App Router, Turbopack), `proxy.ts`, `cacheComponents: true`, async `params`/`searchParams`/`cookies()`/`headers()` | `next ^15.3.3`, `middleware.ts`, `next.config.mjs` | F-01 |
+| Framework | **Next.js 16** (App Router, Turbopack), `proxy.ts`, `cacheComponents: true`, async `params`/`searchParams`/`cookies()`/`headers()` | `next ^15.3.3`, `next.config.mjs`; no middleware (template `middleware.ts` removed in F-00; `proxy.ts` comes in F-01/F-06) | F-01 |
 | UI runtime | **React 19.2**: Server Components by default, `"use client"` only for interactivity | `react ^19.1` | F-01 |
 | Components | **shadcn/ui** (Radix) in `components/ui`, restyled only via tokens | ~50 default-style shadcn components, mostly unused | F-02 |
 | Styling | **Tailwind CSS v4**, `@theme` generated into `app/theme.css` from `data/design-tokens.json` | Tailwind 3.4 + `tailwind.config.ts` + `tailwindcss-animate` | F-02 |
 | Motion | CSS first. **`motion`** (Framer Motion) only inside client islands via `LazyMotion` + `m` | `framer-motion ^11` | F-02 |
-| Mutations | **Server Actions** + Zod, returning `ActionState<T>` (`types/server-action-types.ts`, extended with `fieldErrors`) | `actions/db/*` demo actions | F-01 |
-| Database | **Supabase Postgres via Drizzle, server only** (`db/client.ts` with `server-only`) | `drizzle-orm 0.33`, `db/db.ts`, todo/profile schema | F-04 |
+| Mutations | **Server Actions** + Zod, returning `ActionState<T>` (`types/server-action-types.ts`, extended with `fieldErrors`) | none (template `actions/db/*` removed in F-00); `ActionState<T>` exists without `fieldErrors` | F-01 |
+| Database | **Supabase Postgres via Drizzle, server only** (`db/client.ts` with `server-only`) | `drizzle-orm 0.33`, `db/db.ts` with an empty schema (template todo/profile schema removed in F-00; old migration files remain) | F-04 |
 | Files | **Supabase Storage** buckets `media` (public), `og` (public), `private` (signed URLs) | — | A-04 |
-| Auth | **Clerk, staff only** (admin/editor/sales). `ClerkProvider` only in `/admin`; no public sign-up | Global `ClerkProvider`, public `/signup`, `/todo` protected | F-00, F-05 |
-| Product analytics | **PostHog**, loaded only after analytics consent, proxied via `/ingest`, anonymous visitors never identified | `posthog-js` initialised on module load (before consent) | F-00, S-13 |
+| Auth | **Clerk, staff only** (admin/editor/sales). `ClerkProvider` only in `/admin`; no public sign-up | `@clerk/*` installed but unused: global `ClerkProvider`, public `/login`/`/signup`, `/todo` and `middleware.ts` removed in F-00 | F-05 (F-00 done) |
+| Product analytics | **PostHog**, loaded only after analytics consent, proxied via `/ingest`, anonymous visitors never identified | `posthog-js` installed but not loaded (init-on-load provider removed in F-00) | S-13 (F-00 done) |
 | Ads & conversions | **GTM** (Consent Mode v2, basic) carrying only the ad platforms confirmed in Q-13, plus their server-side APIs | — | S-13, T-01 |
 | Client state | **Zustand** for UI state only (mobile nav, calculator inputs, consent, banners) | — | S-01, S-07 |
 | Client server-state | **TanStack Query**, only in admin screens (and the calculator if it ever needs live data) | — | A-01 |
@@ -58,7 +58,7 @@ The **Target** column is what new code is written for. The **In the app today** 
 | Validation | **Zod**, schemas shared by Server Actions and forms | `zod ^3` | — |
 | Lint/format | **Biome 2** (`biome check`, `next`/`react` domains) + `tsc --noEmit`; narrow ESLint only for Next rules Biome lacks | Biome 1.9 + an unused Prettier config | F-01 |
 | Tests | **None in the initial build phase** (ADR 0004): verification = lint + typecheck + build + `check:redirects` + manual checks (§9). Code stays testable (pure functions) | none | — (ADR 0004) |
-| Package manager | **pnpm**, Node ≥ 20.9 | `pnpm-lock.yaml`, but the husky hook calls `npm` | F-00 |
+| Package manager | **pnpm**, Node ≥ 20.9 | pnpm (`pnpm-lock.yaml`, `pnpm-workspace.yaml` `allowBuilds` for pnpm 11); husky pre-commit uses pnpm + `biome check --staged` + gitleaks | done (F-00) |
 | Hosting | Vercel (assumed, Q-15). Supabase in `ap-southeast-1` | — | L-02 |
 
 AI tooling: Cursor, Claude Code and Codex read this file; an agent that opens only the app finds `43logistics.vn/AGENTS.md`. **V0** output is a draft: give it only tokens and non-sensitive copy, review any dependency it adds, replace its placeholder or fabricated copy with `messages/*` keys or DB data, map colours, radii and spacing to tokens, and land it through a normal spec/PR. **Perplexity** research is never a source for business facts (rule 1).

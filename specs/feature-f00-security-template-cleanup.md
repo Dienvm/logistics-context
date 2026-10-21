@@ -1,9 +1,11 @@
 ---
 title: Untrack secrets and strip the demo template
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/f-00-security-template-cleanup
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/1
+implementation_commit: afff9ab68a010c4c2c9bed4709d0d928aace837e
+implemented_date: 2026-10-21
 owner_repo: app
 roadmap: F-00
 priority: critical
