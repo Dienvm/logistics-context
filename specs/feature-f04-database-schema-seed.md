@@ -1,7 +1,7 @@
 ---
 title: Create the Supabase schema, migrations and seed
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: F-04
 priority: must-have
@@ -64,7 +64,16 @@ Nothing is published by the seed. Public pages keep showing placeholders until o
   - `settings` (`site_settings`), `seo` (`redirects`), `auth` (`profiles`, the staff version from `07`, not the template's).
 
   Each lives in `modules/<module>/infrastructure/schema.ts`. Shared enums live in `db/enums.ts`. `db/schema.ts` re-exports everything and composes `relations()` in one place.
-- [ ] Given the schema import graph, then there is **no cycle** between module schema files (`pnpm check:boundaries` passes and reports no cycle). To keep the graph acyclic, the page↔route link is owned by `content`: **`pages.route_id → routes.id`** replaces `07`'s `routes.page_id`, matching the runtime direction `content → routes`. `07` is updated accordingly.
+- [ ] Given the module schema files, then their **import graph is acyclic** (`pnpm check:boundaries` passes and reports no cycle). Under `module-structure.md`'s schema exception, a schema file may import other modules' tables. The runtime-direction rules apply only to non-schema code.
+  - The planned schema graph:
+    - `auth`, `media`, `settings`, `seo` and `routes` import nothing but `db/enums.ts`;
+    - `pricing` → `routes`;
+    - `goods` → `routes`, `auth`;
+    - `content` → `routes`, `media`, `auth`;
+    - `leads` → `routes`, `auth`;
+    - `contact` → `routes`.
+  - The one cycle `07` would create (`routes.page_id` ↔ `faqs/pages` → `routes`) is removed by making `content` own the link: **`pages.route_id → routes.id`** replaces `routes.page_id`. `07` is updated accordingly.
+- [ ] Given `menu_items`, then it has `key text not null` with **`unique(menu, key)`** (a stable seed and editor key such as `header.outbound`). `07` is updated. A duplicate `(menu, key)` insert is rejected by the database.
 - [ ] Given `site_settings`, then it has `is_verified boolean not null default false` (owner decision 3), and `07` documents it. The settings query (a later task) publishes only verified keys.
 - [ ] Given every table, then RLS is enabled (Drizzle's current RLS API for the installed version, e.g. `pgTable.withRLS` or `.enableRLS()`, checked in the installed docs and types). No policies are created for `anon` or `authenticated`.
 - [ ] Given schema files, then they import no `server-only` and no env, so `drizzle-kit` and the seed load them in plain Node (`module-structure.md`).
@@ -75,19 +84,66 @@ Nothing is published by the seed. Public pages keep showing placeholders until o
 
 **Seed (`pnpm db:seed`, `tsx scripts/seed.ts`)**
 
-- [ ] Given `pnpm db:seed`, then it reads `data/seed/routes.legacy.json`, `data/seed/site-settings.legacy.json` and the new `data/seed/pages.json` + `data/seed/menus.json`, validates every file with **Zod** before writing (a malformed file aborts with the file and path of the problem, and writes nothing), and runs in **one transaction**. It connects with `DATABASE_URL_DIRECT` (falling back to `DATABASE_URL`) through its own `postgres` client, never `@/db/client`, because that file is `server-only`.
+- [ ] Given `pnpm db:seed`, then it reads `data/seed/routes.legacy.json`, `data/seed/site-settings.legacy.json` and the new `data/seed/pages.json` + `data/seed/menus.json`. It reads them from `SEED_DATA_DIR` when that env var is set, otherwise from `data/seed/`.
+  - It validates every file with **Zod**, including cross-file references (`routeKey`, `pageKey`), before writing. A malformed file exits 1 naming the file and path, and writes nothing.
+  - It runs everything in **one transaction**. If any write fails, everything rolls back, and it exits 1.
+  - It connects with **`DATABASE_URL_DIRECT` only** (session pooler or direct; it exits 1 with a clear message if unset) through its own `postgres` client, never `@/db/client`, because that file is `server-only`.
+- [ ] Given `drizzle.config.ts`, then `db:generate`/`db:migrate` **require `DATABASE_URL_DIRECT`** (the `DATABASE_URL` fallback is removed, because migrations can't run through the transaction pooler).
 - [ ] Given a fresh migrated database, then after the seed:
   - **routes:** `routes` = **10** rows (**8** `is_active = true`; `my-vn` and `th-vn` inactive), **all `is_verified = false`**; `route_translations` = 20 (VI + EN per route); `route_rates` = the number of rate bands in the JSON, each satisfying `route_rates_price_ck`;
   - **settings:** `site_settings` = one row per legacy key (`company`, `contact`, `offices`, `hours`, `social`, `tracking`, `offers`, `pricingRules`), **all `is_verified = false`**;
-  - **pages:** one row per IA page from `03`'s sitemap, all `status = 'draft'`, with VI + EN `page_translations` (slugs as listed in `03`; `''` for home). Route pages are linked to their route through `pages.route_id`. The P2 `/tra-cuu/` and `/lp/*` aren't seeded;
-  - **menus:** `menu_items` for `header`, `footer-services` and `footer-policies` with VI + EN labels, pointing at pages or routes (no external URLs).
-- [ ] Given the seed runs a **second time**, then every row count is unchanged and no duplicate keys appear (idempotent upserts by natural key: `routes.key`, `pages.key`, `site_settings.key`, `(menu, key)` for menu items, `(route, method, weight_min_kg)` for rates). Editor changes to `is_verified`, `status` and translations are preserved on re-run (the seed doesn't overwrite them). Rates for a route are replaced only while that route is still `is_verified = false`.
+  - **pages:** exactly the **20 pages** of the manifest below, all `status = 'draft'`, with **40** `page_translations` (VI + EN). Route pages are linked through `pages.route_id`;
+  - **menus:** exactly the menu items of the manifest below, with VI + EN labels (no external URLs).
+
+  **Page manifest** (`data/seed/pages.json`; slugs from `03`, titles = the `03` sitemap names, EN from `12-glossary.md`; `title` and `h1` are both seeded with the name, and editors rewrite them):
+
+  | key | type | route | VI slug | EN slug |
+  | --- | --- | --- | --- | --- |
+  | `home` | home | — | `''` | `''` |
+  | `hub-outbound` | hub | — | `dich-vu` | `services` |
+  | `route-sg`, `route-my`, `route-kr`, `route-tw`, `route-jp`, `route-th`, `route-us` | route_outbound | sg … us | `gui-hang-di-<country>` | `shipping-to-<country>` (as in `03`) |
+  | `hub-inbound` | hub | — | `nhap-hang` | `ship-to-vietnam` |
+  | `route-sg-vn`, `route-my-vn`, `route-th-vn` | route_inbound | sg-vn, my-vn, th-vn | `gui-hang-tu-<country>-ve-viet-nam` | `<country>-to-vietnam-shipping` (the two unconfirmed routes stay draft and inactive, Q-05) |
+  | `calculator` | calculator | — | `tinh-cuoc` | `shipping-calculator` |
+  | `goods` | goods | — | `hang-cam-gui` | `prohibited-items` |
+  | `blog` | hub | — | `kinh-nghiem` | `guides` |
+  | `about` | about | — | `gioi-thieu` | `about` |
+  | `contact` | contact | — | `lien-he` | `contact` |
+  | `policy-shipping-terms`, `policy-claims`, `policy-privacy`, `policy-terms` | policy | — | `quy-dinh-gui-nhan-hang`, `chinh-sach-den-bu`, `chinh-sach-bao-mat`, `dieu-khoan-dich-vu` | `shipping-terms`, `claims-policy`, `privacy-policy`, `terms` |
+
+  Not seeded: blog posts (C-tasks), `/lp/*` (campaign-specific), `/tra-cuu/` (P2, Q-18), `/go/*` (a route handler, not a page). `03`'s footer mentions "policies (5)" but lists four policy URLs. The seed creates the four listed; a fifth is added only if the owner names it.
+
+  **Menu manifest** (`data/seed/menus.json`; labels from `03` Navigation, EN from `12-glossary.md`):
+  - `header`:
+    - `header.outbound` "Gửi hàng đi" / "International shipping" → `hub-outbound`, with 7 children `header.outbound.<sg…us>` → the routes;
+    - `header.inbound` "Nhận hàng về VN" / "Shipping to Vietnam" → `hub-inbound`;
+    - `header.calculator` "Tính cước" / "Shipping calculator" → `calculator`;
+    - `header.blog` "Kinh nghiệm" / "Shipping guides" → `blog`;
+    - `header.company` "Về chúng tôi" / "About us", with children `about`, `contact` and a policies link → `policy-shipping-terms`.
+
+    **15 items.**
+  - `footer-services`: the 7 outbound routes plus `sg-vn`. **8 items.**
+  - `footer-policies`: the 4 policy pages. **4 items.**
+
+  **Total: 27 `menu_items`, 54 `menu_item_translations`.**
+- [ ] Given the seed runs a **second time**, then every row count is unchanged and no duplicate keys appear. **Column ownership on re-run:**
+
+  | Table | New row | Existing row |
+  | --- | --- | --- |
+  | `routes` (by `key`) | insert | facts updated **only `where is_verified = false`**; a verified route is not touched at all |
+  | `route_rates` | inserted with their route | an unverified route's bands are **replaced** (delete + insert in the transaction); a verified route's bands are not touched. No upsert key is needed |
+  | `site_settings` (by `key`) | insert | `value` updated **only `where is_verified = false`** |
+  | `route_translations`, `page_translations`, `menu_item_translations` | insert | **never updated** (`on conflict do nothing`) |
+  | `pages` (by `key`), `menu_items` (by `menu, key`) | insert | **never updated** (`status`, sort, links stay editor-owned) |
 - [ ] Given the seeded data, then no value was invented: every route, rate and setting value comes from the legacy JSON, and page and menu labels come from `03`. `data/seed/pages.json` and `menus.json` hold structure and labels only, with no prices, phones or addresses.
 
 **Database security (Supabase)**
 
-- [ ] Given the cloud project, then a SQL check lists **every table in `public` with `relrowsecurity = true`** and zero policies (`pg_policies` empty for `public`). `SET ROLE anon; SELECT count(*) FROM routes;` and the same as `authenticated` return 0 rows, while the server role sees 10.
-- [ ] Given `.env.example`, then `DATABASE_URL` (transaction pooler) and `DATABASE_URL_DIRECT` (session/direct, for migrations and the seed) are documented with the expected Supabase hosts and ports, with no values. `06-architecture.md`'s env table matches. No secret is committed or printed.
+- [ ] Given the cloud project, then a SQL check lists **every table in `public` with `relrowsecurity = true`**, and `pg_policies` has 0 rows for `public`. Then:
+  - `set role anon; select count(*) from routes;` returns the value **0**, and the same as `authenticated` returns **0**. If Supabase has revoked table privileges instead, "permission denied" is equally acceptable; record which one;
+  - `insert into routes …` as `anon` fails (RLS violation or permission denied), and the row count is unchanged;
+  - the app's connection (`DATABASE_URL`, transaction pooler, `prepare: false`) runs `select current_user, count(*) from routes` and returns **10**. `current_user` (expected `postgres`, the table owner, which bypasses RLS; authorization lives in server code per rule 7) is recorded.
+- [ ] Given `.env.example`, then `DATABASE_URL` (transaction pooler, port 6543, app runtime) and `DATABASE_URL_DIRECT` (session pooler 5432 or direct, required by migrations and the seed) are documented in comments. The hosts are whatever the Supabase dashboard's "Connect" panel shows for the project; no host is hard-coded, and no values are filled in. `06-architecture.md`'s env table matches. No secret is committed or printed.
 
 **Template cleanup**
 
@@ -161,7 +217,7 @@ Nothing is published by the seed. Public pages keep showing placeholders until o
 
 **Steps:**
 
-1. Confirm by name only that `DATABASE_URL` and `DATABASE_URL_DIRECT` are set in `.env` (no values printed). Then run `pnpm install --frozen-lockfile`, `lint`, `typecheck`, `check:boundaries` and `build`.
+1. Confirm by name only that `DATABASE_URL` and `DATABASE_URL_DIRECT` are set in `.env` (no values printed). Unset `DATABASE_URL_DIRECT` in a subshell: `db:migrate` and `db:seed` exit with a clear message. Then run `pnpm install --frozen-lockfile`, `lint`, `typecheck`, `check:boundaries` and `build`.
 2. Run `pnpm db:generate`: one baseline migration. Run it again: no changes. Grep the migrations: no `todos` or `membership`.
 3. Run `pnpm db:migrate` on the empty project, then, with SQL through `psql "$DATABASE_URL_DIRECT"` (values never echoed):
    - list `public` tables with `relrowsecurity`: all true;
@@ -171,9 +227,17 @@ Nothing is published by the seed. Public pages keep showing placeholders until o
    - `routes` 10 (8 active, 0 verified), `route_translations` 20, `route_rates` = the JSON band count;
    - `site_settings` 8 (0 verified);
    - `pages` / `page_translations` / `menu_items` / `menu_item_translations` as expected.
-5. Edit one row (`update pages set status='published' where key='about'`), run `pnpm db:seed` again, and check that the counts are unchanged and the edit survived. Then revert the edit.
-6. Run `SET ROLE anon; select count(*) from routes;` → 0, and the same as `authenticated` → 0. Reset to the server role → 10.
-7. Corrupt a copy of `routes.legacy.json` (e.g. remove a `key`) and point the seed at it (env or CLI flag). It must exit 1 naming the file and path, and the row counts must be unchanged.
+5. Ownership check. Make four edits:
+   - `update routes set transit_days_max = 99, is_verified = true where key = 'kr'`;
+   - `update route_translations set name = 'X' where locale = 'en' and route_id = (sg)`;
+   - `update site_settings set value = '{"x":1}', is_verified = true where key = 'social'`;
+   - `update pages set status = 'published' where key = 'about'`.
+
+   Run `pnpm db:seed` again. All four edits must survive, `kr`'s rate bands must be unchanged (compare `id`s), the unverified `sg`'s bands are re-created, and every count is unchanged. Revert the edits.
+6. Run the security AC's SQL (anon/authenticated counts, anon insert) and the runtime-pooler query (`current_user`, count 10). Record each result.
+7. Failure handling, both cases with `SEED_DATA_DIR` pointing at a temp copy of `data/seed/`:
+   - **validation:** remove a route `key` → exit 1, naming the file and path, with nothing written;
+   - **rollback:** add a page whose slug duplicates an existing one. Cross-file validation doesn't check slugs, so it violates `page_tr_locale_slug_uq` at write time, after routes and settings are written. The run must exit 1, and a before/after snapshot (row counts plus `md5` of `routes`, `route_rates` and `site_settings` contents) must be identical.
 8. Add a temporary client component importing `@/db/client`: `pnpm build` fails with the `server-only` error. Remove it, and the build passes.
 
 **Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `tokens:check`, `i18n:check`, `build` (the `verify` CI workflow runs the same, without DB access). The consent matrix doesn't apply (no consent, tracking, proxy or lead *processing* change; the tables only). No automated tests (ADR 0004).
@@ -185,11 +249,11 @@ Nothing is published by the seed. Public pages keep showing placeholders until o
   - the `drizzle-kit` 0.31 config shape (`dialect`, `schema` glob or `db/schema.ts`, `casing`).
 - `07`'s draft says "not compiled": fix types as needed, but keep column names and semantics.
 - Enums used by several modules (`locale_code`, `content_status`, `shipping_method`, `contact_channel`, `staff_role`…) go in `db/enums.ts`. Module schema files import only enums, other modules' tables (in the allowed direction) and `drizzle-orm`.
-- The seed is a thin CLI (`scripts/seed.ts`) plus pure mappers (JSON → insert rows). Keep the mappers framework-free so they can be tested later (ADR 0004). Use `onConflictDoUpdate` with an explicit `set` that omits editor-owned fields (`is_verified`, `status`, `published_at`).
+- The seed is a thin CLI (`scripts/seed.ts`) plus pure mappers (JSON → insert rows). Keep the mappers framework-free so they can be tested later (ADR 0004). Implement the ownership table with `onConflictDoUpdate({ target, set, setWhere: is_verified = false })` for routes and settings, and `onConflictDoNothing()` for translations, pages and menu items. Rate replacement: delete plus insert, only for unverified routes.
 - `site-settings.legacy.json` has a `$comment` key and `pricingRules`, which isn't in `07`'s key table: seed it and add it to `07` (shape: `volumetricFormula`, `paymentNote`).
 - Supabase:
-  - `DATABASE_URL` is the transaction pooler `aws-0-ap-southeast-1.pooler.supabase.com:6543`;
-  - `DATABASE_URL_DIRECT` is the session pooler (`:5432`) or `db.<ref>.supabase.co:5432` (IPv6 only on newer projects; the session pooler works over IPv4).
+  - `DATABASE_URL` is the transaction pooler (port 6543), and `DATABASE_URL_DIRECT` is the session pooler (port 5432) or the direct host (IPv6 only on newer projects; the session pooler works over IPv4);
+  - copy both strings from the dashboard "Connect" panel, because the pooler host differs per project.
 - Lessons from F-01 to F-03:
   - review dependencies that installers add;
   - pnpm 11 `allowBuilds` for any new native dependency;

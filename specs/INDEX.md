@@ -8,7 +8,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
-| 2026-10-21 | feature | [feature-f04-database-schema-seed.md](feature-f04-database-schema-seed.md) | Create the Supabase schema, migrations and seed | F-04 | both | draft |
+| 2026-10-21 | feature | [feature-f04-database-schema-seed.md](feature-f04-database-schema-seed.md) | Create the Supabase schema, migrations and seed | F-04 | both | approved |
 | 2026-10-21 | feature | [feature-f03-i18n-routing.md](feature-f03-i18n-routing.md) | Add next-intl locale routing with VI root and /en | F-03 | both | implemented |
 | 2026-10-21 | feature | [feature-f02-tokens-and-theme.md](feature-f02-tokens-and-theme.md) | Generate the token theme and move to Tailwind v4 | F-02 | both | implemented |
 | 2026-10-21 | feature | [feature-f01-upgrade-and-harness.md](feature-f01-upgrade-and-harness.md) | Upgrade to Next 16 and adopt the module layout | F-01 | both | implemented |
