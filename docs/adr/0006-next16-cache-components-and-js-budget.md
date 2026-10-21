@@ -9,7 +9,10 @@
   The budget figures in ADR 0004 and ADR 0005 are amended to match.
 - Owner repo: both
 - Context: F-01 upgrades the app to **Next.js 16.4.2 / React 19.3.1** (app commit `0bd48c2`).
-  - **Cache Components.** ADR 0002 §2 and the F-01 roadmap row allowed `cacheComponents: true` only after Clerk and next-intl were checked against it, but neither library is installed yet (they arrive in F-05 and F-03). Public docs describe Clerk's `auth()` as request-time data that must sit behind `<Suspense>` (Clerk rendering modes; Next's authentication-with-Cache-Components guide). No next-intl documentation on `cacheComponents` was found. Next 16.4 warns unless `partialPrefetching` is set, and says new Cache Components projects should enable it.
+  - **Cache Components.** ADR 0002 §2 and the F-01 roadmap row allowed `cacheComponents: true` only after Clerk and next-intl were checked against it, but neither library is installed yet (they arrive in F-05 and F-03). Documentation research on 2026-10-21, for the then-current releases on npm:
+    - **`@clerk/nextjs` 7.9.18:** `auth()` is request-time data. Rendering it opts the route into dynamic rendering, and Clerk recommends wrapping auth-dependent components in `<Suspense>` (Clerk "rendering modes"). Next's authentication-with-Cache-Components guide says the same: stream authenticated UI behind `<Suspense>`. No statement of incompatibility was found, and no version-specific `cacheComponents` note either.
+    - **`next-intl` 4.14.9:** no `cacheComponents` page or note was found in the searched docs and articles. The architecture plan (`06`) already passes `locale` explicitly into cached functions and uses `setRequestLocale`, which avoids request APIs inside caches.
+    - Neither finding is runtime evidence. The checks in Decision 1 at F-03/F-05 are the real gate. Next 16.4 warns unless `partialPrefetching` is set, and says new Cache Components projects should enable it.
   - **JS budget.** `AGENTS.md` rule 8 capped first-party JS at **< 120 KB gz on the initial route render, framework included**. On the F-01 build of the empty `noindex` placeholder, the initial JS is **134.3 KiB**, all framework: React DOM ≈ 70 KiB, the Next router runtime ≈ 48 KiB, plus small runtime chunks.
     - That figure uses the measurement method in Decision 3. The `noModule` polyfill chunk (≈ 38 KiB gz) isn't counted, because modern browsers don't download it.
     - The same page on Next 15.3 / React 19.1 (F-00) measured 100.6 KiB the same way.
@@ -48,7 +51,12 @@
      - against `pnpm build && pnpm start` (gzip as served by `next start`);
      - consent rejected (no consent cookie).
    - **Metric:** the sum of `transferSize` of the `Script` requests in the `network-requests` audit for the initial navigation, in **KiB** (bytes / 1024). It includes response headers (about 0.3 KiB per request), which is accepted as part of the method. `noModule` scripts aren't requested by the browser, so they aren't counted.
-   - **Baseline fixture:** a temporary `app/__baseline/page.tsx` that renders `null` under the root layout, built on the upgrade commit, measured, then deleted. The report JSON and the per-chunk breakdown go into the PR.
+   - **Baseline fixture:** a temporary `app/baseline-probe/page.tsx` that renders only `<p>baseline</p>` under the root layout.
+     - It must be routable: `_`-prefixed folders are private in Next.
+     - It must paint, otherwise Lighthouse stops with `NO_FCP`.
+     - Build it on the upgrade commit, assert HTTP 200, measure, then delete it.
+     - The report JSON and the per-chunk breakdown go into the PR.
+     - F-01 result: `/baseline-probe/` → 200, **134.3 KiB** in five chunks (70.7 + 49.2 + 6.2 + 4.2 + 3.9 KiB); the home placeholder measured the same 134.3 KiB, so its app delta is 0.
    - **Route delta:** the route's metric minus the current baseline.
    - **INP:** a navigation Lighthouse run doesn't measure INP (its performance score uses TBT). Pages with no interactive element record INP as *unmeasured*. Interactive pages record INP from the Chrome Performance panel or the Web Vitals extension, over the route's representative interactions (open menu, change calculator input, submit form), on a throttled mobile profile. After launch, field INP comes from real-user data (PostHog web vitals or CrUX once available).
 

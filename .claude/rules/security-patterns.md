@@ -12,7 +12,7 @@ Context: `AGENTS.md` rules 6–7 and 14–15, `06-architecture.md`, proposal §6
 ## Secrets and config
 
 - Never read, print or commit `.env*` (only `.env.example` with names). Never paste secret values into code, logs, PRs or chat.
-- Read environment variables only through `shared/config/env.ts` (Zod, after F-01). Server variables are imported only in server code; only `NEXT_PUBLIC_*` may reach the client, and only if they are truly public.
+- Read environment variables only through `shared/config/env.server.ts` (server-only) and `shared/config/env.public.ts` (explicit `process.env.NEXT_PUBLIC_*` references). Blank values count as unset. Only `NEXT_PUBLIC_*` may reach the client, and only if they are truly public.
 - New variables: add the name to `.env.example` and to the `06-architecture.md` env table in the same change.
 
 ## Server-only boundaries
