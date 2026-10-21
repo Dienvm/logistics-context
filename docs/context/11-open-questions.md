@@ -24,12 +24,12 @@
 | Q-18 | Tracking numbers: is there a carrier API or internal system to power `/tra-cuu/`? | Phase 6 | Open |
 | Q-19 | Keep URL strategy VI at root (no `/vi/`) — confirmed? | F-03 | Proposed: yes |
 | Q-20 | PostHog: Cloud EU or US (or self-host)? Is session replay wanted? Who prepares the cross-border transfer / impact assessment under Law 91/2025/QH15 + Decree 13, and does `43l_attr` need consent (assumed yes)? | S-13, privacy policy | Open |
-| Q-22 | Which extra destinations listed by Quý Nam (AU, CA, CN, UK, DE, FR, other EU) and services (order consolidation from VN marketplaces, frozen food, vacuum packing, home pickup) does 43 Logistics really offer? | Route registry, route pages, home benefits | Open |
+| Q-22 | Which extra destinations (e.g. AU, CA, CN, UK, DE, FR, other EU) and services (order consolidation from VN marketplaces, frozen food, vacuum packing, home pickup) does **43 Logistics itself** offer? (Quý Nam's menu is only the checklist, not a fact about 43L.) | Route registry, route pages, home benefits | Open |
 | Q-23 | Real trust numbers for 43 Logistics: years operating, customers/shipments per year, any press mentions? | Home stats band, About, press strip | Open |
-| Q-24 | Scope of reuse from Quý Nam (Q-21): (a) do Quý Nam's rate tables (origin Hồ Chí Minh) apply to 43 Logistics shipments from Đà Nẵng, or does 43 Logistics keep its own rates? (b) may Quý Nam's numbers, press coverage and claims ("bảo hiểm 100%", hours, years) appear on 43logistics.vn, and attributed to whom (Quý Nam / the group)? (c) can we get API access to `tracking.quynam.vn` (tracking + calculator)? (d) how do the two sites split keywords and cities (e.g. 43 Logistics leads on Đà Nẵng / central Vietnam)? (e) may 43logistics.vn say publicly that it is part of the Quý Nam group? | Rates, trust sections, `/tra-cuu/`, variant pages, About | Open |
+| Q-24 | Sister company Quý Nam (Q-21): (a) may 43logistics.vn say publicly that it is part of the Quý Nam group (About, footer), and may quynam.vn mention 43L on its About page? (b) may 43L use the sister company's tracking/calculator system (`tracking.quynam.vn`) for its own shipments, if it is the real operational system? | About, footer, off-page SEO, `/tra-cuu/` | Open |
 
 ## Answered
 
 | ID | Question | Answer | Date |
 | --- | --- | --- | --- |
-| Q-21 | Relationship between 43 Logistics and Quý Nam (quynam.vn)? | Sister company. The owner allows reusing Quý Nam's data. Scope of the reuse → Q-24 | 2026-10-21 |
+| Q-21 | Relationship between 43 Logistics and Quý Nam (quynam.vn)? | Sister company. Clarified the same day: quynam.vn is a reference for structure, layout, page count and implementation only; 43logistics.vn uses only 43 Logistics' own facts, numbers, slogans, images and colours, and SEO targets 43logistics.vn only. Remaining points → Q-24 | 2026-10-21 |
