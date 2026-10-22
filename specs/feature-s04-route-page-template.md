@@ -1,11 +1,13 @@
 ---
 title: Build the route pages from database data
 type: feature
-status: in_implementation
+status: implemented
 owner_repo: both
 roadmap: S-04
 branch: feat/s04-route-pages
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/17
+implementation_commit: f3d63343848805517cf20c5d72a113bf72a4ce32
+implemented_date: 2026-10-22
 priority: must-have
 blocked_by_questions: [Q-02, Q-03, Q-04, Q-05, Q-08, Q-09, Q-10, Q-25]
 updated: 2026-10-22

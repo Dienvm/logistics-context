@@ -2,6 +2,16 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-22 — Build the route pages from database data
+
+- Spec: [specs/feature-s04-route-page-template.md](../specs/feature-s04-route-page-template.md) · Roadmap: S-04 (partial)
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/17 (f3d6334); context: https://github.com/Dienvm/logistics-context/pull/38
+- Owner: both
+- Summary: the 7 outbound route pages and SG→VN now render from the database in VI and EN (they 404ed before). One template: hero facts under the fact rule, a mini calculator on the S-03 engine, rate table, pricing rules, process, related routes and the closing band; goods, FAQ, testimonials and guides appear once data exists. Metadata from the 05 patterns, publication-aware hreflang, `Service`/`Offer`/`FAQPage` JSON-LD.
+  - Pages are published by the owner through `data/owner-confirmations.json` (`pages`) + `pnpm db:confirm`, which CI now also runs. `check:redirects`: 59 PASS (was 25), 0 FAIL.
+  - Phase 1 (owner): Codex, manual Lighthouse/axe/fixture checks deferred; OG image deferred (needs a Vietnamese TTF/WOFF font). CI: JS 181.2 KiB (+46.9, PASS) on every route, home included, so ~4 KiB landed in a shared chunk (3.1 KiB headroom left).
+  - Not yet on Supabase: run `pnpm db:confirm` there to publish the pages (migration `0001` also pending).
+
 ## 2026-10-22 — Redesign the home page with confirmed owner facts and motion
 
 - Spec: [specs/feature-s05b-home-redesign.md](../specs/feature-s05b-home-redesign.md) · Roadmap: S-05b
