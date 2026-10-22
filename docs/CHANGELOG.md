@@ -2,6 +2,16 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-22 — Log contact clicks and redirect via /go/[channel]
+
+- Spec: [specs/feature-s02-contact-tracker.md](../specs/feature-s02-contact-tracker.md) · Roadmap: S-02
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/13 (121de49); context: https://github.com/Dienvm/logistics-context/pull/30
+- Owner: both
+- Summary: the contact CTAs now work. `/go/[channel]` 302s to Zalo, `tel:`, WhatsApp or Messenger from `site_settings.contact` and logs one `contact_events` row per click in `after()`; the same `event_id` is pushed to `dataLayer`, ready for S-13 and T-01 dedupe.
+  - Until Q-06 is verified, production `/go/*` returns 404 (no fallback number). Attribution is stored only with ads consent; IPs are HMAC-hashed with `IP_HASH_SALT`; bots and HEAD write no row. The conversion seam is a no-op (T-01 / Q-13).
+  - App JS +0.5 KiB (+42.9 KiB over the baseline on `/`), within the 50 KiB budget; `package.json` `sideEffects` keeps zod out of the public bundle.
+  - Migration `0001` is not yet applied on Supabase.
+
 ## 2026-10-22 — Build the site layout shell from database data
 
 - Spec: [specs/feature-s01-site-layout-shell.md](../specs/feature-s01-site-layout-shell.md) · Roadmap: S-01
