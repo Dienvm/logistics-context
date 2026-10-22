@@ -11,7 +11,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 | 2026-10-22 | feature | [feature-s04-route-page-template.md](feature-s04-route-page-template.md) | Build the route pages from database data | S-04 | both | approved |
 | 2026-10-22 | feature | [feature-s05b-home-redesign.md](feature-s05b-home-redesign.md) | Redesign the home page with confirmed owner facts and motion | S-05b | both | implemented |
 | 2026-10-22 | feature | [feature-s05-home.md](feature-s05-home.md) | Build the home page from database data | S-05 | both | implemented |
-| 2026-10-22 | feature | [feature-s03-price-engine.md](feature-s03-price-engine.md) | Add the pure price engine for quotes | S-03 | both | approved |
+| 2026-10-22 | feature | [feature-s03-price-engine.md](feature-s03-price-engine.md) | Add the pure price engine for quotes | S-03 | both | in_implementation |
 | 2026-10-22 | feature | [feature-s02-contact-tracker.md](feature-s02-contact-tracker.md) | Log contact clicks and redirect via /go/[channel] | S-02 | both | implemented |
 | 2026-10-22 | feature | [feature-f05-clerk-staff-auth.md](feature-f05-clerk-staff-auth.md) | Protect /admin with Clerk staff auth and roles | F-05 | both | approved |
 | 2026-10-21 | feature | [feature-s01-site-layout-shell.md](feature-s01-site-layout-shell.md) | Build the site layout shell from database data | S-01 | both | implemented |

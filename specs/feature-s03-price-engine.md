@@ -1,9 +1,11 @@
 ---
 title: Add the pure price engine for quotes
 type: feature
-status: approved
+status: in_implementation
 owner_repo: both
 roadmap: S-03
+branch: feat/s03-price-engine
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/16
 priority: must-have
 blocked_by_questions: [Q-04, Q-25]
 updated: 2026-10-22

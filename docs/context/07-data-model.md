@@ -368,6 +368,16 @@ export const db = drizzle(client, { schema, casing: 'snake_case' })
 
 `drizzle.config.ts`: `dialect: 'postgresql'`, `schema: './db/schema'`, `out: './db/migrations'`, `dbCredentials.url = process.env.DATABASE_URL_DIRECT`.
 
+## Pricing rules — how `routes` + `route_rates` become a quote (S-03)
+
+The price engine is `43logistics.vn/modules/pricing/domain/{weight,quote}.ts`, exposed client-safe through `modules/pricing/client.ts`. Rows are mapped by `infrastructure/quote-mappers.ts` (`numeric` strings → integer grams; a malformed value throws with its column name). Owner decisions 2026-10-22, open points in Q-25:
+
+- **Units:** integer grams; actual weight rounded **up** to the gram. Volumetric = L×W×H / `routes.volumetric_divisor`, rounded up to the gram, only when all three dimensions are given. Chargeable = max(actual, volumetric), then rounded **up** to `routes.weight_rounding_kg` when set (no default step).
+- **Eligibility:** "Liên hệ" when `is_verified = false` (unless preview) or `prices_public = false`. Only bands of the requested `method` whose `valid_from`/`valid_to` window contains today (Asia/Ho_Chi_Minh, inclusive) count; `routes.methods` is not consulted.
+- **Bands:** `[weight_min_kg, weight_max_kg]` inclusive, `null` max open-ended. Several covering → the **highest minimum** wins; a tie on it → "Liên hệ" (`ambiguous_band`). No covering band → `no_band`.
+- **Modes:** `contact_for_price` → `contact_band`; flat only → that amount; per-kg only → price × chargeable kg, half up to the đồng (bigint); both set → `ambiguous_band`.
+- **Not in the engine:** VAT, insurance, surcharges, minimum charge, promos (Q-04, Q-07, Q-09). Evidence: `pnpm price:examples` (worked examples, compared by hand; ADR 0004).
+
 ## `site_settings` keys (validated with Zod)
 
 | key | shape (example values from legacy site — confirm before publishing) |
