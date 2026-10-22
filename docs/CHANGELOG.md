@@ -2,6 +2,16 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-22 — Build the shipping calculator page
+
+- Spec: [specs/feature-s07-calculator-page.md](../specs/feature-s07-calculator-page.md) · Roadmap: S-07
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/21 (b76a21a); context: https://github.com/Dienvm/logistics-context/pull/44, https://github.com/Dienvm/logistics-context/pull/45
+- Owner: both
+- Summary: `/tinh-cuoc/` and `/en/shipping-calculator/` estimate a shipment's chargeable weight and price on the S-03 engine with the bands the route pages show (embedded, no fetch).
+  - "Gửi kết quả qua Zalo" copies a summary and opens Zalo via `/go/zalo/`; `calculate_quote` is pushed once per settled result; routes without public prices are listed as "Liên hệ".
+  - Entry points: the home hero form (`?route=`) and the route-page calculator link (route + weight).
+  - JS budget: one `QuoteCalculator` island serves route pages and the calculator page, with a `useReducer` instead of Zustand. CI: every route +49.1 KiB (budget 50).
+
 ## 2026-10-22 — Fill the route pages with the owner's content
 
 - Spec: [specs/feature-s04b-route-page-content.md](../specs/feature-s04b-route-page-content.md) · Roadmap: S-04b

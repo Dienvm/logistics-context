@@ -1,9 +1,11 @@
 ---
 title: Build the shipping calculator page
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/s07-calculator-page
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/21
+implementation_commit: b76a21a44749af618886cc6e55c1501a2b03b0e6
+implemented_date: 2026-10-22
 owner_repo: both
 roadmap: S-07
 priority: must-have
