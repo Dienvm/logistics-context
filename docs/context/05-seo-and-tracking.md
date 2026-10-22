@@ -121,14 +121,23 @@ Cookie format (F-06; `modules/tracking`):
 
 ### Contact click tracker
 
-`/go/[channel]?from={path}&route={key}` (route handler, `channel ∈ zalo | call | whatsapp | messenger`):
+`/go/[channel]/?from={path}&eid={uuid}&placement={p}&route={key}` (route handler `app/go/[channel]/route.ts`, `channel ∈ zalo | call | whatsapp | messenger`, exact lower case; S-02):
 0. The client link generates a per-click UUID `event_id`, pushes the client event with it, and sends it as `?eid=` to the handler. The handler validates it (UUID) or generates a fallback; `contact_events.event_id` is unique, so a retried click is not double-counted.
 1. **Redirect first:** the `302` must never wait on or fail because of tracking. Steps 2–3 run in `after()` with a short timeout; failures are logged, not retried inline.
 2. Insert `contact_events` row (channel, route, path, attribution, consent state, hashed IP, user agent).
 3. Fire server-side conversion (see below) only if ads consent was granted, with the same `event_id`.
-4. `302` to `https://zalo.me/0979222357` / `tel:+84979222357` / `https://wa.me/84979222357?text=…` / `https://m.me/43logistics`.
+4. `302` to `https://zalo.me/{contact.zalo}` / `tel:{contact.phoneE164}` / `https://wa.me/{contact.whatsapp, 0… → 84…}?text={contact.whatsappPrefill}` / `https://m.me/{contact.messenger}`, all read from `site_settings.contact` (values: `01-business.md`). The prefill locale comes from `from` (`/en/…` → EN).
 
-The client link also emits the event with the same `event_id` (pass via data attribute) for pixel de-duplication. Events are defined once in `modules/tracking/constants.ts` and fanned out to `dataLayer` (GTM) and — after consent — PostHog.
+Rules (S-02):
+
+- **Unpublished → 404.** The target is published only under the fact-visibility rule (verified, or preview mode: `PREVIEW_UNVERIFIED=1` under `next dev` / Vercel preview). Otherwise, or when the channel's field is missing or malformed, or the channel is unknown (`/go/email/`, `/go/ZALO/`), the response is `404` and no row is written. There is no fallback number. Until Q-06 is verified, production CTAs 404 (L-01 checklist).
+- **Methods.** `GET` redirects and logs; `HEAD` answers with the same status and `Location` but logs nothing; other methods get `405` (`Allow: GET, HEAD`). Every `/go` response has `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow`.
+- **Bots** (UA allowlist in `modules/tracking/domain/bot.ts`: `…bot/`, crawlers, link previewers, Lighthouse) get the redirect but no row.
+- **Placements** (allowlist, else `null`): `header`, `sticky_bar`, `footer`. New placements are added to `CONTACT_PLACEMENTS` in `modules/contact/constants.ts`.
+- **Row inputs** are untrusted: `eid` must be a UUID (else a server UUID), `from` must be a same-site path ≤ 300 chars (else `null`; `locale` follows it), `route` must be an active route key (else `null`). Attribution columns come from `43l_attr` only when `43l_consent` grants ads; consent columns from `parseConsent`. `ip_hash` = HMAC-SHA256 with `IP_HASH_SALT`.
+- **Conversion seam.** `sendContactConversion` (`modules/tracking`) returns unless ads consent; with consent it is a no-op until T-01 / Q-13 (no network request).
+
+The client link (`ContactLink`) mints the `event_id` on `click` (Enter included), pushes `click_<channel>` to `window.dataLayer` with it and puts it in the href as `eid`, so the push and the row share it for pixel de-duplication. Without JS the plain `/go/<channel>/` link still redirects and logs, with a server `event_id`. CTA links carry `rel="nofollow"`. Events are defined once in `modules/tracking/constants.ts` and fanned out to `dataLayer` (GTM) and — after consent — PostHog.
 
 ### dataLayer events
 

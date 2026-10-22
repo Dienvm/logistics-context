@@ -312,6 +312,7 @@ export const leads = pgTable('leads', {
   utmSource: text('utm_source'), utmMedium: text('utm_medium'), utmCampaign: text('utm_campaign'), utmTerm: text('utm_term'), utmContent: text('utm_content'),
   gclid: text('gclid'), gbraid: text('gbraid'), wbraid: text('wbraid'), fbclid: text('fbclid'), ttclid: text('ttclid'),
   referrer: text('referrer'),
+  landingPath: text('landing_path'),                        // from 43l_attr (S-02 migration; written by S-08)
   ipHash: text('ip_hash'),
   userAgent: text('user_agent'),
   consentAt: timestamp('consent_at', { withTimezone: true }).notNull(),
@@ -332,9 +333,10 @@ export const contactEvents = pgTable('contact_events', {
   sourcePath: text('source_path'),
   locale: localeCode('locale'),
   utmSource: text('utm_source'), utmMedium: text('utm_medium'), utmCampaign: text('utm_campaign'), utmTerm: text('utm_term'), utmContent: text('utm_content'),
-  gclid: text('gclid'), fbclid: text('fbclid'), ttclid: text('ttclid'),
-  ipHash: text('ip_hash'),
-  userAgent: text('user_agent'),
+  gclid: text('gclid'), gbraid: text('gbraid'), wbraid: text('wbraid'), fbclid: text('fbclid'), ttclid: text('ttclid'),
+  referrer: text('referrer'), landingPath: text('landing_path'),          // referrer host + landing path from 43l_attr; attribution stored only with ads consent (S-02)
+  ipHash: text('ip_hash'),                                  // HMAC-SHA256(IP, IP_HASH_SALT), hex; null without a salt
+  userAgent: text('user_agent'),                            // truncated to 512 chars
   adsConsent: boolean('ads_consent').notNull().default(false),            // gate for server-side conversions
   analyticsConsent: boolean('analytics_consent').notNull().default(false),
   consentPolicyVersion: text('consent_policy_version'),
