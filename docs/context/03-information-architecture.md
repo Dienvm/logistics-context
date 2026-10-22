@@ -79,6 +79,13 @@
 7. Latest guides (3 posts).
 8. Offices + hours (static map image → Google Maps link).
 
+Built in S-05 with these deliberate deviations, each closed by its owning task:
+
+- The hero route picker links to the route pages; it becomes "route picker → calculator" in **S-07**.
+- Offices have a Google Maps search link built from the address and no static map image (an image needs **A-04** media).
+- Proof has no chat screenshots until consent (**Q-12**) and testimonial admin (**A-05**).
+- Sections with nothing published (unverified facts, unapproved copy Q-27, unconfirmed photos Q-26, no posts, inactive offer Q-07) render nothing, heading included.
+
 ### Outbound route page (one template for 7 countries)
 
 1. Breadcrumb · H1 "Gửi hàng đi {country}" · hero facts: from-price, transit days, flight schedule, methods · CTA Zalo (prefilled message with route) + Gọi.
