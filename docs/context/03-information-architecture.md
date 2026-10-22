@@ -83,7 +83,7 @@ Built in S-05 and redesigned in S-05b (owner review 2026-10-22, old-site order +
 
 Deliberate deviations, each closed by its owning task:
 
-- The hero route picker links to the route pages; it becomes "route picker → calculator" in **S-07**.
+- The hero route picker links to the route pages, plus a no-JS "Tính cước" form (route select) to `/tinh-cuoc/?route=<key>` (S-07).
 - Offices have a Google Maps search link built from the address and no static map image (an image needs **A-04** media).
 - Proof shows the old site's chat screenshots (consent confirmed, Q-12) as static, blurred images in `public/`; managing them moves to testimonial/media admin (**A-05**, **A-04**).
 - Sections with nothing published (unverified facts, unapproved copy Q-27, unconfirmed photos Q-26, no posts, inactive offer Q-07) render nothing, heading included.
@@ -141,7 +141,14 @@ The inbound hub lists only active inbound routes (SG→VN; Q-05). Published by t
 
 ### Calculator `/tinh-cuoc/`
 
-Inputs: route, actual weight (kg), dimensions L×W×H (cm), goods type. Output: chargeable weight, band, estimated price, transit days, caveats. Actions: "Gửi kết quả qua Zalo" (prefilled), "Nhận báo giá chính xác" (lead form prefilled). Pure client computation from rates embedded at build time; logs `calculate_quote` event.
+As built (S-07), on the `[slug]` dispatch (page key `calculator`, published via `db:confirm`):
+
+- **Inputs:** route (grouped outbound/inbound, quotable routes only), method (when the route has more than one), actual weight (kg), optional L×W×H (cm). No goods type (no approved per-type pricing). `?route=<key>&kg=<n>` preselects them; an unknown or non-quotable key falls back to the first quotable route. Inputs live in a Zustand store (no persist).
+- **Output:** chargeable weight (+ volumetric), the band used, the estimated price, verified transit days, caveats (not a final quote; VAT and surcharges excluded, Q-04/Q-25). "Liên hệ" results show the Zalo and call CTAs.
+- **Actions:** "Gửi kết quả qua Zalo" copies a text summary (route, method, weights, estimate, page URL with parameters) and opens Zalo through `/go/zalo/` (`placement=calculator`) in a new tab, because `zalo.me` takes no prefilled text; if the clipboard is unavailable, the text is shown to copy by hand. "Gọi {hotline}". "Nhận báo giá chính xác" waits for the lead form (S-08).
+- Routes without public prices are listed below as "Liên hệ" links to their route pages.
+- Pure client computation from the bands the route pages show (embedded in the server render, no fetch); pushes `calculate_quote` to `dataLayer` once per settled result (500 ms debounce).
+- Entry points: header item, mobile action bar, the home hero picker form, and the route-page mini calculator link (carries the route and typed weight).
 
 ### Prohibited goods `/hang-cam-gui/`
 
