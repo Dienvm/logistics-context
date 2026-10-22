@@ -37,7 +37,7 @@
 | Facebook | `https://www.facebook.com/43logistics` | Only social profile found **Confirmed** by the owner, 2026-10-22 (S-05b; `43logistics.vn/data/owner-confirmations.json`). |
 | Second number | "0827 575 567" (blog: "Call/Zalo/ Whatsapp") | `NEEDS CONFIRMATION` — still in use? Owner decision 2026-10-22: not published (one primary number, Q-06). |
 | Email | "43logistics.danang@gmail.com" | Recommend a domain mailbox; old form sent from `email@43logistics.vn` (may not exist → deliverability risk) **Confirmed** by the owner, 2026-10-22 (S-05b; `43logistics.vn/data/owner-confirmations.json`). |
-| Opening hours | Header: "T2 - T7: 08:00 - 18:00" · Contact page: "Từ thứ 2 -> Sáng thứ 7" · schema: 09:00–17:00 · route pages: "CSKH 24/7" | **Contradictory** — `NEEDS CONFIRMATION`; store one value in `site_settings` Owner decision 2026-10-22: **T2–T7 08:00–18:00** (the header value) is Confirmed; 24/7 stays unconfirmed (Q-03). |
+| Opening hours | Header: "T2 - T7: 08:00 - 18:00" · Contact page: "Từ thứ 2 -> Sáng thứ 7" · schema: 09:00–17:00 · route pages: "CSKH 24/7" | **Contradictory** — `NEEDS CONFIRMATION`; store one value in `site_settings` Owner decision 2026-10-22: **T2–T7 08:00–18:00** (the header value) is Confirmed; 24/7 stays unconfirmed (Q-03). S-04b: owner confirmed "CSKH 24/7" may be published (2026-10-22). |
 
 ## Services (as described on the old site)
 
@@ -64,6 +64,13 @@ Common rules shown on many pages:
 > **Owner confirmation, 2026-10-22 (S-05b):** the per-route prices and transit times in `43logistics.vn/data/seed/routes.legacy.json` for SG, MY, KR, TW, JP, TH and US are **Confirmed** as published on the live site, and `pnpm db:confirm` marks those routes verified. SG→VN stays "liên hệ". VAT/insurance/surcharge rules remain open (Q-04).
 >
 > All legacy prices date from Dec 2023 – Jan 2024 except the 2025 blog posts. Treat any price not listed in the confirmation above as unverified seed data (`43logistics.vn/data/seed/routes.legacy.json`, `is_verified = false`). The public site must show `updated_at` next to each rate table.
+
+## Route page content (owner decisions, 2026-10-22, S-04b)
+
+The route pages publish the owner's live-site content, rewritten, from `43logistics.vn/data/seed/route-content.json`:
+- **Confirmed:** (a) "CSKH 24/7"; (d) accepted goods per route as listed on the live site, including medicine, cosmetics and fresh food (as approved `goods_rules`); (f) free home delivery (KR/TW/JP over 5 kg) and the per-route price notes.
+- **Not confirmed, so not published:** (b) insurance/compensation promises (Q-09); (c) a Hà Nội warehouse (Q-02); (e) carrier names (DHL/UPS/FedEx, Q-08).
+- **Never published:** counterfeit goods, unlabelled cosmetics, links to other companies, unconfirmed services (checkout/order/permit, marketplace buying).
 
 ## Audience (confirmed for the rebuild)
 

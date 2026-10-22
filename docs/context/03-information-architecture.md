@@ -114,6 +114,14 @@ Deliberate deviations, each closed by its owning task:
 
 Pages are published by the owner through `data/owner-confirmations.json` (`pages`) + `pnpm db:confirm`.
 
+**S-04b (owner content):** quynam.vn's order:
+- the H1 carries "– từ {price}" when the price is shown;
+- rates with a "Lưu ý" box;
+- calculator; pricing rules; methods with the DB transit line (VI);
+- route-specific process; why us; tips; goods; the customer chat wall; FAQ; related routes.
+
+Narrative content is `page_translations.blocks` (validated, VI + EN); goods and FAQs are `goods_rules`/`faqs` rows approved or published by `db:confirm` (`routeContent`).
+
 ### Inbound route page (SG → VN)
 
 Same template (S-04: prices "liên hệ", no rate table or calculator while `prices_public = false` or unverified; the inbound blocks below stay hidden until Q-02/Q-05 are answered) with inbound-specific blocks: overseas warehouse address + how to send to it, repack/consolidation, delivery to HN/HCM, permit/checkout/order services ("checkout, order, làm permit" on old page — `NEEDS CONFIRMATION`), declared value + insurance rules. Prices may be "liên hệ" if the business keeps them private.
