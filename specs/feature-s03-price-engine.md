@@ -22,25 +22,26 @@ The legacy rate data (`43logistics.vn/data/seed/routes.legacy.json`, all `is_ver
 A visitor who enters a route, method, actual weight and optional L×W×H gets either:
 
 - a **price**: chargeable weight, which band matched, flat or per-kg mode, and an integer VND total; or
-- **"Liên hệ"** with a machine-readable reason (unverified route, prices not public, no band covers the weight, contact-for-price band, ambiguous band); or
+- **"Liên hệ"** with a machine-readable reason (`unverified`, `not_public`, `no_band`, `contact_band`, `ambiguous_band`, `out_of_range`); or
 - an **invalid-input** result naming the field.
 
 The engine never guesses: anything the rate data doesn't cover exactly is "Liên hệ".
 
 #### Pricing rules (owner decisions 2026-10-22)
 
-1. **Units.** All weight math is in integer grams (no float drift). Actual weight input (kg) is rounded **up** to the gram. Dimensions are centimetres.
+1. **Units.** All weight math is in integer grams (no float drift). Actual weight input (kg) is rounded **up** to the gram, whatever its number of decimals (1.0004 kg → 1.001 kg); the kg → g conversion is exact (scaled integers or string parsing, never `kg * 1000` alone). Dimensions are centimetres.
 2. **Volumetric weight** = L × W × H / `routes.volumetric_divisor` kg, rounded **up** to the gram. Only computed when all three dimensions are given.
 3. **Chargeable weight** = max(actual, volumetric).
+3a. **Supported range** (input validation, not a business fact): 0 < actual ≤ 100.000 kg; each dimension 0 < d ≤ 10.000 cm; the **chargeable** weight (after volumetric and rounding) ≤ 100.000 kg. Anything else returns `invalid` naming the field (`actualWeight` or `dimensions`).
 4. **Rounding.** If `routes.weight_rounding_kg` is set, the chargeable weight is rounded **up** to the next multiple of that step (US 0.5 kg: 1.3 → 1.5, 1.0 → 1.0, 1.01 → 1.5). If it is null, **no rounding** is applied (gram precision). No default step is assumed (Q-25).
 5. **Eligibility (engine applies it).** The result is "Liên hệ" when the route is not verified (`is_verified = false`, unless the caller passes the preview flag that `PREVIEW_UNVERIFIED=1` sets) or `prices_public = false`. Only bands of the requested `method` whose validity window contains `today` (Asia/Ho_Chi_Minh, `YYYY-MM-DD`, both bounds inclusive, the S-01 rule) take part. The engine matches `route_rates.method` only and does not consult `routes.methods` (the seed lists `air_economy`/`air_express`/`sea` for US and TH while every seed band is `air`; reconciling them is data work under Q-04).
 6. **Band coverage.** A band covers `[weight_min_kg, weight_max_kg]`, both inclusive; `weight_max_kg = null` is open-ended.
-7. **Overlaps.** When several bands cover the weight, the band with the **highest `weight_min_kg` wins** (SG 100 kg → the 100+ band).
+7. **Overlaps.** When several bands cover the weight, the band with the **highest `weight_min_kg` wins** (SG 100 kg → the 100+ band). If two or more covering bands share that highest minimum, the result is "Liên hệ" (`ambiguous_band`), independent of row order (the schema has no unique constraint on `(route_id, method, weight_min_kg)`).
 8. **Gaps, below the lowest band, above the highest closed band** → "Liên hệ" (`no_band`). Examples: SG 5.3 kg, SG 0.5 kg, TH 3 kg, US 1.5 kg with the seed's point bands.
 9. **Band modes.**
    - `contact_for_price = true` → "Liên hệ" (`contact_band`), even when an open-ended per-kg band starts lower (MY 300 kg).
    - only `flat_price_vnd` set → the total is that fixed amount for the shipment, not per kg.
-   - only `price_per_kg_vnd` set → total = price per kg × chargeable kg, rounded to the nearest đồng with integer math.
+   - only `price_per_kg_vnd` set → total = price per kg × chargeable grams / 1000, rounded **half up** to the đồng, computed with `bigint` so no intermediate loses precision. A total above `Number.MAX_SAFE_INTEGER` returns "Liên hệ" (`out_of_range`).
    - both set → "Liên hệ" (`ambiguous_band`, a data error).
 10. **Out of the engine.** No VAT, insurance, fuel or other surcharges, no minimum charge, no promos or discounts (Q-04, Q-07, Q-09). The result carries no transit time (S-04/S-07 read that from `routes`).
 
@@ -49,15 +50,17 @@ The engine never guesses: anything the rate data doesn't cover exactly is "Liên
 - [ ] Given the domain files, when `pnpm check:boundaries` runs, then the new `modules/pricing/domain/*` files import nothing outside the module's own domain and `shared/types` (no `next`, `react`, `zod`, `drizzle-orm`, `db/`), and the `domain-pure` rule passes.
 - [ ] Given `modules/pricing/client.ts`, when it is imported, then it exposes the quote function, its input/result types and the weight helpers, and contains no `server-only` import and no import of `infrastructure/` or `@/db`.
 - [ ] Given route rows and `route_rates` rows as Drizzle returns them (`numeric` columns as strings), when the infrastructure mapper converts them, then the domain receives numbers in grams/VND, and a malformed numeric value fails loudly instead of becoming `NaN`.
-- [ ] Given the worked examples below, when `pnpm price:examples` runs, then every printed result equals the expected value in the table, and the script exits 1 if any differs.
+- [ ] Given the worked examples below, when `pnpm price:examples` runs, then it prints one line per row (inputs, chargeable weight, result kind, reason or total) and the reviewer confirms by hand that each line matches the table. The script makes no assertions, prints no PASS/FAIL and exits 0 unless it crashes (ADR 0004 Decision 1: no test suite by purpose).
 - [ ] US rounding: given the US seed route (step 0.5 kg), actual 1.3 kg → chargeable 1.5 kg; actual 1.0 kg → 1.0 kg (no float drift); 0.8 kg → 1.0 kg → flat 1.227.963 đ.
 - [ ] SG band edge: 5 kg → per-kg 150.000 × 5 = 750.000 đ; 6 kg → 88.000 × 6 = 528.000 đ; 5.3 kg → "Liên hệ" (`no_band`).
 - [ ] Volumetric > actual: SG actual 2 kg, 40 × 30 × 30 cm, divisor 5000 → volumetric 7.2 kg → chargeable 7.2 kg → 88.000 × 7,2 = 633.600 đ.
 - [ ] Open-ended and overlapping bands: SG 100 kg → 57.000 × 100 = 5.700.000 đ (higher min wins); SG 150 kg → 8.550.000 đ.
 - [ ] Contact-for-price: KR 150 kg → "Liên hệ" (`contact_band`); MY 300 kg → "Liên hệ" (`contact_band`, higher min wins over the 52.000/kg 100+ band).
 - [ ] Eligibility: an unverified route returns "Liên hệ" (`unverified`) unless the preview flag is set; `prices_public = false` returns `not_public`; a band whose `valid_to` is before `today` is ignored; a method with no bands (seed TH `sea`) returns `no_band`.
-- [ ] Invalid input: actual weight ≤ 0, non-finite, or only some of L/W/H given (or any ≤ 0) returns `invalid` naming the field; no exception escapes.
-- [ ] No business fact is hard-coded: the divisor, rounding step and prices come only from the route and band arguments (golden rule 2); the worked-example script reads its fixtures from `data/seed/routes.legacy.json`, plus inline synthetic rows only for cases the seed can't express (validity, both prices set, `prices_public = false`), each marked as synthetic.
+- [ ] Overlap tie: two covering bands with the same highest minimum return "Liên hệ" (`ambiguous_band`) in either row order.
+- [ ] Invalid input: actual weight ≤ 0, non-finite or above 100.000 kg; only some of L/W/H given, any ≤ 0 or above 10.000 cm; or a chargeable weight above 100.000 kg returns `invalid` naming the field; no exception escapes.
+- [ ] The roadmap's "checked manually in the calculator" is **not** satisfied by S-03: S-03's evidence is the printed worked examples. S-04 (mini calculator) and S-07 (`/tinh-cuoc/`) must each re-run these worked examples through their UI as part of their own verification plans, and L-01 repeats them per route (ADR 0004 line 68). The roadmap S-03 row says so.
+- [ ] No business fact is hard-coded: the divisor, rounding step and prices come only from the route and band arguments (golden rule 2); the worked-example script reads its fixtures from `data/seed/routes.legacy.json`, plus inline synthetic rows only for cases the seed can't express (validity windows, both prices set, overlap ties, `prices_public = false`, a malformed numeric string), each marked as synthetic.
 
 #### Worked examples (`pnpm price:examples`)
 
@@ -82,10 +85,19 @@ Seed values are **unverified legacy data** (Q-04), used here only to exercise th
 | 15 | MY | 300 kg | 300 kg | Liên hệ `contact_band` |
 | 16 | SG | 5 kg, preview **off** | — | Liên hệ `unverified` |
 | 17 | TH | 10 kg, method `sea` | 10 kg | Liên hệ `no_band` |
-| 18 | synthetic | band `valid_to` 2026-10-21 + an older band | — | the expired band is ignored |
-| 19 | synthetic | band with flat and per-kg both set | — | Liên hệ `ambiguous_band` |
-| 20 | synthetic | `prices_public = false` | — | Liên hệ `not_public` |
-| 21 | SG | 0 kg / 2 kg + only L and W | — | `invalid` (`actualWeight` / `dimensions`) |
+| 18 | SYN-A | 10 kg; bands A `[1, ∞)` 100.000/kg `valid_to` 2026-10-21, B `[0.5, ∞)` 120.000/kg no dates | 10 kg | A expired → B: 1.200.000 đ |
+| 19 | SYN-B | 10 kg; one band `[1, ∞)` with `flat_price_vnd` 500.000 **and** `price_per_kg_vnd` 100.000 | 10 kg | Liên hệ `ambiguous_band` |
+| 20 | SG, `prices_public = false` (synthetic copy) | 5 kg, preview on | — | Liên hệ `not_public` |
+| 21 | SG | 0 kg / 2 kg + only L = 40, W = 30 | — | `invalid` (`actualWeight` / `dimensions`) |
+| 22 | SYN-A | same as 18 but A `valid_to` **2026-10-22** (today, inclusive) | 10 kg | A applies: 1.000.000 đ |
+| 23 | SYN-A | same as 18 but A has `valid_from` **2026-10-23** and no `valid_to` | 10 kg | A not yet valid → B: 1.200.000 đ |
+| 24 | SYN-C | 10 kg; bands `[1, ∞)` 100.000/kg and `[1, ∞)` 110.000/kg, run in both row orders | 10 kg | Liên hệ `ambiguous_band` both times |
+| 25 | SG | 8 kg, 20×20×20 cm (volumetric 1.6 kg) | 8 kg (actual > volumetric) | 88.000 × 8 = 704.000 đ |
+| 26 | SG | 1.0004 kg | 1.001 kg (up to the gram) | 150.000 × 1,001 = 150.150 đ |
+| 27 | SG | 100.000,001 kg / 1 kg + 1.000×1.000×1.000 cm (volumetric 200.000 kg) | — | `invalid` (`actualWeight` / `dimensions`) |
+| 28 | mapper | a `route_rates` row with `weight_min_kg = "abc"` | — | the mapper throws an error naming `weight_min_kg`; the script prints the message and continues |
+
+Synthetic routes SYN-A/B/C: `is_verified = true`, `prices_public = true`, divisor 5000, `weight_rounding_kg = null`, method `air`. They exist only inside the script and are labelled "synthetic" in its output.
 
 If the implementer finds a seed value that differs from this table, the seed file wins for the price and the table is corrected in the PR (the rule under test stays the same).
 
@@ -96,8 +108,8 @@ If the implementer finds a seed value that differs from this table, the seed fil
 - Pure domain functions in **new** files under `43logistics.vn/modules/pricing/domain/`: weight conversion and rounding, volumetric and chargeable weight, band selection, quote.
 - `43logistics.vn/modules/pricing/client.ts` (new): the client-safe API for S-04/S-07.
 - An infrastructure mapper from `routes` / `route_rates` rows to the domain types (no new query, no cache tag).
-- `43logistics.vn/scripts/price-examples.ts` + `package.json` script `price:examples` (manual evidence, not a test suite, ADR 0004).
-- Context: Q-25 in `11-open-questions.md`, the pricing rules in `07-data-model.md` (route_rates section), the `price:examples` row in `AGENTS.md` §7.
+- `43logistics.vn/scripts/price-examples.ts` + `package.json` script `price:examples` (prints results for manual comparison, no assertions; not a test suite, ADR 0004).
+- Context: Q-25 in `11-open-questions.md` (added with this spec), the S-03 roadmap row wording (added with this spec), the pricing rules in `07-data-model.md` (route_rates section) and the `price:examples` row in `AGENTS.md` §7 (with the implementation).
 
 **Out of scope:**
 
@@ -138,19 +150,20 @@ If the implementer finds a seed value that differs from this table, the seed fil
 
 ### Manual Verification Plan
 
-- Scenario: Given the seed rates, when `pnpm -C 43logistics.vn price:examples` runs, then all 21 rows print `PASS` with the expected value, and the script exits 0; changing one expected value in the script makes it print `FAIL` and exit 1 (revert afterwards).
-- Seed needs: none. The script reads `data/seed/routes.legacy.json` and inline synthetic rows; it does not touch any database.
+- Scenario: Given the seed rates, when `pnpm -C 43logistics.vn price:examples` runs, then it prints rows 1–28 and every printed result matches the Worked examples table when compared by hand.
+- Seed needs: none. The script reads `data/seed/routes.legacy.json` and inline synthetic rows; it does not touch any database (the shared local Postgres is not used).
 - Steps:
-  1. Run `pnpm -C 43logistics.vn price:examples` and paste its output into the PR.
-  2. Hand-check rows 4, 9 and 10 with a calculator and note the arithmetic in the PR (L-01 evidence format).
-  3. Confirm `client.ts` has no `server-only` / `@/db` / `infrastructure` import (`grep`), and that `pnpm check:boundaries` passes.
-  4. In a scratch file (not committed), check that importing `@/modules/pricing/client` from a `"use client"` component builds.
-- Validation commands: `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `build`, `i18n:check`, `check:redirects` (every PR, F-07). No UI change, so no axe scan or Lighthouse run; the JS delta is 0 (no public route imports the engine). No automated tests (ADR 0004).
+  1. Run `pnpm -C 43logistics.vn price:examples` and paste its output into the PR next to the table, marking each row as matching.
+  2. Hand-check rows 4, 9, 10 and 26 with a calculator and note the arithmetic in the PR (L-01 evidence format).
+  3. Confirm `client.ts` has no `server-only` / `@/db` / `infrastructure` import (`grep -nE "server-only|@/db|infrastructure" modules/pricing/client.ts` prints nothing), and that `pnpm check:boundaries` passes.
+  4. Client-bundle probe (S-03 app worktree only, never committed): add a temporary `"use client"` component that calls `quote()` from `@/modules/pricing/client` with row 6's input and renders the total, import it into the existing `app/[locale]/(site)/page.tsx`, run `pnpm build && pnpm start -p 3200`, open `http://localhost:3200/` and confirm the probe shows 750.000 with no console error. Then remove only the probe changes (`git diff` shows nothing under `app/`).
+  5. With the same production server on port 3200 (probe removed and rebuilt), run `pnpm check:redirects --base http://localhost:3200` and record 0 FAIL (PENDING/SKIPPED rows as named deferrals, F-07).
+- Validation commands: `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `build`, `i18n:check`, `check:redirects` (step 5). No public UI change, so no axe scan or Lighthouse run; the committed JS delta is 0 (no public route imports the engine). No automated tests (ADR 0004).
 
 ### Implementation Hints
 
 - Shape (not prescriptive): `quote(route, bands, input, { today, previewUnverified })` returning a discriminated union `{ kind: "price" | "contact" | "invalid", … }`. Keep each function under the `code-style.md` size limits.
-- Convert kg → grams with integer-safe parsing (`Math.ceil(kg * 1000 - 1e-9)` or string parsing) so `1.0` stays 1000 g; per-kg totals as `Math.round(pricePerKgVnd * grams / 1000)` stay exact within `Number.MAX_SAFE_INTEGER` for realistic weights.
+- Convert kg → grams exactly (e.g. parse the decimal string into integer milligrams, then ceil to grams) so `1.0` stays 1000 g and `1.0004` becomes 1001 g. Compute per-kg totals as `bigint`: `(BigInt(price) * BigInt(grams) * 2n + 1000n) / 2000n` is half-up for positive values; convert back to `number` only after the safe-integer check.
 - Reuse `Vnd` from `domain/from-price.ts` by import; don't edit that file. Name weights `weightKg`/`lengthCm`/`…G` per `type-definitions.md`.
 - The seed JSON uses kg numbers; the DB returns `numeric` as strings (`scripts/seed/write-routes.ts:12`). The mapper and the script both go through the same kg → grams conversion.
 - Lesson patterns to avoid: hard-coding 5000 or 0.5; float rounding (`1.0` → `1.5`); adding VAT or a minimum charge that no doc confirms.
