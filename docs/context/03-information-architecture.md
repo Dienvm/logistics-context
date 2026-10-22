@@ -122,6 +122,15 @@ Same template (S-04: prices "liên hệ", no rate table or calculator while `pri
 
 Comparison table of all routes in that direction (from-price, days, methods, link) + short intro + FAQ + CTA.
 
+**As built (S-06):** on the shared `[slug]` segment, in quynam.vn's service-list structure with the S-05b look:
+- hero (breadcrumbs, H1, intro, Zalo/Gọi);
+- photo route cards with the from-price as the headline;
+- the comparison table (`<table>` from 768 px, cards below; S-01 fact rule);
+- FAQ from `faqs.page_id` when published;
+- the closing band.
+
+The inbound hub lists only active inbound routes (SG→VN; Q-05). Published by the owner via `db:confirm` (`pages`). Route pages show the hub crumb once their hub is published.
+
 ### Calculator `/tinh-cuoc/`
 
 Inputs: route, actual weight (kg), dimensions L×W×H (cm), goods type. Output: chargeable weight, band, estimated price, transit days, caveats. Actions: "Gửi kết quả qua Zalo" (prefilled), "Nhận báo giá chính xác" (lead form prefilled). Pure client computation from rates embedded at build time; logs `calculate_quote` event.
