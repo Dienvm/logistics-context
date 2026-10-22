@@ -27,6 +27,7 @@
 | Q-22 | Which extra destinations (e.g. AU, CA, CN, UK, DE, FR, other EU) and services (order consolidation from VN marketplaces, frozen food, vacuum packing, home pickup) does **43 Logistics itself** offer? (Quý Nam's menu is only the checklist, not a fact about 43L.) | Route registry, route pages, home benefits | Open |
 | Q-23 | Real trust numbers for 43 Logistics: years operating, customers/shipments per year, any press mentions? | Home stats band, About, press strip | Open |
 | Q-24 | Sister company Quý Nam (Q-21): (a) may 43logistics.vn say publicly that it is part of the Quý Nam group (About, footer), and may quynam.vn mention 43L on its About page? (b) may 43L use the sister company's tracking/calculator system (`tracking.quynam.vn`) for its own shipments, if it is the real operational system? | About, footer, off-page SEO, `/tra-cuu/` | Open |
+| Q-25 | Price calculation rules per route: (a) the weight rounding step (only US has one, 0.5 kg; do other routes round up to 0.5 kg or 1 kg?); (b) band edges — is "1–5 kg / 6–20 kg" meant as "up to 5 kg / over 5 kg", and how are US weights between the listed points (e.g. 1.5 kg) priced?; (c) is there a minimum charge or minimum weight; (d) is the volumetric divisor 5000 for every route and method? Until answered the engine (S-03) returns "Liên hệ" for gaps and below-minimum weights and applies no default rounding. | Price engine, calculator, rate tables | Open |
 
 ## Answered
 
