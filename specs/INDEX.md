@@ -8,7 +8,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
-| 2026-10-21 | feature | [feature-s01-site-layout-shell.md](feature-s01-site-layout-shell.md) | Build the site layout shell from database data | S-01 | both | in_implementation |
+| 2026-10-21 | feature | [feature-s01-site-layout-shell.md](feature-s01-site-layout-shell.md) | Build the site layout shell from database data | S-01 | both | implemented |
 | 2026-10-21 | feature | [feature-f08-ci-lighthouse-budget.md](feature-f08-ci-lighthouse-budget.md) | Add Lighthouse report and JS budget gate to CI | F-08 | both | implemented |
 | 2026-10-21 | feature | [feature-f07-legacy-redirects-check.md](feature-f07-legacy-redirects-check.md) | Generate legacy redirects from the CSV and check them | F-07 | both | implemented |
 | 2026-10-21 | feature | [feature-f06-proxy-composition.md](feature-f06-proxy-composition.md) | Compose proxy.ts for gone, legacy, attribution and admin | F-06 | both | implemented |

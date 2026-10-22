@@ -1,14 +1,18 @@
 ---
 title: Build the site layout shell from database data
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/s-01-site-layout-shell
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/11
+implementation_commit: de37a0d4447cb6b923b8cc33df09ff6be99e4a40
+followup_pr: https://github.com/Dienvm/43logistics.vn/pull/12
+followup_commit: ce4b9730e437b441f7c3cb1ad9c2c7b989d48e36
+implemented_date: 2026-10-22
 owner_repo: both
 roadmap: S-01
 priority: must-have
 blocked_by_questions: [Q-01, Q-02, Q-03, Q-04, Q-05, Q-06, Q-11]
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 ## Feature: Build the site layout shell from database data
@@ -249,6 +253,8 @@ A visitor on any page sees the 43 Logistics header. On desktop, "Gửi hàng đi
 9. **axe-core** at 360/768/1280, with the mega menu and drawer open → 0 serious/critical.
 10. **Breadcrumbs:** on `/dev/tokens/`, the trail is visible, and its JSON-LD passes the Schema.org validator.
 11. **CI:** the `verify` run on the PR shows the Postgres service, migrate + seed, build, `check:redirects` and `perf:report` all green.
+
+**Evidence (recorded 2026-10-22):** app PR #11 body (screenshots at 360/768/1023/1280 in production and preview modes, mega-menu keyboard model, axe 0 serious/critical, CLS 0 from the action bar); CI `perf:report` on PR #11: 176.7 KiB, Δ +42.4 KiB, within the 50 KiB budget. PR #12 landed the review follow-up (`0f8a8be`) that was pushed after #11 merged. `verify` and `gitleaks` passed on both merge commits.
 
 **Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `tokens:check`, `i18n:check`, `build`, `check:redirects`, `perf:report`. The consent matrix doesn't apply (no consent or tracking change; the `/go` links are plain links). No automated tests (ADR 0004).
 

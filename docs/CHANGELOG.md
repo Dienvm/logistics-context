@@ -2,6 +2,15 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-22 — Build the site layout shell from database data
+
+- Spec: [specs/feature-s01-site-layout-shell.md](../specs/feature-s01-site-layout-shell.md) · Roadmap: S-01
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/11 (de37a0d), follow-up https://github.com/Dienvm/43logistics.vn/pull/12 (ce4b973); context: https://github.com/Dienvm/logistics-context/pull/21, https://github.com/Dienvm/logistics-context/pull/23, https://github.com/Dienvm/logistics-context/pull/25
+- Owner: both
+- Summary: every public page now has the shell from DB data: header with the routes mega menu, mobile drawer, mobile action bar, footer from `site_settings`, and breadcrumbs with `BreadcrumbList` JSON-LD; contact links go through `/go/[channel]`.
+  - Unverified seed facts stay hidden in production and show with a "chưa xác nhận" badge under `PREVIEW_UNVERIFIED=1` (dev or Vercel preview only); `pnpm db:local` / `dev:local` give a throwaway local DB.
+  - App JS +42.4 KiB over the baseline on `/`, within the 50 KiB budget.
+
 ## 2026-10-22 — Create the Supabase schema, migrations and seed
 
 - Spec: [specs/feature-f04-database-schema-seed.md](../specs/feature-f04-database-schema-seed.md) · Roadmap: F-04
