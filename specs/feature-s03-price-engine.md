@@ -1,7 +1,7 @@
 ---
 title: Add the pure price engine for quotes
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: S-03
 priority: must-have
