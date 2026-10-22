@@ -1,7 +1,7 @@
 ---
 title: Build the route pages from database data
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: S-04
 priority: must-have
