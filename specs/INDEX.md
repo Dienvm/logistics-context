@@ -9,7 +9,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
 | 2026-10-22 | feature | [feature-s04b-route-page-content.md](feature-s04b-route-page-content.md) | Fill the route pages with the owner's content | S-04b | both | in_implementation |
-| 2026-10-22 | feature | [feature-s06-hubs.md](feature-s06-hubs.md) | Build the outbound and inbound hub pages | S-06 | both | approved |
+| 2026-10-22 | feature | [feature-s06-hubs.md](feature-s06-hubs.md) | Build the outbound and inbound hub pages | S-06 | both | in_implementation |
 | 2026-10-22 | feature | [feature-s04-route-page-template.md](feature-s04-route-page-template.md) | Build the route pages from database data | S-04 | both | implemented |
 | 2026-10-22 | feature | [feature-s05b-home-redesign.md](feature-s05b-home-redesign.md) | Redesign the home page with confirmed owner facts and motion | S-05b | both | implemented |
 | 2026-10-22 | feature | [feature-s05-home.md](feature-s05-home.md) | Build the home page from database data | S-05 | both | implemented |
