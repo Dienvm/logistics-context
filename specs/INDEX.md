@@ -12,7 +12,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 | 2026-10-21 | feature | [feature-f08-ci-lighthouse-budget.md](feature-f08-ci-lighthouse-budget.md) | Add Lighthouse report and JS budget gate to CI | F-08 | both | implemented |
 | 2026-10-21 | feature | [feature-f07-legacy-redirects-check.md](feature-f07-legacy-redirects-check.md) | Generate legacy redirects from the CSV and check them | F-07 | both | implemented |
 | 2026-10-21 | feature | [feature-f06-proxy-composition.md](feature-f06-proxy-composition.md) | Compose proxy.ts for gone, legacy, attribution and admin | F-06 | both | implemented |
-| 2026-10-21 | feature | [feature-f04-database-schema-seed.md](feature-f04-database-schema-seed.md) | Create the Supabase schema, migrations and seed | F-04 | both | in_implementation |
+| 2026-10-21 | feature | [feature-f04-database-schema-seed.md](feature-f04-database-schema-seed.md) | Create the Supabase schema, migrations and seed | F-04 | both | implemented |
 | 2026-10-21 | feature | [feature-f03-i18n-routing.md](feature-f03-i18n-routing.md) | Add next-intl locale routing with VI root and /en | F-03 | both | implemented |
 | 2026-10-21 | feature | [feature-f02-tokens-and-theme.md](feature-f02-tokens-and-theme.md) | Generate the token theme and move to Tailwind v4 | F-02 | both | implemented |
 | 2026-10-21 | feature | [feature-f01-upgrade-and-harness.md](feature-f01-upgrade-and-harness.md) | Upgrade to Next 16 and adopt the module layout | F-01 | both | implemented |

@@ -2,6 +2,14 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-22 — Create the Supabase schema, migrations and seed
+
+- Spec: [specs/feature-f04-database-schema-seed.md](../specs/feature-f04-database-schema-seed.md) · Roadmap: F-04
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/6 (2f5109c); context: https://github.com/Dienvm/logistics-context/pull/13, https://github.com/Dienvm/logistics-context/pull/14, https://github.com/Dienvm/logistics-context/pull/25
+- Owner: both
+- Summary: all 25 tables from `07` as Drizzle module schemas with RLS on and no policies, one baseline migration, and an idempotent `pnpm db:seed` that loads legacy data unverified and as drafts.
+  - Verified on the owner's Supabase project in `ap-southeast-1`: `anon`/`authenticated` read 0 rows and can't insert; the app's transaction-pooler connection reads all 10 routes.
+
 ## 2026-10-21 — Add Lighthouse report and JS budget gate to CI
 
 - Spec: [specs/feature-f08-ci-lighthouse-budget.md](../specs/feature-f08-ci-lighthouse-budget.md) · Roadmap: F-08

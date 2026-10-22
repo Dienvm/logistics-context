@@ -1,16 +1,16 @@
 ---
 title: Create the Supabase schema, migrations and seed
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/f-04-database-schema-seed
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/6
 implementation_commit: 2f5109cef0b6d1da687fc8368486f083b2986450
-pending_verification: "Supabase cloud (owner creates the ap-southeast-1 project and sets DATABASE_URL/DATABASE_URL_DIRECT): migrate + seed, RLS/role checks, runtime-pooler query. Every other AC was verified on a fresh local Postgres 17 (app PR #6)."
+implemented_date: 2026-10-22
 owner_repo: both
 roadmap: F-04
 priority: must-have
 blocked_by_questions: [Q-01, Q-02, Q-03, Q-04, Q-05, Q-06, Q-07]
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 ## Feature: Create the Supabase schema, migrations and seed
@@ -243,6 +243,15 @@ Nothing is published by the seed. Public pages keep showing placeholders until o
    - **validation:** remove a route `key` → exit 1, naming the file and path, with nothing written;
    - **rollback:** add a page whose slug duplicates an existing one. Cross-file validation doesn't check slugs, so it violates `page_tr_locale_slug_uq` at write time, after routes and settings are written. The run must exit 1, and a before/after snapshot (row counts plus `md5` of `routes`, `route_rates` and `site_settings` contents) must be identical.
 8. Add a temporary client component importing `@/db/client`: `pnpm build` fails with the `server-only` error. Remove it, and the build passes.
+
+**Cloud evidence (recorded 2026-10-22, owner's Supabase project in `ap-southeast-1`):** steps 5, 7 and 8 were verified on a fresh local Postgres 17 in app PR #6; steps 3, 4 and 6 were re-run on the cloud project.
+
+- `pnpm db:migrate`: applied. 25 tables in `public`, 25 with RLS enabled, 0 policies.
+- `pnpm db:seed`, run three times: `routes` 10 (8 active), `route_translations` 20, `route_rates` 30, `site_settings` 8, `pages` 22, `page_translations` 44, `menu_items` 27, `menu_item_translations` 54; counts unchanged on each re-run.
+- `set role anon` / `set role authenticated`: `select count(*) from routes` returns **0** for both (RLS filters; table privileges are not revoked).
+- `insert into routes …` as `anon`: rejected with `new row violates row-level security policy for table "routes"`; count stays 10.
+- `DATABASE_URL` (transaction pooler, port 6543, `prepare: false`): `select current_user, count(*) from routes` returns `postgres`, 10.
+- `pnpm build` passes against the project; merge-commit checks `verify` and `gitleaks` succeeded.
 
 **Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `tokens:check`, `i18n:check`, `build` (the `verify` CI workflow runs the same, without DB access). The consent matrix doesn't apply (no consent, tracking, proxy or lead *processing* change; the tables only). No automated tests (ADR 0004).
 
