@@ -214,6 +214,7 @@ Check availability first with `command -v codex`; if it's missing, skip the step
 | `pnpm tokens` / `pnpm tokens:check` | exists | Build `app/theme.css` from `43logistics.vn/data/design-tokens.json` / exit 1 if it is out of date |
 | `pnpm i18n:check` | exists | Every `messages/*.json` matches `vi.json` in keys and ICU arguments |
 | `pnpm db:seed` | exists | `tsx scripts/seed.ts`: idempotent, one transaction; routes, rates, settings (unverified), IA pages and menus (draft); requires `DATABASE_URL_DIRECT` |
+| `pnpm db:confirm` | exists (S-05b) | `tsx scripts/confirm-facts.ts`: marks the routes and `site_settings` keys listed in `43logistics.vn/data/owner-confirmations.json` verified (the owner's record; the seed never verifies); requires `DATABASE_URL_DIRECT` |
 | `pnpm perf:report` | exists | Lighthouse 3-run medians per route in `43logistics.vn/data/perf-budget.json`; exits 1 when app JS > baseline + 50 KiB (ADR 0006), unstable, or unmeasurable; CI job summary + `lighthouse-report` artifact |
 | `pnpm db:local` / `pnpm dev:local` | exists (S-01) | Throwaway Docker Postgres 17 on `localhost:54329` (roles, migrate, seed; never writes `.env`) / `next dev` against it with `PREVIEW_UNVERIFIED=1` (unverified facts badged) |
 | `pnpm check:redirects` | exists | Verify every row of `43logistics.vn/data/redirect-map.csv` against a running server (`--strict` at L-01, `--host-checks` at L-02); runs in the `verify` CI workflow |

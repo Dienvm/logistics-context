@@ -2,6 +2,26 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-22 — Redesign the home page with confirmed owner facts and motion
+
+- Spec: [specs/feature-s05b-home-redesign.md](../specs/feature-s05b-home-redesign.md) · Roadmap: S-05b
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/15 (caf3a0c); context: https://github.com/Dienvm/logistics-context/pull/34
+- Owner: both
+- Summary: owner review turned the thin S-05 home into a full page: logo + top bar, hero with the "nhanh, rẻ, dễ dàng" slogan and visible hotline, photo route bento with confirmed prices/days, why us, process timeline, 10% offer band, real photo gallery and blurred customer chats, dark closing band with offices. CSS-only motion; no new JS.
+  - Owner-confirmed facts live in `43logistics.vn/data/owner-confirmations.json`, applied by `pnpm db:confirm` (the seed never verifies). **Not yet applied on Supabase** (with migration `0001`).
+  - Mega menu moved to ≥ 1280 px (EN overflowed at 1024 px). Fonts trimmed to rendered weights.
+  - Lighthouse mobile medians: Performance 90 / 90, Accessibility 100; simulated LCP ≈ 3.6 s (H1 waits for its web font) stays above the 2.5 s target, a follow-up. Route JS unchanged (177.2 KiB).
+  - Also carried the S-05 Codex fixes (`90e4e32`) that missed PR #14.
+
+## 2026-10-22 — Build the home page from database data
+
+- Spec: [specs/feature-s05-home.md](../specs/feature-s05-home.md) · Roadmap: S-05
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/14 (e3216a0); context: https://github.com/Dienvm/logistics-context/pull/33
+- Owner: both
+- Summary: `/` and `/en/` replaced the placeholder with a DB-driven home: one H1 (published translation or messages), publication-aware hreflang, home JSON-LD from verified settings only, a route bento sharing the mega menu's card and visibility rule, gated copy and photos, offices, offer, guides and consented testimonials. Unverified facts never reach HTML or RSC.
+  - Photos render via `next/image` `getImageProps()` (no ~6 KB client chunk). No carousel, no iframe; LCP image ≤ 150 KB.
+  - Its Codex review fixes landed after the merge and shipped in S-05b.
+
 ## 2026-10-22 — Log contact clicks and redirect via /go/[channel]
 
 - Spec: [specs/feature-s02-contact-tracker.md](../specs/feature-s02-contact-tracker.md) · Roadmap: S-02
