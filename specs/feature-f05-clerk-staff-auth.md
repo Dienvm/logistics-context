@@ -1,7 +1,7 @@
 ---
 title: Protect /admin with Clerk staff auth and roles
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: F-05
 priority: must-have
