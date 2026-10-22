@@ -1,7 +1,7 @@
 ---
 title: Build the home page from database data
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: S-05
 priority: must-have
