@@ -1,7 +1,7 @@
 ---
 title: Log contact clicks and redirect via /go/[channel]
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: S-02
 priority: must-have
