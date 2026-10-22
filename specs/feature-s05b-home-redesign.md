@@ -1,11 +1,13 @@
 ---
 title: Redesign the home page with confirmed owner facts and motion
 type: feature
-status: in_implementation
+status: implemented
 owner_repo: both
 roadmap: S-05b
 branch: feat/S-05b-home-redesign
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/15
+implementation_commit: caf3a0c0b5487f61bc6c75bbc78ead2c5cc68c5f
+implemented_date: 2026-10-22
 priority: must-have
 blocked_by_questions: [Q-01, Q-02, Q-03, Q-04, Q-08, Q-11, Q-23]
 updated: 2026-10-22

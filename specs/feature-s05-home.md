@@ -1,11 +1,13 @@
 ---
 title: Build the home page from database data
 type: feature
-status: in_implementation
+status: implemented
 owner_repo: both
 roadmap: S-05
 branch: feat/S-05-home
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/14
+implementation_commit: e3216a0942fda652e45ff1c42f939279a1d89e63
+implemented_date: 2026-10-22
 priority: must-have
 blocked_by_questions: [Q-01, Q-02, Q-03, Q-04, Q-05, Q-06, Q-07, Q-11, Q-12, Q-22, Q-23, Q-26, Q-27]
 updated: 2026-10-22
