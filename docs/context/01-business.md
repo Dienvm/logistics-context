@@ -22,8 +22,8 @@
 
 | Location | Address as shown on old site | Notes |
 | --- | --- | --- |
-| Đà Nẵng (head office / warehouse) | "24 Bình Hòa 6, Khuê Trung, Cẩm Lệ" · schema: "24 Bình Hoà 6, Phường Khuê Trung", "Quận Cẩm Lệ", "Đà Nẵng", postal code "50700" | Ward/district names may have changed after the 01/07/2025 administrative reform — `NEEDS CONFIRMATION` |
-| TP. Hồ Chí Minh | "34 Nguyễn Trọng Lội, Phường 4, Tân Bình" (contact page: "34 Nguyễn Trọng Lội, P4, Tân Bình") | Same reform caveat |
+| Đà Nẵng (head office / warehouse) | "24 Bình Hòa 6, Khuê Trung, Cẩm Lệ" · schema: "24 Bình Hoà 6, Phường Khuê Trung", "Quận Cẩm Lệ", "Đà Nẵng", postal code "50700" | Ward/district names may have changed after the 01/07/2025 administrative reform — `NEEDS CONFIRMATION` Address **Confirmed as shown** by the owner, 2026-10-22 (ward names after the reform still open, Q-02). |
+| TP. Hồ Chí Minh | "34 Nguyễn Trọng Lội, Phường 4, Tân Bình" (contact page: "34 Nguyễn Trọng Lội, P4, Tân Bình") | Same reform caveat Address **Confirmed as shown** by the owner, 2026-10-22 (ward names after the reform still open, Q-02). |
 | Hà Nội | Route pages claim "kho ở Hà Nội – TP.HCM – Đà Nẵng" but no address anywhere | `NEEDS CONFIRMATION` — do not show until confirmed |
 | Overseas | Singapore → VN page mentions "kho Singapore" (receive, sort, repack) | Address `NEEDS CONFIRMATION` |
 
@@ -31,13 +31,13 @@
 
 | Channel | Value | Notes |
 | --- | --- | --- |
-| Hotline / Zalo | "0979 222 357" · E.164 `+84979222357` | Primary. `tel:+84979222357`, `https://zalo.me/0979222357` |
-| WhatsApp | `https://wa.me/84979222357` | Old site used `wa.me/0979222357` (broken, missing country code) |
-| Messenger | `https://m.me/43logistics` | |
-| Facebook | `https://www.facebook.com/43logistics` | Only social profile found |
-| Second number | "0827 575 567" (blog: "Call/Zalo/ Whatsapp") | `NEEDS CONFIRMATION` — still in use? |
-| Email | "43logistics.danang@gmail.com" | Recommend a domain mailbox; old form sent from `email@43logistics.vn` (may not exist → deliverability risk) |
-| Opening hours | Header: "T2 - T7: 08:00 - 18:00" · Contact page: "Từ thứ 2 -> Sáng thứ 7" · schema: 09:00–17:00 · route pages: "CSKH 24/7" | **Contradictory** — `NEEDS CONFIRMATION`; store one value in `site_settings` |
+| Hotline / Zalo | "0979 222 357" · E.164 `+84979222357` | Primary. `tel:+84979222357`, `https://zalo.me/0979222357` **Confirmed** by the owner, 2026-10-22 (S-05b; `43logistics.vn/data/owner-confirmations.json`). |
+| WhatsApp | `https://wa.me/84979222357` | Old site used `wa.me/0979222357` (broken, missing country code) **Confirmed** by the owner, 2026-10-22 (S-05b; `43logistics.vn/data/owner-confirmations.json`). |
+| Messenger | `https://m.me/43logistics` | **Confirmed** by the owner, 2026-10-22 (S-05b; `43logistics.vn/data/owner-confirmations.json`). |
+| Facebook | `https://www.facebook.com/43logistics` | Only social profile found **Confirmed** by the owner, 2026-10-22 (S-05b; `43logistics.vn/data/owner-confirmations.json`). |
+| Second number | "0827 575 567" (blog: "Call/Zalo/ Whatsapp") | `NEEDS CONFIRMATION` — still in use? Owner decision 2026-10-22: not published (one primary number, Q-06). |
+| Email | "43logistics.danang@gmail.com" | Recommend a domain mailbox; old form sent from `email@43logistics.vn` (may not exist → deliverability risk) **Confirmed** by the owner, 2026-10-22 (S-05b; `43logistics.vn/data/owner-confirmations.json`). |
+| Opening hours | Header: "T2 - T7: 08:00 - 18:00" · Contact page: "Từ thứ 2 -> Sáng thứ 7" · schema: 09:00–17:00 · route pages: "CSKH 24/7" | **Contradictory** — `NEEDS CONFIRMATION`; store one value in `site_settings` Owner decision 2026-10-22: **T2–T7 08:00–18:00** (the header value) is Confirmed; 24/7 stays unconfirmed (Q-03). |
 
 ## Services (as described on the old site)
 
@@ -58,10 +58,12 @@ Inbound (nước ngoài → Việt Nam): **Singapore → VN** (`/van-chuyen-hang
 Common rules shown on many pages:
 
 - Volumetric weight: **(Dài × Rộng × Cao) cm / 5000 = kg** (the chargeable weight is the higher of actual and volumetric).
-- New-customer offer: "Bạn là khách hàng mới? Nhận ngay 10% ưu đãi" — `NEEDS CONFIRMATION` that it is still running.
+- New-customer offer: "Bạn là khách hàng mới? Nhận ngay 10% ưu đãi" — **Confirmed running** by the owner, 2026-10-22 (Q-07).
 - Process (4 steps on home): 1 Tiếp nhận & tư vấn → 2 Nhận hàng tại kho, cân kiểm → 3 Đóng gói & thanh toán → 4 Thông quan, vận chuyển, giao hàng. "Người gửi chỉ thanh toán một lần duy nhất và người nhận chỉ nhận hàng!"
 
-> All legacy prices date from Dec 2023 – Jan 2024 except the 2025 blog posts. **Treat every price above as unverified seed data** (`43logistics.vn/data/seed/routes.legacy.json`, `is_verified = false`). The public site must show `updated_at` next to each rate table.
+> **Owner confirmation, 2026-10-22 (S-05b):** the per-route prices and transit times in `43logistics.vn/data/seed/routes.legacy.json` for SG, MY, KR, TW, JP, TH and US are **Confirmed** as published on the live site, and `pnpm db:confirm` marks those routes verified. SG→VN stays "liên hệ". VAT/insurance/surcharge rules remain open (Q-04).
+>
+> All legacy prices date from Dec 2023 – Jan 2024 except the 2025 blog posts. Treat any price not listed in the confirmation above as unverified seed data (`43logistics.vn/data/seed/routes.legacy.json`, `is_verified = false`). The public site must show `updated_at` next to each rate table.
 
 ## Audience (confirmed for the rebuild)
 
