@@ -94,9 +94,9 @@ Every interactive component documents: default · hover · focus-visible · pres
 | Component | Variants / notes |
 | --- | --- |
 | Button | primary (crimson), secondary (ink), ghost, link; channel buttons Zalo / Call / WhatsApp / Messenger (icon + label, go through `/go/[channel]`); sizes sm/md/lg; full-width on mobile |
-| Badge | "Đồng giá", "Nhanh", "Mới", "Ưu đãi"; pill radius |
-| Header | desktop with mega menu (route cards from DB), language switch, Zalo CTA; mobile with drawer |
-| MobileActionBar | sticky bottom: Zalo · Gọi · Tính cước; hides on scroll down, shows on scroll up; safe-area aware |
+| Badge | "Đồng giá", "Nhanh", "Mới", "Ưu đãi"; pill radius. `shared/ui/badge.tsx` (S-01) also marks preview-only facts "chưa xác nhận" (warning tone) |
+| Header | desktop with mega menu (route cards from DB), language switch, Zalo CTA; mobile with drawer. **As built (S-01):** skip link first; text wordmark (Q-11); ≥ 1024 px Radix NavigationMenu, "Gửi hàng đi" is a trigger whose panel holds the outbound route cards (inline SVG flag, name, "Từ … đ/kg" or "Liên hệ", days) plus a hub link; < 1024 px a Sheet drawer (loaded on first open) with the same menu tree, groups as native `<details>`; Chat Zalo from 768 px, call icon from 1024 px; language switch links to the page's `hreflang` alternate |
+| MobileActionBar | sticky bottom: Zalo · Gọi · Tính cước; hides on scroll down, shows on scroll up; safe-area aware. **As built (S-01):** < 768 px, 64 px + safe area reserved on the shell (`pb-action-bar`) so it never shifts layout; `transform` only; shown whenever focus enters it |
 | RouteCard | flag, country, from-price, days, badge; press-down hover |
 | RouteBento | responsive grid of RouteCards (featured card spans 2) |
 | RateTable | weight bands → price; table ≥ md, stacked cards < md; "Cập nhật {date}"; notes (VAT, insurance) |
@@ -109,15 +109,15 @@ Every interactive component documents: default · hover · focus-visible · pres
 | ProofGallery | blurred chat screenshots, lightbox |
 | CtaBand | headline + Zalo + call; variants crimson / sand |
 | TrustStrip | carriers/partners logos (only confirmed), years of experience (only real) |
-| Breadcrumbs | + BreadcrumbList JSON-LD |
+| Breadcrumbs | + BreadcrumbList JSON-LD (`modules/seo` `Breadcrumbs`, escaped `JsonLd`; S-01) |
 | TableOfContents | sticky on desktop for blog/policies |
 | BlogCard, ArticleLayout | cover, title, excerpt, date, route tag |
-| Footer | company + legal, services, policies, contact, social |
+| Footer | company + legal, services, policies, contact, social. Every fact line follows the fact-visibility rule (omitted unless verified; badged in preview, `06`) |
 | ConsentBanner | Consent Mode v2 categories; remembers choice (Zustand + cookie) |
 | Toast | success/error after actions; implemented with `sonner` (`shared/ui/sonner.tsx`), mounted publicly by S-08 |
 | Admin primitives | DataTable (TanStack Table + React Query), FormField, Select, DatePicker, ImageUploader (Supabase Storage, requires alt VI/EN) |
 
-Icons: one SVG line set (Lucide), 1.5–2 px stroke, coloured via `currentColor`. Flags: SVG flag set (e.g. `country-flag-icons`), never emoji. Replace the old multi-colour PNG icons.
+Icons: one SVG line set (Lucide), 1.5–2 px stroke, coloured via `currentColor`. Flags: SVG, never emoji. S-01 uses simplified inline SVGs for the 8 route countries (`shared/ui/flags`), no package. Replace the old multi-colour PNG icons.
 
 Imagery: real photos first (office, warehouse, packing, team). Customer screenshots only with consent and personal data blurred. No stock photos of foreign trucks/ports pretending to be ours. Never text inside images.
 
