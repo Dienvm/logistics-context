@@ -12,6 +12,15 @@ Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app
   - Phase 1 (owner): Codex, manual Lighthouse/axe/fixture checks deferred; OG image deferred (needs a Vietnamese TTF/WOFF font). CI: JS 181.2 KiB (+46.9, PASS) on every route, home included, so ~4 KiB landed in a shared chunk (3.1 KiB headroom left).
   - Not yet on Supabase: run `pnpm db:confirm` there to publish the pages (migration `0001` also pending).
 
+## 2026-10-22 — Add the pure price engine for quotes
+
+- Spec: [specs/feature-s03-price-engine.md](../specs/feature-s03-price-engine.md) · Roadmap: S-03
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/16 (09ff34c); context: https://github.com/Dienvm/logistics-context/pull/37
+- Owner: both
+- Summary: a pure, framework-free price engine turns a route, its rate bands and a weight (plus optional L×W×H) into a price or a "Liên hệ" reason, behind `modules/pricing/client.ts` for the calculators.
+  - Integer grams with exact decimal parsing; volumetric by the route's divisor; rounding only when the route has a step; highest-minimum band wins, ties and both-prices are `ambiguous_band`; per-kg totals in bigint, half up; no VAT/surcharges/minimum (Q-04, Q-25).
+  - `pnpm price:examples` prints the spec's 28 worked examples through the real engine and row mapper; all matched by hand. No public page imported it in this task (route JS unchanged); S-04 added the calculator island.
+
 ## 2026-10-22 — Redesign the home page with confirmed owner facts and motion
 
 - Spec: [specs/feature-s05b-home-redesign.md](../specs/feature-s05b-home-redesign.md) · Roadmap: S-05b
