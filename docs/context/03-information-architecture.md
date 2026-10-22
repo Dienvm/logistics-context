@@ -103,9 +103,20 @@ Deliberate deviations, each closed by its owning task:
 11. Related routes + related guides.
 12. Final CTA band.
 
+**As built (S-04):** one template, `app/[locale]/(site)/[slug]/page.tsx`. The H1 is "Gửi hàng đi {country}" until an editor writes one (the seed stores only the route name). The order follows the list above:
+- the hero facts use the S-01 fact rule; flight schedule and transit note are Vietnamese-only DB text, shown on VI pages only;
+- the mini calculator runs on the S-03 engine with only the shown bands;
+- the rate table is a `<table>` from 768 px and cards below;
+- pricing rules use the route's own divisor and rounding step;
+- the process is the four approved home steps;
+- the compensation section is the policy link only (Q-09); carriers are hidden (Q-08);
+- goods (Q-10), FAQ, testimonials and related guides render only when approved/published rows exist.
+
+Pages are published by the owner through `data/owner-confirmations.json` (`pages`) + `pnpm db:confirm`.
+
 ### Inbound route page (SG → VN)
 
-Same template with inbound-specific blocks: overseas warehouse address + how to send to it, repack/consolidation, delivery to HN/HCM, permit/checkout/order services ("checkout, order, làm permit" on old page — `NEEDS CONFIRMATION`), declared value + insurance rules. Prices may be "liên hệ" if the business keeps them private.
+Same template (S-04: prices "liên hệ", no rate table or calculator while `prices_public = false` or unverified; the inbound blocks below stay hidden until Q-02/Q-05 are answered) with inbound-specific blocks: overseas warehouse address + how to send to it, repack/consolidation, delivery to HN/HCM, permit/checkout/order services ("checkout, order, làm permit" on old page — `NEEDS CONFIRMATION`), declared value + insurance rules. Prices may be "liên hệ" if the business keeps them private.
 
 ### Hubs `/dich-vu/`, `/nhap-hang/`
 
