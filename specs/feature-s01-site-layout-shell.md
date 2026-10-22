@@ -1,7 +1,9 @@
 ---
 title: Build the site layout shell from database data
 type: feature
-status: approved
+status: in_implementation
+branch: feat/s-01-site-layout-shell
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/11
 owner_repo: both
 roadmap: S-01
 priority: must-have
