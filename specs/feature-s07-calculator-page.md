@@ -1,7 +1,7 @@
 ---
 title: Build the shipping calculator page
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: S-07
 priority: must-have
