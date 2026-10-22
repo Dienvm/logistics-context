@@ -98,6 +98,16 @@ const nextConfig: NextConfig = {
 
 Note: in Next 16 `revalidateTag` takes a second `cacheLife` argument; `updateTag` and `refresh` exist only in Server Actions. `params`, `searchParams`, `cookies()`, `headers()` are async.
 
+Site shell (S-01, as built): `app/[locale]/(site)/layout.tsx` composes the header, footer and mobile action bar from module slots (`content` frame and menus, `pricing` route cards, `contact` CTAs and contact blocks), so `content` never imports `pricing` or `contact`. Its queries are tagged as A-02 expects:
+
+- `getMenu` / `getRouteHrefs` / `findPageHref` (`content`) and `listNavRoutes` (`routes`): `menu` plus `route:{key}` per route, `cacheLife('max')`;
+- `getFromPrices` (`pricing`): `menu` plus `route:{key}`, `cacheLife('hours')`, so a `valid_from`/`valid_to` boundary applies within an hour with no edit ("today" is Asia/Ho_Chi_Minh, taken inside the cached function);
+- `getSiteSettings` (`settings`): `settings`, `cacheLife('max')`.
+
+`MENU_TAG` is defined in `modules/routes/constants.ts`, the lowest of the three modules that use it. Client islands that need the current path (contact links' `?from=`, the language switch) read `window.location.pathname` / the page's `hreflang` links after hydration and re-read them when `<head>` changes (every client navigation rewrites it). They don't use `usePathname`: it ships `next/navigation` (~8 KiB gz), suspends on routes with unknown params under Cache Components, and under the proxy's locale rewrite its server value (`/vi/…`) differs from the browser's (`/…`). The mobile drawer's Sheet is loaded on first open (`next/dynamic`), and its groups are native `<details>`, to keep the shell within the JS budget (S-01 measured +42.4 KiB over the 134.3 KiB baseline locally).
+
+**Unverified facts and preview mode (rule 1, S-01).** `shared/lib/fact-visibility.ts` returns `shown` (verified), `badged` (unverified, preview mode) or `hidden`. Preview mode needs `PREVIEW_UNVERIFIED=1` **and** `next dev` or `VERCEL_ENV=preview`; a production build without `VERCEL_ENV=preview` always hides. Each module applies the gate on the server (`pricing` to card prices and transit days, `contact` to phones, offices, hours, social, legal name), so a hidden value never reaches HTML, RSC payloads or island props. The shell is prerendered at **build**, so visibility follows the build environment: preview and production are separate builds, and a preview deployment is never promoted to production without a rebuild in the production environment.
+
 i18n with Cache Components: pass `locale` explicitly into cached query functions (it becomes part of the cache key). Layouts, pages and `shared/i18n/request.ts` read the locale from `next/root-params`, not `setRequestLocale` (see `08`). Verified in F-03 and recorded in ADR 0006 (compatibility record).
 
 ## `proxy.ts` composition (order matters)
@@ -188,12 +198,14 @@ Never mirror server data into Zustand. `QueryClientProvider` mounts only in `/ad
 
 | Name | Scope | Purpose |
 | --- | --- | --- |
-| `DATABASE_URL` | server | Supabase transaction pooler (app runtime) |
+| `DATABASE_URL` | server/CI | Supabase transaction pooler (app runtime). Needed at **build** too: the site shell is prerendered from the DB (S-01). CI and `pnpm db:local` use a throwaway Postgres |
 | `DATABASE_URL_DIRECT` | server/CI | Session pooler (5432) or direct connection; required by `pnpm db:migrate` and `pnpm db:seed` (no fallback to `DATABASE_URL`) |
 | `NEXT_PUBLIC_SUPABASE_URL` | public | Storage public URLs |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | Storage uploads, admin ops |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET` | public/server | Staff auth |
 | `NEXT_PUBLIC_SITE_URL` | public | `https://43logistics.vn` |
+| `PREVIEW_UNVERIFIED` | server | `1` shows unverified seed facts with a "chưa xác nhận" badge, only under `next dev` or `VERCEL_ENV=preview` (S-01). Set it on the Vercel **Preview** environment only, never Production |
+| `VERCEL_ENV` | server (set by Vercel) | `production` / `preview` / `development`; read by the fact-visibility gate |
 | `NEXT_PUBLIC_GTM_ID` | public | `GTM-WF967MKT` or new |
 | `META_PIXEL_ID`, `META_CAPI_TOKEN` | server | Meta CAPI |
 | `TIKTOK_PIXEL_ID`, `TIKTOK_EVENTS_TOKEN` | server | TikTok Events API |
