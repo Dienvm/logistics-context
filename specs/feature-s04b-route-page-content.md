@@ -1,11 +1,13 @@
 ---
 title: Fill the route pages with the owner's content
 type: feature
-status: in_implementation
+status: implemented
 owner_repo: both
 roadmap: S-04b
 branch: feat/s04b-route-content
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/20
+implementation_commit: f84192932b99b0483208706612d84458722886d1
+implemented_date: 2026-10-22
 priority: must-have
 blocked_by_questions: [Q-02, Q-08, Q-09]
 updated: 2026-10-22

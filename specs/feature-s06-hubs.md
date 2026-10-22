@@ -1,11 +1,13 @@
 ---
 title: Build the outbound and inbound hub pages
 type: feature
-status: in_implementation
+status: implemented
 owner_repo: both
 roadmap: S-06
 branch: feat/s06-hubs
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/19
+implementation_commit: ce42ba6339625ccc7c2628ddc2209acd66eb7964
+implemented_date: 2026-10-22
 priority: must-have
 blocked_by_questions: [Q-04, Q-05, Q-25]
 updated: 2026-10-22

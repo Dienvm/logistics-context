@@ -2,6 +2,24 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-22 — Fill the route pages with the owner's content
+
+- Spec: [specs/feature-s04b-route-page-content.md](../specs/feature-s04b-route-page-content.md) · Roadmap: S-04b
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/20 (f841929); context: https://github.com/Dienvm/logistics-context/pull/41, https://github.com/Dienvm/logistics-context/pull/42
+- Owner: both
+- Summary: the 8 route pages now carry the owner's live-site content (intro, "Lưu ý" notes, methods with the DB transit line, process, why us, tips) as validated `page_translations.blocks`, plus approved per-route goods rules (75) and published FAQs (10), in quynam.vn's order; the H1 carries "– từ {price}" when the price is shown.
+  - Owner decisions a/d/f published (CSKH 24/7, goods per route, free delivery + price notes); defaults b/c/e (no insurance promises, no Hà Nội warehouse, no carriers); counterfeit/unlabelled goods and competitor links excluded.
+  - Seed fills empty blocks only; `db:confirm` `routeContent` approves goods and publishes FAQs. Applied on Supabase 2026-10-22 (migration `0001`, seed, confirm).
+  - CI: JS 181.2 KiB (+46.9, PASS); simulated LCP 3.37 s VI / 2.86 s EN (report-only). Phase 1: manual walk-through, axe, Lighthouse, FAQ JSON-LD validation deferred.
+
+## 2026-10-22 — Build the outbound and inbound hub pages
+
+- Spec: [specs/feature-s06-hubs.md](../specs/feature-s06-hubs.md) · Roadmap: S-06
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/19 (ce42ba6); context: https://github.com/Dienvm/logistics-context/pull/39, https://github.com/Dienvm/logistics-context/pull/40
+- Owner: both
+- Summary: `/dich-vu/`, `/en/services/`, `/nhap-hang/` and `/en/ship-to-vietnam/` render (they 404ed before): hero, route photo cards with from-price/days/methods, a comparison table (cards below 768 px), hub FAQ when published, closing band; `ItemList` + `BreadcrumbList` JSON-LD; route pages gain the hub crumb.
+  - Published through `data/owner-confirmations.json` `pages` (on Supabase 2026-10-22). `check:redirects`: 60 PASS, 0 FAIL. JS 181.2 KiB (+46.9, PASS). Manual checks deferred (phase 1).
+
 ## 2026-10-22 — Build the route pages from database data
 
 - Spec: [specs/feature-s04-route-page-template.md](../specs/feature-s04-route-page-template.md) · Roadmap: S-04 (partial)
