@@ -1,12 +1,14 @@
 ---
 title: Log contact clicks and redirect via /go/[channel]
 type: feature
-status: approved
+status: in_implementation
 owner_repo: both
 roadmap: S-02
 priority: must-have
 blocked_by_questions: [Q-06, Q-13, Q-20]
 updated: 2026-10-22
+branch: feat/s02-contact-tracker
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/13
 ---
 
 ## Feature: Log contact clicks and redirect via /go/[channel]
