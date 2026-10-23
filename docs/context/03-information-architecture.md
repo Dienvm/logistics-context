@@ -160,13 +160,13 @@ Filter by country; three groups (cấm / hạn chế – cần khai báo / nhậ
 
 Big channel buttons (Zalo, Gọi, WhatsApp, Messenger; each only when the `contact` setting is verified and holds that channel, placement `contact_page`) · quote form (S-09 reuses the S-08 `LeadSection` from `modules/leads`) · offices with hours · static map.
 
-**Map (S-09):** no iframe and no browser request to Google. The server fetches a Google Static Maps PNG per verified office (key `GOOGLE_MAPS_STATIC_KEY`, server-only), caches it under the settings tag and serves it from `/api/maps/{officeKey}/`; the route builds the provider URL only from the verified office's address (no request parameter is forwarded). Without the key (Q-29), or for an unknown/unverified office, the route is a 404 and the page shows no image; a provider error or 5 s timeout is a 502. Every verified office always has a "Xem bản đồ" link to a Google Maps search of its address (new tab).
+**Map (S-09, owner decision 2026-10-23):** each verified office shows a zoomable Google Maps embed of its address (keyless `https://www.google.com/maps?q={address}&output=embed`, `loading="lazy"`, titled "Bản đồ văn phòng {name}") plus a "Xem bản đồ" link to a Google Maps search (new tab). No API key or server-side map fetch. The iframe loads without consent until S-13 gates it (05 Consent). The email from the `contact` setting is listed under the channel buttons.
 
 ### About `/gioi-thieu/`
 
 Real story, team & warehouse photos, carriers/partners, legal info, numbers only if real.
 
-S-09 template: H1, the page's `richText` markdown blocks, and a legal block (legal name, tax code) rendered only when the `company` setting is verified (Q-01). Photos, carriers and numbers wait for verified data (Q-08, Q-23). The page stays draft (404) until C-03 writes the copy.
+S-09 template: H1, the page's `richText` markdown blocks, and a legal block (legal name, tax code) rendered only when the `company` setting is verified (Q-01). Photos, carriers and numbers wait for verified data (Q-08, Q-23). Published 2026-10-23 with drafted copy (`43logistics.vn/data/seed/info-pages/about.{vi,en}.md`: who we are, services, process, commitments, contact) and the closing CTA band with offices; the real story and photos follow in A-03/A-04/C-03.
 
 ### Blog
 
@@ -180,7 +180,7 @@ Variant of a route page: no full nav (logo + Zalo button), hero matching the ad 
 
 Long-form prose, last-updated date, table of contents. Privacy policy must cover Decree 13/2023 (purposes, retention, rights, contact).
 
-S-09 template: one `policy` block per translation (07 Blocks). "Cập nhật: {d/M/yyyy}" comes from its `effectiveDate`; markdown headings are demoted (the page H1 stays the only `<h1>`) and get diacritic-free ids; the TOC lists the h2/h3 headings when there are at least 2. Raw HTML in markdown is shown as text, images are not rendered. Pages stay draft until C-03 (Q-01, Q-09, Q-17).
+S-09 template: one `policy` block per translation (07 Blocks). "Cập nhật: {d/M/yyyy}" comes from its `effectiveDate`; markdown headings are demoted (the page H1 stays the only `<h1>`) and get diacritic-free ids; the TOC lists the h2/h3 headings when there are at least 2. Raw HTML in markdown is shown as text, images are not rendered. The TOC is a sticky side column from 1024 px; a "questions?" box with the Zalo/call CTAs closes the page. All four policies were published 2026-10-23 with drafted copy (`data/seed/info-pages/policy-*.md`, effective date 2026-10-23) that states no compensation amounts, retention periods or legal name; those facts follow in A-03/C-03 (Q-01, Q-09, Q-17).
 
 ### 404
 
