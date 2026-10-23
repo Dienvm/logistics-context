@@ -65,7 +65,11 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
   - `effectiveDate`: an ISO date;
   - `markdown`: at most 40 000 characters.
 
-  The block is validated with a Zod schema in `modules/content/application/info-blocks.ts`, which also defines `richText` (`markdown`). An invalid block is dropped and logged by page key and type only, as `parseRouteBlocks` does. A policy page whose `policy` block is missing or invalid renders the 404.
+  The block is validated with a Zod schema in `modules/content/application/info-blocks.ts`, which also defines `richText` (`markdown`). An invalid block is dropped and logged by page key and type only, as `parseRouteBlocks` does. A policy page whose `policy` block is missing, invalid or duplicated renders the 404 (a guard, not the normal path).
+- [ ] **Policy validity on every write.** Given any path that writes or publishes a policy translation, then it refuses a translation without exactly one valid `policy` block, so a published policy never reaches the render-time guard:
+  - `pnpm db:seed` parses policy blocks with the strict schema (a bad seed file fails, like the route blocks);
+  - `pnpm db:confirm` refuses to publish a `policy` page whose translation lacks exactly one valid block and names the page and locale;
+  - A-03's page actions must use the same `parseInfoBlocks` check before saving (recorded as a requirement in 07 Blocks; A-03 implements it).
 - [ ] **Markdown rendering.** Given the markdown, then it renders through `react-markdown` in a Server Component (0 bytes of client JS):
   - Raw HTML is not rendered: no `rehype-raw`, and no `dangerouslySetInnerHTML`.
   - Headings `#` in content are demoted, so the page keeps exactly one `<h1>` (the page H1): markdown `#`/`##` → `<h2>`, `###` → `<h3>`, deeper → `<h4>`.
@@ -84,7 +88,7 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 - [ ] **About.** Given a published `about` page, then it renders:
   - the H1;
   - its `richText` blocks in order (same renderer and heading rules);
-  - the existing `CompanyDetails` block, which shows legal name, tax code and licence only when `company` is verified (Q-01), and nothing otherwise.
+  - a legal block of its own (new `modules/contact/ui/company-legal.tsx`, not the footer's `CompanyDetails`, which always renders the brand and logo): legal name and tax code from the `company` setting, rendered only when `company` is verified (Q-01), and nothing at all otherwise. A licence field doesn't exist in `site_settings` and is out of scope.
 
   No numbers, carriers or photos are rendered unless they come from verified data (Q-08, Q-23); S-09 adds no such fields.
 
@@ -98,7 +102,7 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 
   It keeps S-08's behaviour: off without configuration, and off in production while the policy version is a draft. The section id stays `bao-gia`. No "Nhận báo giá chính xác" button exists on this page.
 - [ ] **Offices and hours.** Given verified `offices` and `hours`, then each office shows its localized name, address and the hours. Unverified values follow the S-01 rule: hidden in production, badged in preview.
-- [ ] **Static map (on).** Given `GOOGLE_MAPS_STATIC_KEY` is set and an office is verified, then:
+- [ ] **Static map (on).** Given `GOOGLE_MAPS_STATIC_KEY` is set and an office is verified, then (setting the key is the activation, ADR 0004; the key is configured in production only after the Maps ADR and Q-29, an L-01/L-02 checklist item):
   - the office shows an image from the site's own route `/api/maps/{officeKey}`, rendered with `next/image` (explicit width/height, `sizes`, lazy);
   - its `alt` is the localized "Bản đồ văn phòng {name}" / "Map of the {name} office";
   - the route handler fetches Google Static Maps server-side with the key, using the office's address as center and marker;
@@ -118,12 +122,12 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 
 **Navigation**
 
-- [ ] **Published links only.** Given any page, then footer, desktop header and mobile menu render only items whose target page is published in the current locale (external URLs count as published). A group with no remaining children is not rendered. No rendered menu link has `href="#"` or points to a page that returns 404 (roadmap *Accept*).
+- [ ] **Published links only.** Given any page, then footer, desktop header and mobile menu render only items whose target page is eligible: `pages.status = 'published'` **and** the translation in the current locale is `published` (external URLs count as published). The rule is one shared predicate in `modules/content` (`isPagePublished`), used by `getMenu` and by the info-page loader, so a menu link and its page always agree. Today `getMenu` checks only the translation status (`infrastructure/queries.ts`, `slugIn`); S-09 adds the parent check. A group with no remaining children is not rendered. No rendered menu link has `href="#"` or points to a page that returns 404 (roadmap *Accept*); policy content validity is guaranteed by the write-path AC above.
 
 **SEO and copy**
 
 - [ ] **Metadata.** Given an info page, then `generateMetadata` returns:
-  - title and description from `seo_title`/`seo_description`, falling back to `title`/`excerpt`;
+  - title and description from `seo_title`/`seo_description`, falling back to `title`/`excerpt`, then to a per-type default in `messages` (`contactPage.metaDescription`, `infoPage.metaDescription.{about|policy}`), so the description is never empty (rule 4; the seeded `contact` row has only slug and title);
   - the canonical URL;
   - `alternates.languages` for published pairs only;
   - `noindex` from the row.
@@ -147,7 +151,7 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
   - 03 Contact: the map approach; Navigation: the published-only rule;
   - 05 Structured data: policy `WebPage` with `dateModified`; Contact/About `LocalBusiness`; and the map's no-third-party note;
   - 06 env table: `GOOGLE_MAPS_STATIC_KEY`;
-  - 07 Blocks: the `policy` block (`effectiveDate`, `markdown`) and `richText`;
+  - 07 Blocks: the `policy` block (`effectiveDate`, `markdown`) and `richText`, and the rule that every write path (seed, `db:confirm`, A-03 actions) validates a policy translation before saving or publishing;
   - 11: new Q-29 (Google Maps Platform API key, billing account and key restrictions; until answered the map is off);
   - `.env.example`.
 
@@ -175,7 +179,8 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 - `/hang-cam-gui/` (S-12), the blog (S-11), the sitemap and robots (S-10).
 - An admin editor for these pages (A-03).
 - Interactive maps or any map iframe.
-- Activating the static map in production: needs Q-29 plus an ADR for the Google Maps Platform dependency.
+- Writing the Maps ADR and configuring the production key (Q-29; an L-01/L-02 checklist item, see the Static map AC).
+- PostHog delivery of contact events (rule 12, S-13): S-09 covers `/go` logging and the `dataLayer` push for its new placements.
 
 ### Affected Areas
 
@@ -183,10 +188,10 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 |------|-------|----------------------|
 | app | content application | `modules/content/application/info-blocks.ts` (Zod `policy` + `richText`, `parseInfoBlocks`), `application/load-info-page.ts` (`loadInfoPage(locale, slug)`, `listInfoPageSlugs`) |
 | app | content domain | `modules/content/domain/heading-id.ts` (pure id + TOC extraction), `domain/info-page.ts` (types) |
-| app | content infrastructure | `modules/content/infrastructure/page-record-queries.ts` or a new `info-page-queries.ts` (published info pages by type, cached with `pageTag`), `infrastructure/queries.ts` (`getMenu`: published-only items, empty groups dropped) |
+| app | content infrastructure | `modules/content/infrastructure/page-record-queries.ts` or a new `info-page-queries.ts` (published info pages by type, cached with `pageTag`), `infrastructure/queries.ts` (`getMenu`: published-only items via the shared `isPagePublished` predicate, which also checks `pages.status`; empty groups dropped), `domain/page-published.ts` (the predicate) |
 | app | content ui | `modules/content/ui/blocks/rich-text.tsx` (react-markdown, server), `ui/blocks/table-of-contents.tsx`, `ui/info/policy-page.tsx`, `ui/info/about-page.tsx`, `ui/info/contact-page.tsx` (slots), `ui/layout/site-footer.tsx`, `ui/layout/desktop-nav.tsx`, `ui/layout/mobile-nav-sheet.tsx`, `ui/layout/mobile-nav.tsx` (published-only; the `prefetch={isPublished ? … : false}` branches go away) |
 | app | content entry points | `modules/content/index.ts` (exports), `constants.ts` (`INFO_PAGE_TYPES`, `CONTACT_PAGE_KEY`) |
-| app | contact | `modules/contact/constants.ts` (placements `contact_page`, `not_found`), `ui/contact-ctas.tsx` (`Extract<ContactPlacement, …>` gains `not_found`), `ui/contact-link.tsx` (unchanged API), new `ui/contact-channel-buttons.tsx`, new `ui/office-map.tsx` (image + "Xem bản đồ" link), new `infrastructure/static-map.ts` (server-only fetch + cache), new `application/office-map-url.ts` (pure Maps search URL from an `Office`), `index.ts` exports |
+| app | contact | `modules/contact/constants.ts` (placements `contact_page`, `not_found`), `ui/contact-ctas.tsx` (`Extract<ContactPlacement, …>` gains `not_found`), `ui/contact-link.tsx` (unchanged API), new `ui/contact-channel-buttons.tsx`, new `ui/office-map.tsx` (image + "Xem bản đồ" link), new `ui/company-legal.tsx` (About legal block, verified only), new `infrastructure/static-map.ts` (server-only fetch + cache), new `application/office-map-url.ts` (pure Maps search URL from an `Office`), `index.ts` exports |
 | app | settings | `modules/settings/index.ts` (reuse `getSiteSettings`, `SETTINGS_TAG`; no change expected) |
 | app | leads | `modules/leads/index.ts` (reuse `LeadSection`, `isLeadFormEnabled`; no change expected) |
 | app | goods | `modules/goods/index.ts` (reuse `listLeadGoodsOptions`) |
@@ -195,6 +200,7 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 | app | pages | `app/[locale]/(site)/[slug]/page.tsx` (info branch in `generateStaticParams`, `generateMetadata`, `Page`), new `[slug]/info-view.tsx` (composition), `app/[locale]/(site)/not-found.tsx` (route cards + CTAs), new `app/api/maps/[office]/route.ts` (thin handler → contact entry point) |
 | app | shared | `shared/config/env.server.ts` (`GOOGLE_MAPS_STATIC_KEY`), `shared/lib/format.ts` (date formatter if missing), `next.config.ts` (`images.localPatterns` for `/api/maps/**` if `next/image` needs it) |
 | app | data | `data/owner-confirmations.json` (`pages` += `contact`), `data/perf-budget.json` (+ `/lien-he/`, `/en/contact/`) |
+| app | scripts | `scripts/seed.ts` (strict `policy`/`richText` parsing of page blocks), `scripts/confirm-facts.ts` (refuse to publish a policy without exactly one valid `policy` block) |
 | app | deps | `package.json` + `pnpm-lock.yaml` (`react-markdown`, exact version ≥ 2 weeks old; review size and licence) |
 | app | messages | `messages/vi.json`, `messages/en.json` (`infoPage.*`, `contactPage.*`, `notFound.*`) |
 | app | env | `.env.example` (`GOOGLE_MAPS_STATIC_KEY`) |
@@ -222,9 +228,9 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 
 ### Dependencies & Risks
 
-- **Depends on:** S-01 (layout, `ContactLink`, `CompanyDetails`, `ContactDetails`), S-05 (home JSON-LD office builder), S-07/S-08 (`LeadSection`, goods options), F-04 (`pages`, `site_settings`). No unclosed stack gap.
+- **Depends on:** S-01 (layout, `ContactLink`, `ContactDetails`, the company setting), S-05 (home JSON-LD office builder), S-07/S-08 (`LeadSection`, goods options), F-04 (`pages`, `site_settings`). No unclosed stack gap. Rule 12's consent-gated PostHog fan-out stays with S-13 (PostHog isn't installed, AGENTS.md §3); S-09's contact links get `/go` logging and the `dataLayer` push through the existing `ContactLink`.
 - **Blocked by questions** (ADR 0004 placeholders):
-  - **Q-01:** legal info; `CompanyDetails` renders nothing until verified.
+  - **Q-01:** legal info; the About legal block renders nothing until `company` is verified.
   - **Q-02:** Hà Nội/SG warehouses; only the verified DN/HCM offices render.
   - **Q-08, Q-11, Q-23, Q-24:** About trust content; not rendered.
   - **Q-09, Q-17:** policy text; the pages stay draft.
@@ -238,11 +244,14 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 ### Manual Verification Plan
 
 - **Seed needs:**
-  - `pnpm db:local` + `db:confirm` against the local DB (contact published, everything else draft).
-  - Local fixtures for the draft templates, local DB only, SQL in the PR:
-    - publish `policy-privacy` VI with a `policy` block (`effectiveDate` 2026-11-01, markdown with 3 `##`, 1 `###`, one internal and one external link, one `# Heading`, one raw `<script>` line and one image);
-    - publish `about` VI with two `richText` blocks;
-    - leave EN draft.
+  - `pnpm db:local`, then `DATABASE_URL_DIRECT="$(scripts/db-local.sh --url)" pnpm db:confirm` (local DB only: contact published, everything else draft).
+  - Server: `NEXT_PUBLIC_TURNSTILE_SITE_KEY=… TURNSTILE_SECRET_KEY=… IP_HASH_SALT=… pnpm dev:local` (S-08 test keys), base URL `http://localhost:3000`.
+  - Local fixtures for the draft templates, local DB only, SQL in the PR (and a reset script that sets them back to draft):
+    - **F1** `policy-privacy` VI published with one `policy` block: `effectiveDate` 2026-11-01; markdown with 3 `##` (two of them with the same text), 1 `###`, one `# Heading`, one heading made only of punctuation, one internal and one external link, one raw `<script>` line and one image;
+    - **F2** `policy-privacy` EN published with one valid `policy` block of a single `##` heading;
+    - **F3** `policy-terms` VI published with **two** `policy` blocks (invalid);
+    - **F4** `about` VI published with two `richText` blocks;
+    - **F5** `policy-claims`: `pages.status = 'draft'` but the VI translation `published`.
   - For the map:
     - first without `GOOGLE_MAPS_STATIC_KEY`;
     - then with a test key if the owner provides one (Q-29). Otherwise the "on" state is checked by code review only, and the handler's 404 path by hand.
@@ -255,28 +264,37 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 
      In DevTools Network, no request to any Google domain.
   2. **Contact (EN).** Open `/en/contact/`. Expect English copy, the same sections, and the privacy link resolved from the page record.
-  3. **Map route.** `curl -I /api/maps/da-nang` without the key: 404. `curl -I /api/maps/unknown`: 404. With a test key (if available): 200 `image/png` with the `Cache-Control` above; the second request doesn't call Google (server log).
-  4. **Policy (fixture).** Open `/chinh-sach-bao-mat/`. Expect:
+  3. **Map route.**
+     - `curl -sI http://localhost:3000/api/maps/<office key>` without the key → `404`; `curl -sI http://localhost:3000/api/maps/unknown` → `404`.
+     - With `GOOGLE_MAPS_STATIC_KEY=invalid`: the office route → `502`, and `/lien-he/` still renders (200) with the "Xem bản đồ" links.
+     - With a real test key (only if the owner provides one, Q-29): `200 image/png` with the `Cache-Control` above, and a second request makes no outbound call (server log). Otherwise the "on" path is checked by code review only.
+  4. **Policy (F1).** Open `/chinh-sach-bao-mat/`. Expect:
      - exactly one `<h1>` (`document.querySelectorAll('h1').length === 1`);
-     - "Cập nhật: 1/11/2026" in a `<time>`;
-     - a TOC with 4 entries whose links jump to ids without diacritics;
+     - "Cập nhật: 1/11/2026" in a `<time dateTime="2026-11-01">`;
+     - a TOC with **6** entries (3 `##` + the demoted `#` + the punctuation-only heading as `<h2>`, and 1 `###`), in document order, each jumping to its heading;
+     - ids without diacritics; the repeated heading text gets `-2`; the punctuation-only heading gets `muc-{n}`;
      - the `# Heading` rendered as `<h2>`;
-     - the `<script>` line shown as text, not executed;
-     - no image rendered;
-     - the external link with `target="_blank" rel="noopener nofollow"`.
-
-     `/en/privacy-policy/` → 404 (EN draft).
-  5. **About (fixture).** Open `/gioi-thieu/`. Expect the H1, both sections, and no legal block (company unverified).
-  6. **Draft pages.** Without fixtures, `/gioi-thieu/`, `/chinh-sach-den-bu/` and `/en/terms/` → localized 404 with the route cards and the Zalo/call CTAs, `noindex`.
-  7. **Navigation.** On `/` at 1280 px and in the 360 px mobile menu: every menu link returns 200 (check with a quick script over the rendered `href`s, or by hand); no `href="#"`. After publishing a fixture, its link appears.
-  8. **SEO.** View source on `/lien-he/` and the policy fixture: canonical, `hreflang` only for published pairs, JSON-LD (`WebPage` with `dateModified`; Contact `LocalBusiness` only for verified offices) valid in a schema validator.
-  9. **Accessibility.** Keyboard through the Contact page and the TOC; axe DevTools at 360 and 1280 px: 0 serious or critical issues.
+     - the `<script>` line shown as text, not executed; no image rendered;
+     - the internal link as a same-site link; the external link with `target="_blank" rel="noopener nofollow"`.
+  5. **Policy EN and guards.**
+     - F2: `/en/privacy-policy/` → 200, "Updated: …", **no** TOC (fewer than 2 headings).
+     - F3: `/dieu-khoan-dich-vu/` → `404` (two blocks), and a server log line naming the page key and block type only.
+     - F5: `/chinh-sach-den-bu/` → `404`, and it is absent from the footer (draft parent).
+     - `pnpm db:confirm` with `policy-terms` added to the local confirmations copy and F3's blocks → refuses, naming `policy-terms` and the locale.
+  6. **About (F4).** Open `/gioi-thieu/`. Expect the H1, both sections, and no legal block at all (company unverified: no heading, no logo).
+  7. **Draft pages and 404.** Without fixtures: `curl -s -o /dev/null -w '%{http_code}'` on `/gioi-thieu/`, `/chinh-sach-den-bu/`, `/en/terms/` and `/khong-ton-tai/` → `404` each. In the browser: the localized 404 with the route cards and the Zalo/call CTAs, and `<meta name="robots" content="noindex…">`.
+  8. **Navigation.** On `/` at 1280 px and in the 360 px mobile menu: collect every rendered menu `href` and request each (`curl` loop) → all `200`; no `href="#"`. After F1 is applied, "Chính sách bảo mật" appears in the footer; after F5, "Chính sách đền bù" does not.
+  9. **Tracking.** On `/lien-he/` click Zalo, then on a 404 click Zalo: each adds one `contact_events` row with `placement = contact_page` / `not_found` (local DB query, no personal data), and `window.dataLayer` has one `click_zalo` whose `event_id` matches the row's.
+  10. **Metadata.** View source on `/lien-he/` (seed + confirm only, no fixture): non-empty `<meta name="description">` from the messages default; same for F1 and F4.
+  11. **SEO.** View source on `/lien-he/` and F1: canonical, `hreflang` only for published pairs (F1 + F2 pair; Contact VI + EN), JSON-LD (`WebPage` with `dateModified`; Contact `LocalBusiness` only for verified offices) valid in a schema validator.
+  12. **Accessibility and layout.** Keyboard through the Contact page and the TOC; 360, 768 and 1280 px; `prefers-reduced-motion` on; axe DevTools at 360 and 1280 px: 0 serious or critical issues.
+  13. **Lighthouse (mobile, consent rejected, production build).** `/lien-he/` and F1: performance ≥ 90, SEO 100, accessibility ≥ 95; record LCP, CLS, INP and the app-JS delta (AGENTS.md §9).
 - **Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `tokens:check`, `i18n:check`, `build`, `check:redirects`; CI `perf:report` (JS budget gate). No automated tests (ADR 0004).
-- **Process:** the owner's phase-1 rule (no Codex, Lighthouse or browser runs inside `/implement`) lets steps 1–9 be deferred from the implementation PR and recorded as pending; lint, typecheck, boundaries, build and CI perf still gate it.
+- **Process:** owner decision 2026-10-22 (phase 1, recorded in `feature-s08-lead-form.md` "Process"): no Codex, Lighthouse or browser runs inside `/implement`. Steps 1–13 may therefore be deferred from the implementation PR and recorded there as pending; lint, typecheck, boundaries, build and CI perf still gate it. The deferred evidence (steps 1–13, including Lighthouse and the 768 px / reduced-motion checks) is required before `/mark-implemented`.
 
 ### Implementation Hints
 
-- **Dispatch:** add an info branch next to `loadRoutePage`/`loadHubPage`/`loadCalculatorPage` in `[slug]/page.tsx`. Keep `app/` thin: `info-view.tsx` composes the slots (channel buttons, `LeadSection`, offices, maps, `CompanyDetails`) like `calculator-view.tsx`.
+- **Dispatch:** add an info branch next to `loadRoutePage`/`loadHubPage`/`loadCalculatorPage` in `[slug]/page.tsx`. Keep `app/` thin: `info-view.tsx` composes the slots (channel buttons, `LeadSection`, offices, maps, the About legal block) like `calculator-view.tsx`.
 - **Blocks:** follow `application/route-blocks.ts`. One schema for seed and read; each block parsed alone; drop and log invalid ones.
 - **Heading ids:** compute in a pure function from the markdown AST, so the TOC and the rendered headings share them. Pass a `components` map to `react-markdown` (`h1`–`h6`, `a`, `img: () => null`). No `rehype-raw`.
 - **Menus:** filter in the query (`getMenu`), not in each component, so footer, header and mobile stay consistent. `isPublished` already exists on `MenuItem`.
