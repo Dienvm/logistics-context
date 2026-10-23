@@ -1,7 +1,7 @@
 ---
 title: Add the About, Contact, policy and 404 pages
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: S-09
 priority: must-have
