@@ -12,3 +12,4 @@ The labels are defined in `.claude/skills/fix-implement/SKILL.md`.
 
 | Date | Slug | Summary | Categories | Status | File |
 |------|------|---------|------------|--------|------|
+| 2026-10-23 | s08-lead-form | Specs miss files a new prop/enum threads through; repo-wide lint:fix rewrote files outside the task (Biome 2.6 formats md/yaml) | SCOPE_CREEP, CONVENTION_VIOLATION | open | [link](2026-10-23-s08-lead-form.md) |

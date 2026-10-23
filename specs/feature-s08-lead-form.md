@@ -308,3 +308,4 @@ The form appears only on the calculator page in this task. S-09 reuses the same 
 - Specs: `feature-s02-contact-tracker.md` (attribution and IP-hash pattern), `feature-s07-calculator-page.md` (held-back action, JS budget)
 - Open questions: Q-28, Q-17, Q-01, Q-13, Q-20; Q-14 answered 2026-10-23
 - `.claude/rules/form-patterns.md`, `security-patterns.md`, `api-patterns.md`
+- Lesson: [lessons/2026-10-23-s08-lead-form.md](../lessons/2026-10-23-s08-lead-form.md) — Affected Areas missed threaded files; lint:fix rewrote files outside the task
