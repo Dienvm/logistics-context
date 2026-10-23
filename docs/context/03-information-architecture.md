@@ -86,7 +86,7 @@ Built in S-05 and redesigned in S-05b (owner review 2026-10-22, old-site order +
 Deliberate deviations, each closed by its owning task:
 
 - The hero route picker links to the route pages, plus a no-JS "Tính cước" form (route select) to `/tinh-cuoc/?route=<key>` (S-07).
-- Offices have a Google Maps search link built from the address and no static map image (an image needs **A-04** media).
+- Each office card has a lazy, keyless Google Maps embed of its address and a "Xem bản đồ" link (new tab); owner decision 2026-10-23 (43logistics.vn PR #31). The same closing band and maps appear on the calculator, hubs, About and blog.
 - Proof shows the old site's chat screenshots (consent confirmed, Q-12) as static, blurred images in `public/`; managing them moves to testimonial/media admin (**A-05**, **A-04**).
 - Sections with nothing published (unverified facts, unapproved copy Q-27, unconfirmed photos Q-26, no posts, inactive offer Q-07) render nothing, heading included.
 

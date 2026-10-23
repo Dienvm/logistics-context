@@ -77,7 +77,7 @@ Info pages (S-09, `modules/seo` `InfoJsonLd`):
 
 - **Policy pages:** `WebPage` { name, url, inLanguage, `dateModified` = the `policy` block's `effectiveDate` } + `BreadcrumbList` (from the breadcrumbs).
 - **Contact and About:** `BreadcrumbList` + one `LocalBusiness` per office, only with `offices` verified. It is built by the same `buildLocalBusiness` as home (`domain/local-business.ts`) from the same verified facts (`ui/verified-business.ts`), with the home URL as `url` and `@id` base, so all three pages describe the same entities. Nothing else is emitted without verified offices.
-- **Office maps:** `/lien-he/` embeds a keyless Google Maps iframe per verified office (03 Contact). **Known exception to rule 14 (owner decision 2026-10-23):** the iframe loads (lazily) without consent and Google may set cookies; the privacy policy discloses it. S-13 must gate it behind consent (click-to-load or the banner) before ads launch.
+- **Office maps:** `/lien-he/` and the closing office band (home, calculator, hubs, About, blog) embed a keyless, lazy Google Maps iframe per office (`shared/ui/map-embed.tsx`; 03 Contact, Home 8). **Known exception to rule 14 (owner decision 2026-10-23):** the iframe loads (lazily) without consent and Google may set cookies; the privacy policy discloses it. S-13 must gate it behind consent (click-to-load or the banner) before ads launch.
 
 ## Redirects & legacy URLs
 
