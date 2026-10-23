@@ -184,7 +184,7 @@ Never mirror server data into Zustand. `QueryClientProvider` mounts only in `/ad
 | `NEXT_PUBLIC_SUPABASE_URL` | public | Storage public URLs |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | Storage uploads, admin ops |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET` | public/server | Staff auth |
-| `NEXT_PUBLIC_SITE_URL` | public | `https://43logistics.vn` |
+| `NEXT_PUBLIC_SITE_URL` | public | `https://43logistics.vn` in production. **Indexing switch (S-10):** only a build with exactly this origin gets `index, follow` and a crawlable robots.txt; any other value or unset (local, staging, previews) is `noindex` with `Disallow: /`. Absolute URLs in canonical, hreflang, JSON-LD, sitemap and RSS come from it |
 | `PREVIEW_UNVERIFIED` | server | `1` shows unverified seed facts with a "chưa xác nhận" badge, only under `next dev` or `VERCEL_ENV=preview` (S-01). Set it on the Vercel **Preview** environment only, never Production |
 | `VERCEL_ENV` | server (set by Vercel) | `production` / `preview` / `development`; read by the fact-visibility gate |
 | `NEXT_PUBLIC_GTM_ID` | public | `GTM-WF967MKT` or new |
