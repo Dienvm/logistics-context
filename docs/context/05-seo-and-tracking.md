@@ -73,6 +73,12 @@ Do not output `AggregateRating`/`Review` unless reviews are real, collected on-s
 
 Every value above is emitted only when its source is verified (rule 1), and preview mode never changes structured data: badges are for humans only. Home today (S-05, `modules/seo` `buildHomeJsonLd`, one `@graph`): `WebSite` { name, url, inLanguage } + `Organization` { name, url }, plus `legalName`/`taxID` only with `company` verified (Q-01), `contactPoint` only with `contact` verified (Q-06), `sameAs` only with `social` verified; no `logo` until Q-11. One `LocalBusiness` per office only with `offices` verified (Q-02), `openingHoursSpecification` only with `hours` verified (Q-03) and its structured `spec` parsing. `alternateName`, `geo` and `image` wait for confirmed values; S-10 moves `WebSite`/`Organization` to the layout.
 
+Info pages (S-09, `modules/seo` `InfoJsonLd`):
+
+- **Policy pages:** `WebPage` { name, url, inLanguage, `dateModified` = the `policy` block's `effectiveDate` } + `BreadcrumbList` (from the breadcrumbs).
+- **Contact and About:** `BreadcrumbList` + one `LocalBusiness` per office, only with `offices` verified. It is built by the same `buildLocalBusiness` as home (`domain/local-business.ts`) from the same verified facts (`ui/verified-business.ts`), with the home URL as `url` and `@id` base, so all three pages describe the same entities. Nothing else is emitted without verified offices.
+- **Office maps** add no third-party request: the map image is served from our own `/api/maps/{officeKey}/` (03 Contact), so `/lien-he/` loads nothing from Google before or after consent.
+
 ## Redirects & legacy URLs
 
 - Source of truth: `43logistics.vn/data/redirect-map.csv` (`old_url,new_url_vi,new_url_en,status_code,notes`).
@@ -135,7 +141,7 @@ Rules (S-02):
 - **Unpublished → 404.** The target is published only under the fact-visibility rule (verified, or preview mode: `PREVIEW_UNVERIFIED=1` under `next dev` / Vercel preview). Otherwise, or when the channel's field is missing or malformed, or the channel is unknown (`/go/email/`, `/go/ZALO/`), the response is `404` and no row is written. There is no fallback number. Until Q-06 is verified, production CTAs 404 (L-01 checklist).
 - **Methods.** `GET` redirects and logs; `HEAD` answers with the same status and `Location` but logs nothing; other methods get `405` (`Allow: GET, HEAD`). Every `/go` response has `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow`.
 - **Bots** (UA allowlist in `modules/tracking/domain/bot.ts`: `…bot/`, crawlers, link previewers, Lighthouse) get the redirect but no row.
-- **Placements** (allowlist, else `null`): `header` (incl. the top-bar hotline), `hero` (home and route heroes, S-05/S-04), `rate_table` and `calculator` (route pages, S-04), `cta_band` (offer and closing bands, S-05b), `sticky_bar`, `footer`. New placements are added to `CONTACT_PLACEMENTS` in `modules/contact/constants.ts`.
+- **Placements** (allowlist, else `null`): `header` (incl. the top-bar hotline), `hero` (home and route heroes, S-05/S-04), `rate_table` and `calculator` (route pages, S-04), `cta_band` (offer and closing bands, S-05b), `sticky_bar`, `footer`, `lead_form` (S-08), `contact_page` (Contact channel buttons) and `not_found` (404 CTAs, S-09). New placements are added to `CONTACT_PLACEMENTS` in `modules/contact/constants.ts`.
 - **Row inputs** are untrusted: `eid` must be a UUID (else a server UUID), `from` must be a same-site path ≤ 300 chars (else `null`; `locale` follows it), `route` must be an active route key (else `null`). Attribution columns come from `43l_attr` only when `43l_consent` grants ads; consent columns from `parseConsent`. `ip_hash` = HMAC-SHA256 with `IP_HASH_SALT`.
 - **Conversion seam.** `sendContactConversion` (`modules/tracking`) returns unless ads consent; with consent it is a no-op until T-01 / Q-13 (no network request).
 
