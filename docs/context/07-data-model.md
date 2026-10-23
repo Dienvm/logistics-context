@@ -328,6 +328,16 @@ export const leads = pgTable('leads', {
   index('leads_ip_hash_created_idx').on(t.ipHash, t.createdAt),   // S-08 rate limit (migration 0002)
 ]).enableRLS()
 
+// S-08b (migration 0004): rotating OAuth tokens of the sales notifiers (Zalo OA). Server-only
+// secrets, never rendered; one row per provider, updated under SELECT … FOR UPDATE.
+export const oauthTokens = pgTable('oauth_tokens', {
+  provider: text('provider').primaryKey(),                 // 'zalo_oa'
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token').notNull(),           // single-use; each refresh stores the next one
+  expiresAt: timestamp('expires_at', { withTimezone: true }),
+  ...timestamps,
+}).enableRLS()
+
 export const contactEvents = pgTable('contact_events', {
   id: uuid('id').primaryKey().defaultRandom(),
   eventId: text('event_id').notNull().unique(),             // per-click UUID from the client (fallback: server), shared with pixel for dedupe
@@ -408,6 +418,7 @@ Route pages mostly render from route data; blocks only add editorial sections, s
 - `policy` { `effectiveDate`: ISO date, `markdown`: ≤ 40 000 chars }: the whole body of a policy page. A policy translation holds **exactly one** valid `policy` block; its `effectiveDate` is the "Cập nhật" date and the `WebPage` `dateModified`, so editing other fields of the page never changes it.
 - `richText` { `markdown`: ≤ 40 000 chars }: About sections, rendered in order as one body.
 - Markdown renders on the server through `react-markdown` without raw HTML (shown as text) or images; headings are demoted below the page H1.
+- **Seed copy:** `data/seed/info-pages.json` lists the pages whose copy lives in `data/seed/info-pages/{key}.{vi|en}.md` (policies get the manifest's `effectiveDate`). `pnpm db:seed` re-parses them with the strict page schema and writes them only into translations whose `blocks` is still `[]`, so an editor's text is never overwritten.
 - **Every write path validates a policy translation with the same check (`findPolicyBlock`) before saving or publishing:** `pnpm db:seed` parses page blocks strictly (a bad seed file fails); `pnpm db:confirm` refuses to publish a `policy` page whose translation lacks exactly one valid block and names the page and locale; A-03's page actions must run `parseInfoBlocks`/`findPolicyBlock` before saving. The render-time 404 for an invalid policy is only a guard.
 
 ## Security (RLS & access)
@@ -440,7 +451,9 @@ Upload pipeline (server action): validate type/size → convert to WebP/AVIF (sh
 - `routes.legacy.json`: routes, rates and translations, with `isVerified` that must be `false`;
 - `site-settings.legacy.json`;
 - `pages.json`: 22 IA pages from `03`. Route pages take their slugs and names from the routes file;
-- `menus.json`: `header`, `footer-services` and `footer-policies`, 27 items.
+- `menus.json`: `header`, `footer-services` and `footer-policies`, 27 items;
+- `info-pages.json` + `info-pages/*.md`: About and policy copy (S-09), written only into empty blocks;
+- `posts.json` + `posts/*.md`: blog posts (S-11), each inserted as a draft when its VI slug is new, with one `richText` block per translation; `db:confirm` publishes the VI slugs listed under `posts` in `owner-confirmations.json`.
 
 Every file is validated with Zod, including cross-file references, before anything is written. Everything runs in one transaction and needs `DATABASE_URL_DIRECT`.
 

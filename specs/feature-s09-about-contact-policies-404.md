@@ -53,6 +53,15 @@ Trust is the site's third goal (AGENTS.md §1): real contacts, offices, legal in
 
 **S-08 gate:** unchanged. `PRIVACY_POLICY_VERSION` stays a constant; the change that publishes the real privacy policy (C-03) also sets the real version.
 
+### Amendment 2026-10-23 (owner, during /implement)
+
+The owner changed four decisions after the first implementation PR. These override the matching ACs below:
+
+1. **Publish About and the four policies now** with copy drafted from the confirmed facts (structure only from quynam.vn, no wording). Copy lives in `data/seed/info-pages/{key}.{vi|en}.md`; `db:seed` fills empty blocks and `db:confirm` publishes (`owner-confirmations.json` pages += about, policy-*). The copy states no compensation amounts, retention period or legal name (Q-09, Q-17, Q-01 stay open, finished in A-03). Overrides "About and the policies stay draft" and "S-09 ships no policy or About text".
+2. **Maps: a keyless Google Maps iframe per verified office** (zoomable, `loading="lazy"`) plus the "Xem bản đồ" link. The Static Maps route, `GOOGLE_MAPS_STATIC_KEY` and Q-29 are dropped. **Known rule-14 exception:** the iframe loads without consent until S-13 gates it; the privacy policy discloses it. Overrides the "Static map (on)", "Static map (off and errors)" and "No third-party requests" ACs and the "Interactive maps or any map iframe" out-of-scope line.
+3. **Lead form on in production:** `PRIVACY_POLICY_VERSION` = `2026-10-23`, equal to the privacy policy's `effectiveDate`. Overrides "S-08 gate: unchanged".
+4. **Finish the UI now; admin work is noted for phase 2** (10-roadmap, Phase 2 note).
+
 ### Acceptance Criteria
 
 **Routing and publishing**

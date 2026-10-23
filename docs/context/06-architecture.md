@@ -191,10 +191,10 @@ Never mirror server data into Zustand. `QueryClientProvider` mounts only in `/ad
 | `META_PIXEL_ID`, `META_CAPI_TOKEN` | server | Meta CAPI |
 | `TIKTOK_PIXEL_ID`, `TIKTOK_EVENTS_TOKEN` | server | TikTok Events API |
 | `GOOGLE_ADS_*` | server | Enhanced/offline conversions (later) |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | public/server | Lead form bot protection (S-08). Unset → the form is off and shows the Zalo/call notice. Local checks use Cloudflare's public test keys |
-| `IP_HASH_SALT` | server | HMAC key for `ip_hash` in leads/events. Required by the lead form (unset → form off) |
-| `ZALO_OA_ACCESS_TOKEN`, `ZALO_OA_RECIPIENT_IDS` | server | Lead alerts via Zalo OA (S-08; recipients comma-separated). Unset → no Zalo alert (Q-28). The token expires; a refresh flow is activation work. Email alert variables arrive with the provider (Q-28) |
-| `GOOGLE_MAPS_STATIC_KEY` | server | Contact page office maps (S-09): `/api/maps/{officeKey}/` fetches Google Static Maps server-side with it and caches the PNG under the settings tag; it never reaches HTML or client bundles. Unset → 404 from the route and only the "Xem bản đồ" link (Q-29). Configured in production only after the Maps ADR and Q-29 (L-01/L-02) |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | public/server | Lead form bot protection (S-08). Optional since S-08b (owner 2026-10-23): with both keys the challenge runs; unset → honeypot + minimum fill time, the form stays on. Local checks can use Cloudflare's test keys |
+| `IP_HASH_SALT` | server | HMAC key for `ip_hash` in leads/events. Unset → a key derived from `DATABASE_URL` (S-08b); set it in production so a DB password rotation doesn't reset rate-limit history |
+| `ZALO_OA_APP_ID`, `ZALO_OA_APP_SECRET`, `ZALO_OA_REFRESH_TOKEN`, `ZALO_OA_RECIPIENT_IDS` | server | Lead alerts via Zalo OA (S-08b). The refresh token seeds a rotation the app stores in `oauth_tokens` (renewed under a row lock; refresh tokens are single-use). Recipients: Zalo user ids of staff who follow the OA (free consultation messages need recent interaction). Unset → no Zalo alert (Q-28) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `LEAD_NOTIFY_EMAILS` | server | Lead alerts by email (S-08b, nodemailer). Defaults to Gmail `smtp.gmail.com:465`; use a Google App password for the company Gmail. Unset user/password/recipients → no email (Q-28) |
 | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | public | PostHog (product lane). Host = `/ingest` rewrite target region per Q-20 |
 
 Template leftovers to remove or rename in F-00/F-01: `STRIPE_*` and `NEXT_PUBLIC_STRIPE_*` (no payments); `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (no public sign-up); `SUPABASE_URL` → `NEXT_PUBLIC_SUPABASE_URL`; `SUPABASE_BUCKET_RECEIPTS` (not in the data model).

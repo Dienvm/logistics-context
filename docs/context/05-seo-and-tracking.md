@@ -66,7 +66,7 @@ Emit with a `<JsonLd data={...} />` server component (`<script type="application
 | Home, Contact, About | `LocalBusiness` per office (Đà Nẵng, TP.HCM): name, address (`PostalAddress` with confirmed new admin names), `geo`, telephone, `openingHoursSpecification` from settings, `url`, `image` |
 | Route pages | (S-04 as built: `Service` with `Offer` only for a shown verified public from-price, `FAQPage` only with published FAQ rows, `BreadcrumbList` from the breadcrumbs; OG image deferred) `Service` { serviceType "International parcel shipping", provider → Organization, areaServed → `Country` {name}, `offers`: `Offer` with `priceSpecification` `UnitPriceSpecification` { price, priceCurrency "VND", unitCode "KGM", referenceQuantity, eligibleQuantity (min/max kg) }, `validFrom`/`validThrough` from rates } + `BreadcrumbList` + `FAQPage` (Google shows FAQ rich results only for some authoritative sites; still valid markup) |
 | Hubs | `ItemList` of route services + `BreadcrumbList` |
-| Blog post | `BlogPosting` (headline, image, datePublished, dateModified, author `Organization`, inLanguage, mainEntityOfPage) + `BreadcrumbList` |
+| Blog post | `BlogPosting` (headline, image, datePublished, dateModified, author `Organization`, inLanguage, mainEntityOfPage) + `BreadcrumbList`. S-11 emits all but `image` (no covers until A-04); the blog index emits an `ItemList` of its articles |
 | Policy pages | `WebPage` + `BreadcrumbList` |
 
 Do not output `AggregateRating`/`Review` unless reviews are real, collected on-site, and policy-compliant.
@@ -77,7 +77,7 @@ Info pages (S-09, `modules/seo` `InfoJsonLd`):
 
 - **Policy pages:** `WebPage` { name, url, inLanguage, `dateModified` = the `policy` block's `effectiveDate` } + `BreadcrumbList` (from the breadcrumbs).
 - **Contact and About:** `BreadcrumbList` + one `LocalBusiness` per office, only with `offices` verified. It is built by the same `buildLocalBusiness` as home (`domain/local-business.ts`) from the same verified facts (`ui/verified-business.ts`), with the home URL as `url` and `@id` base, so all three pages describe the same entities. Nothing else is emitted without verified offices.
-- **Office maps** add no third-party request: the map image is served from our own `/api/maps/{officeKey}/` (03 Contact), so `/lien-he/` loads nothing from Google before or after consent.
+- **Office maps:** `/lien-he/` embeds a keyless Google Maps iframe per verified office (03 Contact). **Known exception to rule 14 (owner decision 2026-10-23):** the iframe loads (lazily) without consent and Google may set cookies; the privacy policy discloses it. S-13 must gate it behind consent (click-to-load or the banner) before ads launch.
 
 ## Redirects & legacy URLs
 
