@@ -156,6 +156,8 @@ As built (S-07), on the `[slug]` dispatch (page key `calculator`, published via 
 
 Filter by country; three groups (cấm / hạn chế – cần khai báo / nhận gửi). Content must be approved by operations.
 
+S-12 as built (43logistics.vn PR #34): country chips jump to one section per route (anchors, no client JS); each section has the approved rules in Cấm gửi → Hạn chế → Được gửi groups (only non-empty groups, grid sized to them), a link to the route's rates, rules for every route first; an "ask first" box with the Zalo/call CTAs and the closing office band. Linked from the footer "Chính sách" menu. No rule is "Hạn chế" yet: operations can add them in A-05.
+
 ### Quote form section `#bao-gia` (calculator and contact pages)
 
 S-08b (owner 2026-10-23): a dark panel with a 3-step infographic (send details → we get in touch → get your quote; HTML and icons, no text in images) and the Zalo/call links, beside a form card asking only name, phone/Zalo, weight (optional) and other shipping details (optional) + consent. The calculator's route travels as a hidden prefill. The form is always on when the database is; leads are saved and sent to sales by email and Zalo OA once those are configured (Q-28).

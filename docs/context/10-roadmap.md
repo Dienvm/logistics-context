@@ -33,7 +33,7 @@
 - [ ] **S-09 About, Contact, Policies, 404** — templates; policy pages render markdown with TOC and "Cập nhật" date. *Accept:* footer has no `#` links.
 - [ ] **S-10 SEO infra** — `buildMetadata`, `JsonLd`, `sitemap.ts`, `robots.ts`, RSS. *Accept:* sitemap lists only published+indexable URLs with alternates; manual SEO check per page type (1 H1, canonical, hreflang reciprocal, JSON-LD valid in the Rich Results Test). — built on owner instruction 2026-10-24 without a spec (43logistics.vn PR #33): sitemap, robots, RSS, site metadata, indexing switch; all 46 sitemap URLs pass the H1/canonical/hreflang/JSON-LD check. Open: OG images, Rich Results Test (L-01).
 - [ ] **S-11 Blog** — list (filter by route), article (TOC, CTA box, related route), `BlogPosting`.  — built without a spec on owner instruction 2026-10-23 (43logistics.vn PR #30); route filter, author and covers deferred to phase 2.
-- [ ] **S-12 Prohibited goods** — `/hang-cam-gui/` grouped + filter; only rules with `approved_at`.
+- [ ] **S-12 Prohibited goods** — `/hang-cam-gui/` grouped + filter; only rules with `approved_at`. — built on owner instruction 2026-10-24 without a spec (43logistics.vn PR #34); page published 2026-10-24.
 - [ ] **S-13 Consent, GTM & PostHog** — Consent Mode v2 defaults, banner, GTM via `@next/third-parties`, PostHog lazy init + `/ingest` rewrite, `modules/tracking` fan-out. *Context:* 05, ADR 0002. *Accept:* no ad or analytics cookies/requests before consent; events visible in GTM preview and PostHog live events after consent, with matching `event_id`.
 
 ## Phase 2 — Admin (staff CMS)
