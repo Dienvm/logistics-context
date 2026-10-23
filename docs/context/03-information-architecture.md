@@ -66,6 +66,8 @@
 
 **Breadcrumbs:** on every page below home; also emitted as `BreadcrumbList` JSON-LD.
 
+**Published links only (S-09):** header, mobile menu and footer render an item only when its target is published in the current locale: `pages.status = 'published'` **and** that locale's translation is `published` (external URLs count as published). One predicate (`isPagePublished` in `modules/content`) is shared by `getMenu` and the page loaders, so a menu link and its page always agree. Items to draft pages disappear (About, policies and the blog until they publish), a group with no remaining children is not rendered, and no menu link is `#` or a 404.
+
 ## Page specifications
 
 ### Home `/`
@@ -156,11 +158,15 @@ Filter by country; three groups (cấm / hạn chế – cần khai báo / nhậ
 
 ### Contact `/lien-he/`
 
-Big channel buttons (Zalo, Gọi, WhatsApp, Messenger) · quote form (S-09 reuses the S-08 `LeadSection` from `modules/leads`) · offices with hours · static map.
+Big channel buttons (Zalo, Gọi, WhatsApp, Messenger; each only when the `contact` setting is verified and holds that channel, placement `contact_page`) · quote form (S-09 reuses the S-08 `LeadSection` from `modules/leads`) · offices with hours · static map.
+
+**Map (S-09):** no iframe and no browser request to Google. The server fetches a Google Static Maps PNG per verified office (key `GOOGLE_MAPS_STATIC_KEY`, server-only), caches it under the settings tag and serves it from `/api/maps/{officeKey}/`; the route builds the provider URL only from the verified office's address (no request parameter is forwarded). Without the key (Q-29), or for an unknown/unverified office, the route is a 404 and the page shows no image; a provider error or 5 s timeout is a 502. Every verified office always has a "Xem bản đồ" link to a Google Maps search of its address (new tab).
 
 ### About `/gioi-thieu/`
 
 Real story, team & warehouse photos, carriers/partners, legal info, numbers only if real.
+
+S-09 template: H1, the page's `richText` markdown blocks, and a legal block (legal name, tax code) rendered only when the `company` setting is verified (Q-01). Photos, carriers and numbers wait for verified data (Q-08, Q-23). The page stays draft (404) until C-03 writes the copy.
 
 ### Blog
 
@@ -174,6 +180,10 @@ Variant of a route page: no full nav (logo + Zalo button), hero matching the ad 
 
 Long-form prose, last-updated date, table of contents. Privacy policy must cover Decree 13/2023 (purposes, retention, rights, contact).
 
+S-09 template: one `policy` block per translation (07 Blocks). "Cập nhật: {d/M/yyyy}" comes from its `effectiveDate`; markdown headings are demoted (the page H1 stays the only `<h1>`) and get diacritic-free ids; the TOC lists the h2/h3 headings when there are at least 2. Raw HTML in markdown is shown as text, images are not rendered. Pages stay draft until C-03 (Q-01, Q-09, Q-17).
+
 ### 404
 
 Search-free: route cards + Zalo CTA.
+
+S-09: the message and home link, the Zalo/call CTAs (placement `not_found`) and the home route grid (verified prices only). Status 404, `noindex`. Draft info pages render it too.

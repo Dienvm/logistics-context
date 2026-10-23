@@ -403,6 +403,13 @@ Typed JSON array; each block maps to a component in `modules/content/ui/blocks/`
 
 Route pages mostly render from route data; blocks only add editorial sections, so all 7 route pages stay structurally identical.
 
+**Info pages (S-09, `modules/content/application/info-blocks.ts`):**
+
+- `policy` { `effectiveDate`: ISO date, `markdown`: ≤ 40 000 chars }: the whole body of a policy page. A policy translation holds **exactly one** valid `policy` block; its `effectiveDate` is the "Cập nhật" date and the `WebPage` `dateModified`, so editing other fields of the page never changes it.
+- `richText` { `markdown`: ≤ 40 000 chars }: About sections, rendered in order as one body.
+- Markdown renders on the server through `react-markdown` without raw HTML (shown as text) or images; headings are demoted below the page H1.
+- **Every write path validates a policy translation with the same check (`findPolicyBlock`) before saving or publishing:** `pnpm db:seed` parses page blocks strictly (a bad seed file fails); `pnpm db:confirm` refuses to publish a `policy` page whose translation lacks exactly one valid block and names the page and locale; A-03's page actions must run `parseInfoBlocks`/`findPolicyBlock` before saving. The render-time 404 for an invalid policy is only a guard.
+
 ## Security (RLS & access)
 
 - The app reads/writes through Drizzle on the server; authorization = `requireRole()` in Server Actions and admin pages.
