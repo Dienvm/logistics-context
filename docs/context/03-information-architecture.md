@@ -156,6 +156,10 @@ As built (S-07), on the `[slug]` dispatch (page key `calculator`, published via 
 
 Filter by country; three groups (cấm / hạn chế – cần khai báo / nhận gửi). Content must be approved by operations.
 
+### Quote form section `#bao-gia` (calculator and contact pages)
+
+S-08b (owner 2026-10-23): a dark panel with a 3-step infographic (send details → we get in touch → get your quote; HTML and icons, no text in images) and the Zalo/call links, beside a form card asking only name, phone/Zalo, weight (optional) and other shipping details (optional) + consent. The calculator's route travels as a hidden prefill. The form is always on when the database is; leads are saved and sent to sales by email and Zalo OA once those are configured (Q-28).
+
 ### Contact `/lien-he/`
 
 Big channel buttons (Zalo, Gọi, WhatsApp, Messenger; each only when the `contact` setting is verified and holds that channel, placement `contact_page`) · quote form (S-09 reuses the S-08 `LeadSection` from `modules/leads`) · offices with hours · static map.
@@ -171,6 +175,8 @@ S-09 template: H1, the page's `richText` markdown blocks, and a legal block (leg
 ### Blog
 
 List with filters by route; article layout with TOC, author, dates, CTA box, related route link. `BlogPosting` JSON-LD.
+
+S-11 as built (owner 2026-10-23, 43logistics.vn PR #30): the index is a newest-first card grid (route chip, date, title, excerpt) with the closing CTA band; an article has breadcrumbs (Trang chủ → Kinh nghiệm → article), route chip, published/updated dates and reading time, a sticky TOC beside the body (≥ 1024 px), a dark CTA box, the related route's price tile and related posts (same route first). Launch content: the two legacy posts rewritten without prices or unconfirmed services (slugs from the redirect map) and two new guides (volumetric weight, packing), VI + EN. Not yet: the route filter, author, cover images and categories (phase 2: A-03/A-04).
 
 ### Ads landing page `/lp/{campaign}/`
 

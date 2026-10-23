@@ -36,9 +36,9 @@ Context: `AGENTS.md` rules 6–7 and 14–15, `06-architecture.md`, proposal §6
 
 ## Abuse and privacy
 
-- **Lead form** (public Server Action): Turnstile verified server-side, rate limit keyed by IP hash, size limits on every field.
+- **Lead form** (public Server Action): Turnstile verified server-side when configured, otherwise a honeypot + minimum fill time (owner decision 2026-10-23, S-08b); rate limit keyed by IP hash (key: `IP_HASH_SALT`, else derived from `DATABASE_URL`), size limits on every field.
 - **`/go/[channel]`** stays a plain link with a 302 (rule 12), with no challenge. Protect it with rate limiting per IP hash, and de-duplicate `contact_events` by `event_id` / short time window. The redirect never waits on the insert.
-- Store a **salted hash** of the IP (`IP_HASH_SALT`), never the raw IP (rule 14).
+- Store a **keyed hash** of the IP (`IP_HASH_SALT`, else a key derived from `DATABASE_URL`), never the raw IP (rule 14).
 - No analytics or ad requests, cookies or `43l_attr` before consent; check through `modules/tracking`.
 - Collect the minimum personal data; never log lead payloads.
 

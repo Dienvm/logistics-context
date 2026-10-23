@@ -66,7 +66,7 @@ Emit with a `<JsonLd data={...} />` server component (`<script type="application
 | Home, Contact, About | `LocalBusiness` per office (Đà Nẵng, TP.HCM): name, address (`PostalAddress` with confirmed new admin names), `geo`, telephone, `openingHoursSpecification` from settings, `url`, `image` |
 | Route pages | (S-04 as built: `Service` with `Offer` only for a shown verified public from-price, `FAQPage` only with published FAQ rows, `BreadcrumbList` from the breadcrumbs; OG image deferred) `Service` { serviceType "International parcel shipping", provider → Organization, areaServed → `Country` {name}, `offers`: `Offer` with `priceSpecification` `UnitPriceSpecification` { price, priceCurrency "VND", unitCode "KGM", referenceQuantity, eligibleQuantity (min/max kg) }, `validFrom`/`validThrough` from rates } + `BreadcrumbList` + `FAQPage` (Google shows FAQ rich results only for some authoritative sites; still valid markup) |
 | Hubs | `ItemList` of route services + `BreadcrumbList` |
-| Blog post | `BlogPosting` (headline, image, datePublished, dateModified, author `Organization`, inLanguage, mainEntityOfPage) + `BreadcrumbList` |
+| Blog post | `BlogPosting` (headline, image, datePublished, dateModified, author `Organization`, inLanguage, mainEntityOfPage) + `BreadcrumbList`. S-11 emits all but `image` (no covers until A-04); the blog index emits an `ItemList` of its articles |
 | Policy pages | `WebPage` + `BreadcrumbList` |
 
 Do not output `AggregateRating`/`Review` unless reviews are real, collected on-site, and policy-compliant.
