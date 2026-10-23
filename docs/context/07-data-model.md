@@ -313,7 +313,7 @@ export const leads = pgTable('leads', {
   gclid: text('gclid'), gbraid: text('gbraid'), wbraid: text('wbraid'), fbclid: text('fbclid'), ttclid: text('ttclid'),
   referrer: text('referrer'),
   landingPath: text('landing_path'),                        // from 43l_attr (S-02 migration; written by S-08)
-  ipHash: text('ip_hash'),
+  ipHash: text('ip_hash'),                                  // HMAC-SHA256(IP, IP_HASH_SALT), hex (S-08 rate limit)
   userAgent: text('user_agent'),
   consentAt: timestamp('consent_at', { withTimezone: true }).notNull(),
   consentPolicyVersion: text('consent_policy_version').notNull(),
@@ -322,7 +322,10 @@ export const leads = pgTable('leads', {
   assignedTo: text('assigned_to').references(() => profiles.clerkUserId),
   notes: text('notes'),
   ...timestamps,
-}, (t) => [index('leads_status_created_idx').on(t.status, t.createdAt)]).enableRLS()
+}, (t) => [
+  index('leads_status_created_idx').on(t.status, t.createdAt),
+  index('leads_ip_hash_created_idx').on(t.ipHash, t.createdAt),   // S-08 rate limit (migration 0002)
+]).enableRLS()
 
 export const contactEvents = pgTable('contact_events', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -411,7 +414,7 @@ using ((select auth.jwt()->>'role') in ('admin','sales'));
 ```
 
 - PII: `leads.phone/email/name/message` visible only to `admin` and `sales`; retention policy (e.g. delete or anonymise leads older than 24 months) — `NEEDS CONFIRMATION`, document in the privacy policy.
-- `ip_hash = sha256(ip + IP_HASH_SALT)`; never store raw IPs.
+- `ip_hash = HMAC-SHA256(ip, IP_HASH_SALT)` (hex); never store raw IPs.
 
 ## Storage buckets
 
