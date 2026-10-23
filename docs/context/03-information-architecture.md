@@ -145,7 +145,7 @@ As built (S-07), on the `[slug]` dispatch (page key `calculator`, published via 
 
 - **Inputs:** route (grouped outbound/inbound, quotable routes only), method (when the route has more than one), actual weight (kg), optional L×W×H (cm). No goods type (no approved per-type pricing). `?route=<key>&kg=<n>` preselects them; an unknown or non-quotable key falls back to the first quotable route. Inputs live in a `useReducer` (in memory, no persist). The route pages and `/tinh-cuoc/` share one calculator island (`QuoteCalculator`), because every page prefetches the same client JS and a second island broke the ADR 0006 budget; Zustand was dropped for the same reason (owner decision, 2026-10-22).
 - **Output:** chargeable weight (+ volumetric), the band used, the estimated price, verified transit days, caveats (not a final quote; VAT and surcharges excluded, Q-04/Q-25). "Liên hệ" results show the Zalo and call CTAs.
-- **Actions:** "Gửi kết quả qua Zalo" copies a text summary (route, method, weights, estimate, page URL with parameters) and opens Zalo through `/go/zalo/` (`placement=calculator`) in a new tab, because `zalo.me` takes no prefilled text; if the clipboard is unavailable, the text is shown to copy by hand. "Gọi {hotline}". "Nhận báo giá chính xác" waits for the lead form (S-08).
+- **Actions:** "Gửi kết quả qua Zalo" copies a text summary (route, method, weights, estimate, page URL with parameters) and opens Zalo through `/go/zalo/` (`placement=calculator`) in a new tab, because `zalo.me` takes no prefilled text; if the clipboard is unavailable, the text is shown to copy by hand. "Gọi {hotline}". "Nhận báo giá chính xác" (priced results only, while the lead form is on) prefills route and weight and jumps to the "Nhận báo giá" section `#bao-gia` below the calculator (S-08).
 - Routes without public prices are listed below as "Liên hệ" links to their route pages.
 - Pure client computation from the bands the route pages show (embedded in the server render, no fetch); pushes `calculate_quote` to `dataLayer` once per settled result (500 ms debounce).
 - Entry points: header item, mobile action bar, the home hero picker form, and the route-page mini calculator link (carries the route and typed weight).
@@ -156,7 +156,7 @@ Filter by country; three groups (cấm / hạn chế – cần khai báo / nhậ
 
 ### Contact `/lien-he/`
 
-Big channel buttons (Zalo, Gọi, WhatsApp, Messenger) · quote form · offices with hours · static map.
+Big channel buttons (Zalo, Gọi, WhatsApp, Messenger) · quote form (S-09 reuses the S-08 `LeadSection` from `modules/leads`) · offices with hours · static map.
 
 ### About `/gioi-thieu/`
 

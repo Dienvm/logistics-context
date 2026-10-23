@@ -21,7 +21,7 @@ GTM (ads lane, Consent Mode v2) + server-side conversions (Meta CAPI, TikTok Eve
 PostHog (product-analytics lane, after consent, via /ingest rewrite) — ADR 0002
 ```
 
-Hosting assumption: Vercel (or any Node host supporting Next 16). Supabase region close to Vietnam (Singapore, `ap-southeast-1`). `NEEDS CONFIRMATION` of hosting choice.
+Hosting: the owner chose a **self-managed VPS** running the Next 16 Node server (Q-15, 2026-10-23), not Vercel. Provider, region and DNS access are still open (Q-15); the deployment shape (reverse proxy, process manager, cache handler, preview environment) needs an ADR before L-02. Supabase region close to Vietnam (Singapore, `ap-southeast-1`). Note: the fact-visibility gate and the client-IP source below were written against Vercel (`VERCEL_ENV`, `x-forwarded-for`) and must be re-checked for the VPS setup.
 
 ## Folder structure
 
@@ -175,7 +175,7 @@ export async function submitLeadAction(_prev: ActionState<{ leadId: string }> | 
   const attribution = await readAttributionCookie()
   const lead = await createLead({ ...parsed.data, ...attribution })
   after(() => sendConversions({ type: 'lead', lead }))                         // next/server `after`
-  after(() => notifySales(lead))                                               // channel = Q-14
+  after(() => notifySales(lead))                                               // Zalo OA + email (Q-14); recipients Q-28
   return { isSuccess: true, message: 'ok', data: { leadId: lead.id } }
 }
 ```
@@ -210,8 +210,9 @@ Never mirror server data into Zustand. `QueryClientProvider` mounts only in `/ad
 | `META_PIXEL_ID`, `META_CAPI_TOKEN` | server | Meta CAPI |
 | `TIKTOK_PIXEL_ID`, `TIKTOK_EVENTS_TOKEN` | server | TikTok Events API |
 | `GOOGLE_ADS_*` | server | Enhanced/offline conversions (later) |
-| `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | public/server | Bot protection |
-| `IP_HASH_SALT` | server | Hash IPs for leads/events |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | public/server | Lead form bot protection (S-08). Unset → the form is off and shows the Zalo/call notice. Local checks use Cloudflare's public test keys |
+| `IP_HASH_SALT` | server | HMAC key for `ip_hash` in leads/events. Required by the lead form (unset → form off) |
+| `ZALO_OA_ACCESS_TOKEN`, `ZALO_OA_RECIPIENT_IDS` | server | Lead alerts via Zalo OA (S-08; recipients comma-separated). Unset → no Zalo alert (Q-28). The token expires; a refresh flow is activation work. Email alert variables arrive with the provider (Q-28) |
 | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | public | PostHog (product lane). Host = `/ingest` rewrite target region per Q-20 |
 
 Template leftovers to remove or rename in F-00/F-01: `STRIPE_*` and `NEXT_PUBLIC_STRIPE_*` (no payments); `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (no public sign-up); `SUPABASE_URL` → `NEXT_PUBLIC_SUPABASE_URL`; `SUPABASE_BUCKET_RECEIPTS` (not in the data model).
