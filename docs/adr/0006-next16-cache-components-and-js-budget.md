@@ -43,14 +43,14 @@
      - mega-menu interactivity ≈ 3–6 KiB.
 
      `motion`, TanStack Query or a second form library would not fit without justification, which is intended.
-   - **Experience targets stay the primary gate:** LCP < 2.5 s, INP < 200 ms, CLS < 0.1 on mobile/4G. Third-party tags loaded after consent are reported separately and kept deferred.
+   - **Experience targets stay the primary gate:** LCP < 2.5 s, INP < 200 ms, CLS < 0.1 on mobile/4G. Third-party tags loaded after consent are reported separately and kept deferred, and so are third-party embeds (amendment 2026-10-24).
 3. **Measurement method** (extends ADR 0004 Decision 2):
    - **Tool and setup:**
      - Lighthouse **12.8.2** CLI, mobile preset, cold cache (Lighthouse's default fresh profile);
      - the arm64 Node noted in `.claude/rules/verification-patterns.md`;
      - against `pnpm build && pnpm start` (gzip as served by `next start`);
      - consent rejected (no consent cookie).
-   - **Metric:** the sum of `transferSize` of the `Script` requests in the `network-requests` audit for the initial navigation, in **KiB** (bytes / 1024). It includes response headers (about 0.3 KiB per request), which is accepted as part of the method. `noModule` scripts aren't requested by the browser, so they aren't counted.
+   - **Metric:** the sum of `transferSize` of the **first-party** `Script` requests (same origin as the audited page) in the `network-requests` audit for the initial navigation, in **KiB** (bytes / 1024). Third-party scripts (other origins) are reported in their own column and never fail the gate (amendment 2026-10-24 below). It includes response headers (about 0.3 KiB per request), which is accepted as part of the method. `noModule` scripts aren't requested by the browser, so they aren't counted.
    - **Baseline fixture:** a temporary `app/baseline-probe/page.tsx` that renders only `<p>baseline</p>` under the root layout.
      - It must be routable: `_`-prefixed folders are private in Next.
      - It must paint, otherwise Lighthouse stops with `NO_FCP`.
@@ -59,6 +59,16 @@
      - F-01 result: `/baseline-probe/` → 200, **134.3 KiB** in five chunks (70.7 + 49.2 + 6.2 + 4.2 + 3.9 KiB); the home placeholder measured the same 134.3 KiB, so its app delta is 0.
    - **Route delta:** the route's metric minus the current baseline.
    - **INP:** a navigation Lighthouse run doesn't measure INP (its performance score uses TBT). Pages with no interactive element record INP as *unmeasured*. Interactive pages record INP from the Chrome Performance panel or the Web Vitals extension, over the route's representative interactions (open menu, change calculator input, submit form), on a throttled mobile profile. After launch, field INP comes from real-user data (PostHog web vitals or CrUX once available).
+
+### Amendment 2026-10-24: the budget counts first-party JS only
+
+- **Context:** the owner chose (2026-10-23) to embed keyless Google Maps iframes for the offices on `/lien-he/` and in the closing office band. Each embed loads about 440 KiB of Google's JavaScript inside its iframe. Lighthouse lists those requests in `network-requests`, so `/tinh-cuoc/`, `/lien-he/` and `/kinh-nghiem/` measured +489.5 KiB and CI failed from 43logistics.vn PR #27 onwards. Google's request set also varies between runs, which made routes UNSTABLE.
+- **Decision (owner, 2026-10-24):** keep the maps loading on their own and change the measurement. The 50 KiB app budget applies to first-party scripts (same origin as the audited page). Third-party scripts are measured and reported in a separate column of `perf:report` but don't block a PR. The run-to-run stability check compares first-party script sets only.
+- **Consequences:**
+  - The budget again measures what the app ships, which is what it was meant to control.
+  - Third-party weight is still visible in every CI report, and LCP/TBT/performance scores still include it; the manual Lighthouse evidence (≥ 90 performance) keeps applying.
+  - A future third-party embed must be justified in its PR with its reported weight; it can't hide inside the budget.
+  - The maps still load before consent (owner's rule-14 exception, docs/context/05); S-13 gates them.
 
 ## Alternatives considered
 
