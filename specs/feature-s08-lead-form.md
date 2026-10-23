@@ -1,9 +1,11 @@
 ---
 title: Add the quote request form to the calculator page
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/s08-lead-form
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/23
+implementation_commit: d8c7f076923a8ccabbf3806066331a408d89e610
+implemented_date: 2026-10-23
 owner_repo: both
 roadmap: S-08
 priority: must-have
