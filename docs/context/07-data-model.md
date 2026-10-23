@@ -73,7 +73,8 @@ export const profiles = pgTable('profiles', {
   clerkUserId: text('clerk_user_id').primaryKey(),          // Clerk `sub`
   email: text('email').notNull(),
   displayName: text('display_name'),
-  role: staffRole('role').notNull().default('editor'),
+  role: staffRole('role'),                                   // null = no role (F-05); access uses the session claim
+  deletedAt: timestamp('deleted_at', { withTimezone: true }), // Clerk user.deleted → soft delete, FKs kept
   ...timestamps,
 }).enableRLS()
 

@@ -1,12 +1,14 @@
 ---
 title: Protect /admin with Clerk staff auth and roles
 type: feature
-status: approved
+status: in_implementation
+branch: feat/f05-clerk-staff-auth
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/24
 owner_repo: both
 roadmap: F-05
 priority: must-have
 blocked_by_questions: []
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 ## Feature: Protect /admin with Clerk staff auth and roles

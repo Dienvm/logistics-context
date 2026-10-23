@@ -190,7 +190,7 @@ A visitor following an old link lands on the new page in one redirect, and a cra
 | Repo | Layer | File / Path |
 |------|-------|-------------|
 | app | routing | `proxy.ts`, `next.config.ts` (`skipTrailingSlashRedirect`) |
-| app | planner | `shared/i18n/normalize-path.ts`, `shared/lib/admin-path.ts` (new); planner in `modules/seo/domain/request-plan.ts` (new; composes gone, legacy, admin and normalise) |
+| app | planner | `shared/i18n/normalize-path.ts`, `shared/lib/admin-path.ts` (new); planner in `modules/seo/application/request-plan.ts` (new; composes gone, legacy, admin and normalise) |
 | app | module domain | `modules/seo/domain/gone-paths.ts`, `modules/seo/domain/legacy-ids.ts`, `modules/tracking/domain/consent.ts`, `modules/tracking/domain/attribution.ts` (new) |
 | app | module application | `modules/seo/application/legacy-ids-schema.ts`, `modules/tracking/application/attribution-schema.ts` (Zod, client-safe; new) |
 | app | module entry | `modules/seo/client.ts`, `modules/tracking/client.ts`; `modules/tracking/constants.ts` (cookie names, max-ages, param list, byte budget) |
