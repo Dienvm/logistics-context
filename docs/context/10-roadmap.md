@@ -37,6 +37,13 @@
 
 ## Phase 2 — Admin (staff CMS)
 
+> **Carried over from S-09 (owner decision 2026-10-23: publish the info pages now, finish in admin):**
+> - **A-03:** About and the four policies were published with drafted copy from `43logistics.vn/data/seed/info-pages/*.md` (no prices, compensation amounts or retention periods). The page editor must edit the `policy`/`richText` blocks with the `parseInfoBlocks`/`findPolicyBlock` check, let the owner review the copy, and change `effectiveDate` together with `PRIVACY_POLICY_VERSION` (`modules/leads/constants.ts`) when the privacy text changes. Also editable: H1/SEO title/description per page (the seed uses the short page title as H1).
+> - **A-03 / C-03:** fill in the facts the policies leave open: compensation amounts and insurance terms (Q-09), the data retention period (Q-17), the legal name and tax code for the data controller and the About legal block (Q-01). About still needs the real story, team/warehouse photos, carriers and verified numbers (Q-08, Q-11, Q-23, Q-24).
+> - **A-04:** About and Contact photos (media library, alt VI/EN).
+> - **A-09:** offices (ward names after the 2025 reform, Q-02), hours and contact channels edited in Settings; the Contact page, its map embed and the JSON-LD follow automatically.
+> - **S-13 (before ads):** gate the Contact page Google Maps iframe behind consent (click-to-load or the consent banner). It loads without consent until then (owner decision 2026-10-23, docs/context/05).
+
 - [ ] **F-05 Auth** — Clerk for `/admin` only, roles in `publicMetadata`, session claim `role`, `requireRole()`, Clerk webhook → `profiles`. *Context:* 06. *Moved from Phase 0 (owner decision 2026-10-22): public SEO pages first; `/admin` stays a 404 via the F-06 seam until this lands.* *Accept:* Clerk works with `cacheComponents: true` (build + a request to `/admin`), result recorded in ADR 0006; unauthenticated `/admin` → sign-in; `editor` cannot open leads; public pages ship no Clerk JS (check bundle).
 - [ ] **A-01 Admin shell** — `/admin` layout with Clerk `<UserButton>`, nav by role, React Query provider. 
 - [ ] **A-02 Routes & rates editor** — CRUD bands, validity dates, `is_verified` toggle (admin only), preview of public table; actions call `updateTag('route:{key}')` + `revalidateTag('menu','max')`. *Accept:* editing a price shows on the public route page, mega menu and calculator after save (checked manually).

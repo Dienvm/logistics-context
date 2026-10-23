@@ -213,7 +213,6 @@ Never mirror server data into Zustand. `QueryClientProvider` mounts only in `/ad
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | public/server | Lead form bot protection (S-08). Unset → the form is off and shows the Zalo/call notice. Local checks use Cloudflare's public test keys |
 | `IP_HASH_SALT` | server | HMAC key for `ip_hash` in leads/events. Required by the lead form (unset → form off) |
 | `ZALO_OA_ACCESS_TOKEN`, `ZALO_OA_RECIPIENT_IDS` | server | Lead alerts via Zalo OA (S-08; recipients comma-separated). Unset → no Zalo alert (Q-28). The token expires; a refresh flow is activation work. Email alert variables arrive with the provider (Q-28) |
-| `GOOGLE_MAPS_STATIC_KEY` | server | Contact page office maps (S-09): `/api/maps/{officeKey}/` fetches Google Static Maps server-side with it and caches the PNG under the settings tag; it never reaches HTML or client bundles. Unset → 404 from the route and only the "Xem bản đồ" link (Q-29). Configured in production only after the Maps ADR and Q-29 (L-01/L-02) |
 | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | public | PostHog (product lane). Host = `/ingest` rewrite target region per Q-20 |
 
 Template leftovers to remove or rename in F-00/F-01: `STRIPE_*` and `NEXT_PUBLIC_STRIPE_*` (no payments); `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (no public sign-up); `SUPABASE_URL` → `NEXT_PUBLIC_SUPABASE_URL`; `SUPABASE_BUCKET_RECEIPTS` (not in the data model).
