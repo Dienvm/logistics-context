@@ -188,6 +188,21 @@ The client link (`ContactLink`) mints the `event_id` on `click` (Enter included)
 - Withdrawal (banner reopenable from the footer): on revoking ads consent, delete `43l_attr`, stop loading GTM on the next navigation, and send no further server-side conversions (queued ones are dropped). On revoking analytics consent, call PostHog `opt_out_capturing()` and clear its cookies/storage. Rows already stored keep their recorded consent state.
 - Lead form has an explicit consent checkbox linking `/chinh-sach-bao-mat/`; store `consent_at` and the policy version.
 
+S-13 as built (43logistics.vn PRs #36, #37; owner decisions 2026-10-24):
+- **Banner** (`modules/tracking/ui/consent-banner.tsx`): VI/EN, Reject and Accept all as equal buttons, Customize (Phân tích → PostHog, Quảng cáo → GTM + ad platforms), privacy link; shown after hydration while no valid `43l_consent` exists; reopened by any `#cai-dat-cookie` link (footer "Cài đặt cookie"). State is a small `useSyncExternalStore` store (not Zustand: one island, ADR 0006 budget), kept in step across tabs (BroadcastChannel, focus/visibility re-read).
+- **Vendors** (`application/vendors.ts`): GTM loads only after ads consent (`consent default` all denied, then `consent update`), from `NEXT_PUBLIC_GTM_ID`; PostHog is imported only after analytics consent (`api_host: /ingest`, `person_profiles: identified_only`, no autocapture, no replay) and only with both `NEXT_PUBLIC_POSTHOG_KEY` and `_HOST`. A generation counter keeps a stale grant from initialising PostHog after a withdrawal.
+- **Events:** every dataLayer push goes through `application/event-bus.ts`, which also forwards it to PostHog `capture` after analytics consent.
+- **Withdrawal:** a changed ads choice sends a `HEAD` for the current page (no referrer) so `proxy.ts` sets or clears `43l_attr` before the banner closes; `proxy.ts` deletes `43l_attr` whenever the cookie no longer grants ads; withdrawing ads after GTM loaded reloads the page into the denied state.
+- **Maps** stay auto-loading (owner decision 2026-10-24): the Google Maps iframes are not gated by the banner; the privacy policy discloses them.
+
+### New GTM container setup (Q-13; the legacy `GTM-WF967MKT` is retired)
+
+1. Create a Web container for `43logistics.vn`; set `NEXT_PUBLIC_GTM_ID` on the server. The site already sends Consent Mode v2 `default`/`update` and loads GTM only after ads consent, so keep the container's built-in consent checks on ("Require additional consent" for ad tags).
+2. Data-layer variables to create: `event_id`, `route_key`, `placement`, `locale`, `weight_kg`, `chargeable_kg`, `estimate_vnd`, `form`, `field`, `lead_id`, `currency`.
+3. Custom-event triggers: `click_zalo`, `click_call`, `click_whatsapp`, `click_messenger` (contact conversions), `calculate_quote`, `form_start`, `form_error`, `generate_lead` (primary conversion; `event_id` = `lead_id` for de-duplication with the server-side APIs in T-01).
+4. Add tags only for the ad platforms confirmed in Q-13 (e.g. Google Ads conversion on `generate_lead` and `click_zalo`; Meta/TikTok pixels only if chosen). No GA4 unless an ADR adds it (analytics lane is PostHog, ADR 0002).
+5. Publish, then check in GTM Preview with consent accepted (S-13 acceptance).
+
 ## Ads landing page checklist
 
 - [ ] Message match: H1, price and offer equal the ad text (variant via `/lp/{campaign}/` content or `?v=` mapped server-side — never reflect raw query text).

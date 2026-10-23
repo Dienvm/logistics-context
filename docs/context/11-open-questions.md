@@ -2,6 +2,9 @@
 
 > Agents: when a task needs one of these facts, do not guess — render nothing/placeholder behind a feature flag and reference the question ID. Update this file when answered (move to "Answered" with date and value, and update `01-business.md` / `site_settings`).
 
+
+> **Owner checklist:** the open items that block Phase 1 content, activation and launch are collected in plain Vietnamese, with fill-in fields, in [`docs/owner-inputs-phase-1.md`](../owner-inputs-phase-1.md) (2026-10-24). Answers come back here.
+
 | ID | Question | Blocks | Status |
 | --- | --- | --- | --- |
 | Q-01 | Legal company name, tax code (MST), business/postal licence (if any)? Owner will supply later (2026-10-23). | Footer, About, JSON-LD, policies | Open |
@@ -13,7 +16,7 @@
 | Q-09 | Compensation/insurance policy text (old SG→VN page: "bảo hiểm 10% → đền bù 100%", otherwise "x3 phí vận chuyển") — official terms for all routes? | Claims policy (published 2026-10-23 without amounts: "explained before you ship"; fill in via A-03), route pages | Open |
 | Q-10 | Goods lists per country approved by operations (old pages accepted prescription medicine, "kem trộn", fresh food — legally risky). Partly answered 2026-10-22 (S-04b): the owner approved the per-route goods lists **as on the live site** (medicine, cosmetics, fresh food included), seeded as `goods_rules` and approved via `db:confirm`. Excluded regardless: counterfeit goods and unlabelled cosmetics ("kem trộn"). | Goods rules, `/hang-cam-gui/` | Open |
 | Q-11 | Vector logo (SVG/AI/PDF)? Any plan to refresh the logo? Partly answered 2026-10-22: the raster logo from the old site is used (header, footer); a vector file is still wanted. | Header, favicon, OG | Open |
-| Q-13 | Tracking: access to GTM `GTM-WF967MKT`, GA4, Search Console, Google Ads, Meta Business, TikTok Ads? Ad budget & channel priority — which ad platforms launch first (only those get tags/CAPI)? | Phase 4 | Open |
+| Q-13 | Tracking: access to GTM `GTM-WF967MKT`, GA4, Search Console, Google Ads, Meta Business, TikTok Ads? Ad budget & channel priority — which ad platforms launch first (only those get tags/CAPI)? Partly answered 2026-10-24: the legacy container is **retired**; the owner will create a new GTM container (`NEXT_PUBLIC_GTM_ID`, S-13). Still open: the new container id, ad platforms and access. | Phase 4 | Open |
 | Q-15 | Hosting choice (Vercel or other) and domain DNS access? Partly answered 2026-10-23: the owner chose a **VPS** (not Vercel). Still open: VPS provider and region, who administers it, and who holds DNS access for the domain. | L-02 | Open |
 | Q-16 | Machine-translation provider for EN drafts (or human only)? | C-06 | Open |
 | Q-17 | Lead data retention period? | Privacy policy (published 2026-10-23 with "as long as the purposes or the law require"; fill in via A-03), DB job | Open |
