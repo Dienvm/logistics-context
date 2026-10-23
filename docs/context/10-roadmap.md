@@ -43,7 +43,7 @@
 > - **A-03 / C-03:** fill in the facts the policies leave open: compensation amounts and insurance terms (Q-09), the data retention period (Q-17), the legal name and tax code for the data controller and the About legal block (Q-01). About still needs the real story, team/warehouse photos, carriers and verified numbers (Q-08, Q-11, Q-23, Q-24).
 > - **A-04:** About and Contact photos (media library, alt VI/EN).
 > - **A-09:** offices (ward names after the 2025 reform, Q-02), hours and contact channels edited in Settings; the Contact page, its map embed and the JSON-LD follow automatically.
-> - **S-13 (before ads):** gate the Contact page Google Maps iframe behind consent (click-to-load or the consent banner). It loads without consent until then (owner decision 2026-10-23, docs/context/05).
+> - **S-13 (before ads):** gate the Google Maps iframes (Contact page and the closing office band) behind consent (click-to-load or the consent banner). It loads without consent until then (owner decision 2026-10-23, docs/context/05).
 > - **A-06 (leads inbox):** quote requests are saved now (S-08b) but only visible in the database and the email/Zalo alerts; the inbox, status workflow and CSV export come with A-06.
 > - **A-03 (blog):** post editor, route filter on `/kinh-nghiem/`, categories, author, cover images (A-04).
 > - **Soft 404:** unknown `/{slug}/` and `/kinh-nghiem/{post}/` paths render the localized 404 with `noindex` but status 200 on a streamed render (S-09/S-11 finding); fix before launch (L-01).
