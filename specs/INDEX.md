@@ -8,7 +8,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
-| 2026-10-23 | feature | [feature-s08-lead-form.md](feature-s08-lead-form.md) | Add the quote request form to the calculator page | S-08 | both | draft |
+| 2026-10-23 | feature | [feature-s08-lead-form.md](feature-s08-lead-form.md) | Add the quote request form to the calculator page | S-08 | both | approved |
 | 2026-10-22 | feature | [feature-s07-calculator-page.md](feature-s07-calculator-page.md) | Build the shipping calculator page | S-07 | both | implemented |
 | 2026-10-22 | feature | [feature-s04b-route-page-content.md](feature-s04b-route-page-content.md) | Fill the route pages with the owner's content | S-04b | both | implemented |
 | 2026-10-22 | feature | [feature-s06-hubs.md](feature-s06-hubs.md) | Build the outbound and inbound hub pages | S-06 | both | implemented |
