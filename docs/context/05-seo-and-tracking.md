@@ -56,6 +56,12 @@ Open Graph images: `app/[locale]/(site)/[...]/opengraph-image.tsx` with `next/og
 - robots: allow `/`; disallow `/admin/`, `/api/`, `/go/`; `Sitemap: https://43logistics.vn/sitemap.xml`.
 - RSS: `/kinh-nghiem/rss.xml`, `/en/guides/rss.xml` (route handlers).
 
+S-10 as built (43logistics.vn PR #33):
+- Sitemap rows come from `modules/content` `listSitemapPages`: page + translation published, not `noindex`, route active for route pages, no `landing` pages; posts published per locale. The **home is always listed**, since it renders from the owner-approved messages copy whatever its record's status, and its hreflang pair is always emitted.
+- robots.txt disallows `/admin/`, `/api/`, `/go/`, `/dev/`, `/en/dev/` on the production origin and everything elsewhere; the root layout's robots meta follows the same `NEXT_PUBLIC_SITE_URL` switch (06 env table).
+- Root layout defaults: title template `%s | 43 Logistics` (home uses an absolute title), Open Graph `siteName`/locale/type, `twitter: summary_large_image`.
+- Not yet: OG images (`next/og`), and the Rich Results Test per page type (L-01, needs a public URL).
+
 ## Structured data (JSON-LD) per page type
 
 Emit with a `<JsonLd data={...} />` server component (`<script type="application/ld+json">`, escaped). Values come from `site_settings`, `routes`, `route_rates`, `faqs`, `posts` — never hard-coded.
