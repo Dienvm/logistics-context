@@ -112,46 +112,27 @@ i18n with Cache Components: pass `locale` explicitly into cached query functions
 
 ## `proxy.ts` composition (order matters)
 
-**As built (F-06):** `proxy.ts` calls one pure planner, `planRequest` (`modules/seo/application/request-plan.ts`), and acts on its decision:
+**As built (F-06, F-05):** `proxy.ts` calls one pure planner, `planRequest` (`modules/seo/application/request-plan.ts`), and acts on its decision:
 1. 410 for gone paths;
-2. 404 with `x-robots-tag: noindex` for `/admin…` and `/api/admin…` (F-05 replaces it with Clerk `auth.protect()`);
-3. pass-through for `/api`, `/go` and files;
+2. admin paths (`isAdminPath`, `shared/lib/admin-path.ts`):
+   - **admin** (canonical: the raw path is `/admin…` or `/api/admin…`, lowercase, no locale prefix, no `%` or `//`): handed to Clerk `clerkMiddleware`, built lazily on the first admin request. `/admin/sign-in/…` passes unauthenticated; `/api/admin/*` without a session → 401; every other admin page → `auth.protect()` (307 to `/admin/sign-in/?redirect_url=…`). Every admin response gets `x-robots-tag: noindex`. A slash-less admin page (`/admin`) first gets one 308 to its slashed form;
+   - **deny** (any variant: `/en/admin/`, `/vi/admin/`, `/ADMIN/`, `/%61dmin/`): 404 + `noindex`, never authenticated or redirected;
+   - without both Clerk keys (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`) the admin branch also answers the deny 404 (fail closed);
+3. pass-through for `/api`, `/go` and files (incl. `/api/webhooks/clerk`);
 4. **one** redirect combining legacy ID, locale prefix and trailing slash (`skipTrailingSlashRedirect: true`; 308 for slash-only fixes, 301 otherwise);
 5. next-intl, then `43l_attr` on non-redirect responses only.
 
-The matcher excludes `_next`, `_vercel` and dotted paths, and lists the legacy `.php`, `/portfolio`, `/admin` and `/api/admin` paths explicitly. `proxy.ts` imports only client-safe module entries (a depcruise rule). The sketch below was the plan; Clerk is still to come (F-05).
-
-```ts
-// proxy.ts (sketch)
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import createIntlMiddleware from 'next-intl/middleware'
-import { routing } from '@/shared/i18n/routing'
-const intl = createIntlMiddleware(routing)
-const isAdmin = createRouteMatcher(['/admin(.*)', '/api/admin(.*)'])
-const GONE = [/^\/tieu-de\/?$/, /^\/portfolio\//, /^\/wp-(admin|login\.php|json)/, /^\/xmlrpc\.php/]
-
-export default clerkMiddleware(async (auth, req) => {
-  const { pathname, searchParams } = req.nextUrl
-  if (GONE.some((r) => r.test(pathname))) return new NextResponse(null, { status: 410 })
-  const legacyId = searchParams.get('page_id') ?? searchParams.get('p')
-  if (pathname === '/' && legacyId) return legacyIdRedirect(legacyId, req)   // 301 map of old WP IDs
-  if (isAdmin(req)) { await auth.protect(); return NextResponse.next() }
-  if (pathname.startsWith('/go/') || pathname.startsWith('/api/')) return NextResponse.next()
-  const res = intl(req)
-  captureAttribution(req, res)                                              // sets 43l_attr if utm/click ids present
-  return res
-})
-// the dot-exclusion would skip /wp-login.php and /xmlrpc.php — list legacy file paths explicitly so the 410 rules run (verify both with check:redirects / the manual plan; ADR 0004)
-export const config = { matcher: ['/((?!_next|.*\\..*).*)', '/wp-login.php', '/xmlrpc.php', '/wp-:path*', '/(api|trpc)(.*)'] }
-```
+Clerk's middleware never runs on a public request: the planner decides first, so public responses carry no Clerk header, cookie or handshake. The matcher excludes `_next`, `_vercel` and dotted paths, and lists the legacy `.php`, `/portfolio`, `/admin` and `/api/admin` paths explicitly. `proxy.ts` imports only client-safe module entries (a depcruise rule) plus `@clerk/nextjs/server`, and reads the two Clerk keys from `process.env` directly (`env.server.ts` is `server-only`).
 
 ## Auth & roles (Clerk)
 
-- Only staff sign in. Roles stored in Clerk `publicMetadata.role ∈ { 'admin', 'editor', 'sales' }` and mirrored to `profiles` via a Clerk webhook (`/api/webhooks/clerk`, verified with svix).
-- Session token customisation: include `role` claim (`{"role": "{{user.public_metadata.role}}"}`) so `auth().sessionClaims.role` is available without a DB call.
-- `requireRole(roles)` helper used at the top of every admin Server Action and admin page; throws/redirects on failure.
-- Permissions: `admin` everything; `editor` content, translations, media, FAQs, routes/rates; `sales` leads and contact events (read, update status, notes).
-- The public site never calls Clerk components except `ClerkProvider` scoped to `/admin` (keep Clerk JS off public pages for performance).
+**As built (F-05):**
+- Only staff sign in (Clerk sign-up mode "Restricted", invite only). `/admin` is a second root layout (`app/admin/layout.tsx`, `lang="vi"`, `noindex`, `instant = false`) and the only place `ClerkProvider` mounts, so public pages ship no Clerk JS. Sign-in is an embedded `<SignIn>` at `/admin/sign-in/` (path routing, no sign-up link).
+- Roles live in Clerk `publicMetadata.role ∈ { 'admin', 'editor', 'sales' }`. The session token is customised with `{"role": "{{user.public_metadata.role}}"}`; `modules/auth` validates the claim with Zod (`STAFF_ROLES`, mirrors the `staff_role` enum). A missing or unknown claim means **no role**: nothing is granted by default.
+- `modules/auth` (server API): `getStaff()` → `{ userId, role | null } | null`; `requireRole(roles)` is the first call in every admin page, Server Action and `/api/admin/*` handler (rule 7): no Clerk keys → 404, no session → sign-in, no allowed role → `forbidden()` (403, `app/admin/forbidden.tsx`, needs `experimental.authInterrupts`). Access is decided by the session claim, **never** by `profiles`.
+- Webhook `POST /api/webhooks/clerk`: svix verifies the raw body first (bad/missing signature → 400; no `CLERK_WEBHOOK_SIGNING_SECRET` → 503), then Zod. `user.created`/`user.updated` upsert `profiles` (primary email, display name = first + last, else username, else null, role or null); `user.deleted` soft-deletes (`deleted_at`), and a soft-deleted row is never revived by a late retry. Unknown events → 200; DB errors → 500 so svix retries. Payloads are never logged.
+- Permissions: `admin` everything; `editor` content, translations, media, FAQs, routes/rates; `sales` leads and contact events (read, update status, notes). F-05 enforces the leads gate (`LEADS_ROLES = admin, sales`); A-01+ add the rest.
+- Session reads (`auth()`, `currentUser()`) happen only in request-time admin code, never inside `"use cache"` (ADR 0006).
 
 ## Database access (Drizzle + Supabase)
 
