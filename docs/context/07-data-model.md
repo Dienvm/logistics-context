@@ -263,6 +263,8 @@ export const posts = pgTable('posts', {
   status: contentStatus('status').notNull().default('draft'),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   legacyWpId: integer('legacy_wp_id'),
+  adminEditedAt: timestamp('admin_edited_at', { withTimezone: true }), // A-03b: set by every admin post write; db:confirm skips the post
+  adminEditedBy: text('admin_edited_by'),                              // Clerk user ID of that write
   ...timestamps,
 }).enableRLS()
 
@@ -276,6 +278,9 @@ export const postTranslations = pgTable('post_translations', {
   seoTitle: text('seo_title'),
   seoDescription: text('seo_description'),
   status: contentStatus('status').notNull().default('draft'),
+  updatedBy: text('updated_by'),                                       // A-03b: Clerk user ID of the last admin save of this locale
+  sourceUpdatedAt: timestamp('source_updated_at', { withTimezone: true }), // EN: the VI updated_at it follows ("EN lỗi thời")
+  publishedAt: timestamp('published_at', { withTimezone: true }),      // first publication of this locale while the post is published; locks its slug (0008 backfilled it from posts.published_at)
   ...timestamps,
 }, (t) => [primaryKey({ columns: [t.postId, t.locale] }), uniqueIndex('post_tr_locale_slug_uq').on(t.locale, t.slug)]).enableRLS()
 
@@ -473,6 +478,7 @@ Re-runs are idempotent and respect ownership:
 - an unverified, never admin-edited route's rate bands are replaced; a verified or admin-edited route is never touched, and the seed prints the admin-edited keys it skipped;
 - `pnpm db:confirm` likewise leaves `is_verified` of an admin-edited route alone (it prints "skipped (edited in admin): {key}"): once edited in `/admin/routes/`, the admin is the route's only source;
 - pages, menus and all translations are insert-only, and `pnpm db:confirm` skips pages edited in `/admin/pages/` (`admin_edited_at` set; it prints "skipped (edited in admin): {key}"), so an editor's text and status are never overwritten (A-03);
+- `pnpm db:confirm` likewise skips a listed post edited in `/admin/posts/` (`posts.admin_edited_at` set; it prints "skipped (edited in admin): {vi slug}"), and stamps `post_translations.published_at` (coalesce) when it publishes one (A-03b); `pnpm db:seed` stays insert-only for posts;
 - a page translation's `h1` defaults to its title; `pages.json` gives an explicit `h1` where they differ (hubs, calculator, goods, blog index: their loaders read the DB `h1` since A-03, migration `0007` copied the previous `messages` H1 into existing rows).
 
 **Privacy policy version (A-03):** the version stored on each lead (`leads.consent_policy_version`) is the `effectiveDate` of the published VI `policy-privacy` translation's `policy` block (`getPrivacyPolicyVersion()`, cached under `page:policy-privacy`). Without a published VI privacy policy the lead form is off. A published VI privacy text change must come with a later `effectiveDate` (the admin action refuses it otherwise).
