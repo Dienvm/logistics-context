@@ -71,7 +71,8 @@ const timestamps = {
 // ───────────────────────── staff (mirrors Clerk users)
 export const profiles = pgTable('profiles', {
   clerkUserId: text('clerk_user_id').primaryKey(),          // Clerk `sub`
-  email: text('email').notNull(),
+  username: text('username'),                               // staff sign in with a username (F-05, migration 0005)
+  email: text('email'),                                      // optional: username-only accounts have none
   displayName: text('display_name'),
   role: staffRole('role'),                                   // null = no role (F-05); access uses the session claim
   deletedAt: timestamp('deleted_at', { withTimezone: true }), // Clerk user.deleted → soft delete, FKs kept
