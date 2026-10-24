@@ -45,19 +45,20 @@
 > - **A-09:** offices (ward names after the 2025 reform, Q-02), hours and contact channels edited in Settings; the Contact page, its map embed and the JSON-LD follow automatically.
 > - **S-13 (before ads):** gate the Google Maps iframes (Contact page and the closing office band) behind consent (click-to-load or the consent banner). It loads without consent until then (owner decision 2026-10-23, docs/context/05).
 > - **A-06 (leads inbox):** quote requests are saved now (S-08b) but only visible in the database and the email/Zalo alerts; the inbox, status workflow and CSV export come with A-06.
-> - **A-03 (blog):** post editor, route filter on `/kinh-nghiem/`, categories, author, cover images (A-04).
+> - **A-03b (blog):** post editor, route filter on `/kinh-nghiem/`, categories, author, cover images (A-04).
 > - **Phase 1 review follow-ups (Codex, 2026-10-24):** load the Radix desktop navigation only on ≥ 1280 px (~8.8 KiB gz on mobile); test deferring the home hero photo on mobile with a stable LCP measurement; decide whether vendored shadcn primitives, flag-shape data and `globals.css` are exempt from the code-style size limits (disputed in the review).
 > - **Soft 404:** unknown `/{slug}/` and `/kinh-nghiem/{post}/` paths render the localized 404 with `noindex` but status 200 on a streamed render (S-09/S-11 finding); fix before launch (L-01).
 
 - [x] **F-05 Auth** — Clerk for `/admin` only, roles in `publicMetadata`, session claim `role`, `requireRole()`, Clerk webhook → `profiles`. *Context:* 06. *Moved from Phase 0 (owner decision 2026-10-22): public SEO pages first; `/admin` stays a 404 via the F-06 seam until this lands.* *Accept:* Clerk works with `cacheComponents: true` (build + a request to `/admin`), result recorded in ADR 0006; unauthenticated `/admin` → sign-in; `editor` cannot open leads; public pages ship no Clerk JS (check bundle). — spec: specs/feature-f05-clerk-staff-auth.md (app PRs #24, #26, #38)
 - [ ] **A-01 Admin shell** — `/admin` layout with Clerk `<UserButton>`, nav by role, React Query provider. 
 - [ ] **A-02 Routes & rates editor** — CRUD bands, validity dates, `is_verified` toggle (admin only), preview of public table; actions call `updateTag('route:{key}')` + `revalidateTag('menu','max')`. *Accept:* editing a price shows on the public route page, mega menu and calculator after save (checked manually). — spec: specs/feature-a02-routes-rates-editor.md
-- [ ] **A-03 Pages & translations** — block editor (form-based per block type), SEO fields with length counters, slug change → auto redirect row, status workflow (draft → review → published), "Create EN draft".
+- [ ] **A-03 Pages & translations** — block editor (form-based per block type), SEO fields with length counters, status workflow (draft → review → published), "Create EN draft". Slug editing and its redirect rows moved to A-08 (owner, 2026-10-24: every page URL is CSV-owned). — spec: specs/feature-a03-pages-and-translations.md
+- [ ] **A-03b Blog post editor** — post fields and `richText` blocks, route filter on `/kinh-nghiem/`, categories, author, cover image (via A-04), "Tạo bản nháp EN" for posts.
 - [ ] **A-04 Media library** — upload (sharp conversion), required alt VI/EN, usage list. Owns the `/wp-content/uploads/*` legacy URLs: either a Storage rewrite, or the owner's decision not to keep them (owner note 2026-10-21). Also owns the attachment-slug redirects from `data/media-inventory.csv` (F-07).
 - [ ] **A-05 FAQs, goods rules, testimonials** — with approval (`approved_at`) and consent (`consent_at`) gates.
 - [ ] **A-06 Leads inbox** (sales) — DataTable (TanStack Query + Table), filters (status, route, source, date), status updates, notes, CSV export, attribution detail. *Accept:* `editor` gets 403.
 - [ ] **A-07 Contact analytics** — counts of `contact_events` + leads by channel/route/source per week.
-- [ ] **A-08 Redirects manager** — list/add/edit, hits counter.
+- [ ] **A-08 Redirects manager** — list/add/edit, hits counter; slug editing for pages (moved from A-03): a published slug change writes a `redirects` row (301, one hop, chains re-pointed), CSV-owned paths (kept URLs and destinations, VI and EN) stay locked, and the runtime lookup answers before any streamed output (no meta-refresh redirect).
 - [ ] **A-09 Settings** — company, contacts, offices, hours, offers (Zod-validated forms).
 
 ## Phase 3 — Content & EN

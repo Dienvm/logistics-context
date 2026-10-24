@@ -111,6 +111,9 @@ export const pages = pgTable('pages', {
   status: contentStatus('status').notNull().default('draft'),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   legacyWpId: integer('legacy_wp_id'),
+  // A-03: Clerk user ID as plain text, no FK (a missing profiles mirror row must not block a save)
+  adminEditedAt: timestamp('admin_edited_at', { withTimezone: true }), // set by every admin page edit; db:confirm skips the page
+  adminEditedBy: text('admin_edited_by'),
   ...timestamps,
 }).enableRLS()
 
@@ -128,6 +131,7 @@ export const pageTranslations = pgTable('page_translations', {
   noindex: boolean('noindex').notNull().default(false),
   status: contentStatus('status').notNull().default('draft'),
   sourceUpdatedAt: timestamp('source_updated_at', { withTimezone: true }), // VI version timestamp this translation was based on
+  updatedBy: text('updated_by'),                            // A-03: Clerk user ID of the last admin edit, no FK
   ...timestamps,
 }, (t) => [primaryKey({ columns: [t.pageId, t.locale] }), uniqueIndex('page_tr_locale_slug_uq').on(t.locale, t.slug)]).enableRLS()
 
@@ -468,6 +472,9 @@ Re-runs are idempotent and respect ownership:
 - routes and settings are refreshed only while `is_verified = false`, and a route only while `admin_edited_at` is also null (A-02);
 - an unverified, never admin-edited route's rate bands are replaced; a verified or admin-edited route is never touched, and the seed prints the admin-edited keys it skipped;
 - `pnpm db:confirm` likewise leaves `is_verified` of an admin-edited route alone (it prints "skipped (edited in admin): {key}"): once edited in `/admin/routes/`, the admin is the route's only source;
-- pages, menus and all translations are insert-only.
+- pages, menus and all translations are insert-only, and `pnpm db:confirm` skips pages edited in `/admin/pages/` (`admin_edited_at` set; it prints "skipped (edited in admin): {key}"), so an editor's text and status are never overwritten (A-03);
+- a page translation's `h1` defaults to its title; `pages.json` gives an explicit `h1` where they differ (hubs, calculator, goods, blog index: their loaders read the DB `h1` since A-03, migration `0007` copied the previous `messages` H1 into existing rows).
+
+**Privacy policy version (A-03):** the version stored on each lead (`leads.consent_policy_version`) is the `effectiveDate` of the published VI `policy-privacy` translation's `policy` block (`getPrivacyPolicyVersion()`, cached under `page:policy-privacy`). Without a published VI privacy policy the lead form is off. A published VI privacy text change must come with a later `effectiveDate` (the admin action refuses it otherwise).
 
 Legacy route-level `notes` (e.g. "Giá chưa bao gồm VAT") have no column. They are page copy for the route-page tasks and aren't seeded.

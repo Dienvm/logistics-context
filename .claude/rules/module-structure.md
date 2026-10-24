@@ -77,7 +77,7 @@ Every layer may import its own module's `constants.ts`.
   - `pricing` → `routes`;
   - `content` → `routes`, `goods` → `routes`;
   - `seo` → `routes`, `content`, `settings`;
-  - `leads` → `routes`, `tracking`; `contact` → `settings`, `tracking`.
+  - `leads` → `routes`, `tracking`, `content` (the privacy policy version, A-03); `contact` → `settings`, `tracking`.
   - `auth` is used by any admin action.
 
   If two modules need each other at runtime, move the shared part to the lower module or `shared/`.
