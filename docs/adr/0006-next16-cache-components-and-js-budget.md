@@ -43,6 +43,7 @@
      - mega-menu interactivity ≈ 3–6 KiB.
 
      `motion`, TanStack Query or a second form library would not fit without justification, which is intended.
+   - **Scope:** the budget applies to public routes only; the staff admin under `/admin` (Clerk, TanStack Query, sidebar) is outside it, but its code must not grow the initial JS of public routes (amendment 2026-10-24, A-01).
    - **Experience targets stay the primary gate:** LCP < 2.5 s, INP < 200 ms, CLS < 0.1 on mobile/4G. Third-party tags loaded after consent are reported separately and kept deferred, and so are third-party embeds (amendment 2026-10-24).
 3. **Measurement method** (extends ADR 0004 Decision 2):
    - **Tool and setup:**

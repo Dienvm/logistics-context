@@ -131,7 +131,22 @@ Clerk's middleware never runs on a public request: the planner decides first, so
 - Roles live in Clerk `publicMetadata.role ∈ { 'admin', 'editor', 'sales' }`. The session token is customised with `{"role": "{{user.public_metadata.role}}"}`; `modules/auth` validates the claim with Zod (`STAFF_ROLES`, mirrors the `staff_role` enum). A missing or unknown claim means **no role**: nothing is granted by default.
 - `modules/auth` (server API): `getStaff()` → `{ userId, role | null } | null`; `requireRole(roles)` is the first call in every admin page, Server Action and `/api/admin/*` handler (rule 7): no Clerk keys → 404, no session → sign-in, no allowed role → `forbidden()` (403, `app/admin/forbidden.tsx`, needs `experimental.authInterrupts`). Access is decided by the session claim, **never** by `profiles`.
 - Webhook `POST /api/webhooks/clerk`: svix verifies the raw body first (bad/missing signature → 400; no `CLERK_WEBHOOK_SIGNING_SECRET` → 503), then Zod. `user.created`/`user.updated` upsert `profiles` (username, primary email or null, display name = first + last, else username, else null, role or null; a username-only account is mirrored too); `user.deleted` soft-deletes (`deleted_at`), and a soft-deleted row is never revived by a late retry. Unknown events → 200; DB errors → 500 so svix retries. Payloads are never logged.
-- Permissions: `admin` everything; `editor` content, translations, media, FAQs, routes/rates; `sales` leads and contact events (read, update status, notes). F-05 enforces the leads gate (`LEADS_ROLES = admin, sales`); A-01+ add the rest.
+- Permissions: `admin` everything; `editor` content, translations, media, FAQs, routes/rates; `sales` leads and contact events (read, update status, notes). The source of truth is `ADMIN_SECTIONS` in `modules/auth/domain/admin-sections.ts` (A-01): the sidebar (`visibleSections(role)`), the welcome page and every section page guard (`requireSection(key)` = `requireRole(ADMIN_SECTIONS[key].roles)`) read it, so no page passes a literal role list. Field-level rules (e.g. only `admin` toggles `is_verified`) stay inside each section's actions (A-02…).
+
+  | Section | Path | Roadmap | admin | editor | sales |
+  | --- | --- | --- | --- | --- | --- |
+  | Tổng quan | `/admin/` | A-01 | ✓ | ✓ | ✓ |
+  | Yêu cầu báo giá | `/admin/leads/` | A-06 | ✓ | — | ✓ |
+  | Thống kê liên hệ | `/admin/analytics/` | A-07 | ✓ | — | ✓ |
+  | Tuyến & bảng giá | `/admin/routes/` | A-02 | ✓ | ✓ | — |
+  | Trang | `/admin/pages/` | A-03 | ✓ | ✓ | — |
+  | Bài viết | `/admin/posts/` | A-03 | ✓ | ✓ | — |
+  | Thư viện ảnh | `/admin/media/` | A-04 | ✓ | ✓ | — |
+  | Câu hỏi thường gặp | `/admin/faqs/` | A-05 | ✓ | ✓ | — |
+  | Quy định hàng hoá | `/admin/goods-rules/` | A-05 | ✓ | ✓ | — |
+  | Đánh giá khách hàng | `/admin/testimonials/` | A-05 | ✓ | ✓ | — |
+  | Chuyển hướng | `/admin/redirects/` | A-08 | ✓ | — | — |
+  | Cài đặt | `/admin/settings/` | A-09 | ✓ | — | — |
 - Session reads (`auth()`, `currentUser()`) happen only in request-time admin code, never inside `"use cache"` (ADR 0006).
 
 ## Database access (Drizzle + Supabase)

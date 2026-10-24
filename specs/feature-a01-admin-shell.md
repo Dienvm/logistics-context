@@ -1,7 +1,9 @@
 ---
 title: Build the role-aware admin shell with sidebar and UserButton
 type: feature
-status: approved
+status: in_implementation
+branch: feat/a01-admin-shell
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/39
 owner_repo: both
 roadmap: A-01
 priority: must-have

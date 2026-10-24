@@ -31,7 +31,7 @@ Pick the smallest tool that fits. Context: `06-architecture.md` "State managemen
 
 ## TanStack Query (admin, plus one exception)
 
-- `QueryClientProvider` lives in `app/admin/layout.tsx`.
+- `QueryClientProvider` (`shared/lib/query-provider.tsx`) lives in `app/admin/(shell)/layout.tsx`, not the admin root layout: one `QueryClient` per mounted shell, so sign-in, 403 and 404 carry no TanStack Query (A-01).
 - **Only exception** (`AGENTS.md` §3, `06-architecture.md`): the calculator island, **if** it ever needs live data instead of build-time rates. That needs a spec, and its JS cost is measured against the 50 KB gz app budget (ADR 0006). No other public page ships TanStack Query.
 - Query keys come from a factory per module: `leadKeys.list(filters)`, `leadKeys.detail(id)`. No inline arrays.
 - Fetchers call `/api/admin/*` route handlers, which call `requireRole`.
