@@ -1,7 +1,7 @@
 ---
 title: Edit pages and their translations from the admin
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: A-03
 priority: must-have
