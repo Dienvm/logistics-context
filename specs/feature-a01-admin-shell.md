@@ -1,7 +1,7 @@
 ---
 title: Build the role-aware admin shell with sidebar and UserButton
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: A-01
 priority: must-have
