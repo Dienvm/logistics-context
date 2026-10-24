@@ -128,7 +128,7 @@ Decisions (owner, 2026-10-24):
 
 **Loaders read the saved H1**
 
-- [ ] Given a published translation, when its H1 is saved, then the public page shows it on the next request, for every type in the per-type table. `load-calculator-page.ts`, `load-goods-page.ts` and `load-blog.ts` (blog index) read `page_translations.h1`, keeping the `messages` value only as the fallback when the H1 is empty. Their `intro` and `crumb` copy stays in `messages` (code-owned).
+- [ ] Given a published translation, when its H1 is saved, then the public page shows it on the next request, for every type in the per-type table. `load-hub-page.ts`, `load-calculator-page.ts`, `load-goods-page.ts` and `load-blog.ts` (blog index) read `page_translations.h1` with no `messages` fallback (one source; amended 2026-10-24 after the Codex implementation review, owner decision): every write path requires a 1–120-char H1 (admin schema, seed `h1 ?? title`). Migration `0007` copies the H1 these pages showed from `messages` into rows still holding the seeded default (`h1 = title`), and those `messages` keys are removed, except `hubPage.*.h1`, still the route breadcrumb label. Their `intro` and `crumb` copy stays in `messages` (code-owned).
 
 **"Tạo bản nháp EN" and outdated translations**
 
@@ -145,7 +145,7 @@ Decisions (owner, 2026-10-24):
 
 - [ ] Given the published VI `policy-privacy` translation, then a new lead's `consent_policy_version` is that translation's `policy.effectiveDate`, read by a cached query tagged `pageTag("policy-privacy")`. This replaces `PRIVACY_POLICY_VERSION`. Existing lead rows keep their stored version.
 - [ ] Given no published VI privacy policy (page or translation not published, or an invalid policy block), then in a production runtime the lead form is off and the action rejects submissions as `unavailable`. This is today's `draft-` gate, now derived from the DB. Every caller of the gate is updated for the async read: `lead-section.tsx`, `calculator-view.tsx`, `submit-lead.ts`.
-- [ ] Given a **published** VI privacy translation whose `policy.markdown` changes, when it is saved, then the new `effectiveDate` must be later than the stored one; otherwise the save gets an `effectiveDate` field error and writes nothing. A date-only change is allowed when it moves forward. Editing a draft or review privacy translation has no such rule. The editor shows that new leads will record the new version.
+- [ ] Given a VI privacy translation of a page that has ever been published (`pages.published_at` set), whatever the translation's status now, when its `policy.markdown` changes on save, then the new `effectiveDate` must be later than the stored one; otherwise the save gets an `effectiveDate` field error and writes nothing. A date-only change is allowed when it moves forward, and a date never moves back. Amended 2026-10-24 (Codex implementation review #1, owner decision): a detour through draft must not reuse a version for different text. The editor shows that new leads will record the new version.
 - [ ] Given this new runtime dependency, `leads → content`, then `.claude/rules/module-structure.md` lists it. Today `content` has no import of `leads`, so there is no cycle; the walk-through records the import list, because `check:boundaries` catches cycles, not the direction table.
 
 **Cache invalidation**
