@@ -1,7 +1,7 @@
 ---
 title: Edit route rates and route flags from the admin
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: A-02
 priority: must-have
