@@ -6,7 +6,7 @@
 - **Facts are data, not copy:** `routes` (transit, schedule, methods, divisor, rounding) and `route_rates` (weight bands, prices, validity) feed rate tables, the calculator, mega menu, JSON-LD and OG images.
 - Money: integer VND (`bigint`, mode `number`). Weights: `numeric(8,2)` kg. Timestamps: `timestamptz` UTC.
 - Legacy traceability: `legacy_wp_id`, `legacy_url` columns for imported rows.
-- `is_verified = false` on all legacy-seeded routes/rates until operations confirm; the UI shows a rate table only when `routes.is_verified = true` (otherwise "Liên hệ để nhận giá mới nhất").
+- Verification is per **route**, not per rate: `routes.is_verified = false` on every legacy-seeded route until operations confirm, and it covers that route's transit facts and all its `route_rates` bands. The UI shows a rate table only when `routes.is_verified = true` (otherwise "Liên hệ để nhận giá mới nhất"). `route_rates` has no verified flag.
 
 ## ER overview
 
@@ -149,6 +149,11 @@ export const routes = pgTable('routes', {
   isActive: boolean('is_active').notNull().default(true),
   isVerified: boolean('is_verified').notNull().default(false), // legacy seed = false until ops confirms
   sort: integer('sort').notNull().default(0),
+  // A-02: Clerk user IDs as plain text, no FK (a missing profiles mirror row must not block a save)
+  adminEditedAt: timestamp('admin_edited_at', { withTimezone: true }), // set by every admin write; seed + db:confirm skip the route
+  adminEditedBy: text('admin_edited_by'),
+  verifiedAt: timestamp('verified_at', { withTimezone: true }),       // admin: now() on → true, null on → false; db:confirm: coalesce(verified_at, now())
+  verifiedBy: text('verified_by'),                                    // admin user ID; null when set by db:confirm
   ...timestamps,
 }).enableRLS()
 
@@ -172,6 +177,7 @@ export const routeRates = pgTable('route_rates', {
   validFrom: date('valid_from'),
   validTo: date('valid_to'),
   notes: text('notes'),
+  updatedBy: text('updated_by'),                                         // A-02: Clerk user ID of the last admin edit, no FK
   ...timestamps,
 }, (t) => [
   index('route_rates_route_idx').on(t.routeId, t.method, t.weightMinKg),
@@ -459,8 +465,9 @@ Upload pipeline (server action): validate type/size → convert to WebP/AVIF (sh
 Every file is validated with Zod, including cross-file references, before anything is written. Everything runs in one transaction and needs `DATABASE_URL_DIRECT`.
 
 Re-runs are idempotent and respect ownership:
-- routes and settings are refreshed only while `is_verified = false`;
-- an unverified route's rate bands are replaced, and a verified route is never touched;
+- routes and settings are refreshed only while `is_verified = false`, and a route only while `admin_edited_at` is also null (A-02);
+- an unverified, never admin-edited route's rate bands are replaced; a verified or admin-edited route is never touched, and the seed prints the admin-edited keys it skipped;
+- `pnpm db:confirm` likewise leaves `is_verified` of an admin-edited route alone (it prints "skipped (edited in admin): {key}"): once edited in `/admin/routes/`, the admin is the route's only source;
 - pages, menus and all translations are insert-only.
 
 Legacy route-level `notes` (e.g. "Giá chưa bao gồm VAT") have no column. They are page copy for the route-page tasks and aren't seeded.
