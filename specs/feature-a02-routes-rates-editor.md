@@ -171,7 +171,7 @@ Owner instruction 2026-10-24 (Phase 2 admin): no CI wait, no SEO/Lighthouse, no 
   | 2 | `editor` | open `/admin/routes/` | all routes listed with badges, band counts, last edit |
   | 3 | `editor` | `/admin/routes/sg/` | `is_verified` / `is_active` read-only; transit days and "Hiện giá" editable |
   | 4 | `editor` | add a band with max < min; with a minimum equal to an existing band | field errors, nothing saved |
-  | 5 | `admin` | change the SG per-kg price of the cheapest band, save; open `/gui-hang-di-singapore/`, the mega menu and `/tinh-cuoc/` for 3 kg to SG | all three show the new price on first load; "Sửa lần cuối" shows the admin's name |
+  | 5 | `admin` | note the SG `/tinh-cuoc/` total for 3 kg, the home/mega-menu "từ …/kg" and the route table; change the per-kg price of the SG 1–5 kg band, save; then change the per-kg price of the SG 100 kg+ band (the from-price band) to a value that stays the minimum, save; open `/gui-hang-di-singapore/`, `/en/gui-hang-di-singapore/` (EN route page), the home page, the mega menu and `/tinh-cuoc/` for 3 kg to SG | the route tables (VI + EN) show both new prices; the 3 kg quote = new 1–5 kg price × 3 (differs from the noted total); home and mega menu show the new from-price; all on first load; "Sửa lần cuối" shows the admin's name |
   | 6 | `admin` | set a band's "valid to" to yesterday | badge "Hết hạn"; preview drops it; public table drops it within the hour |
   | 7 | `admin` | untick "Đã xác minh" on a route, save | route page shows "Liên hệ" / badged facts per `factVisibility`; preview states it |
   | 8 | `admin` | delete a band, cancel, then confirm | cancel keeps it; confirm removes it and the public table updates |
