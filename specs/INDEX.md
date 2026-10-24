@@ -18,6 +18,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 | 2026-10-22 | feature | [feature-s05-home.md](feature-s05-home.md) | Build the home page from database data | S-05 | both | implemented |
 | 2026-10-22 | feature | [feature-s03-price-engine.md](feature-s03-price-engine.md) | Add the pure price engine for quotes | S-03 | both | implemented |
 | 2026-10-22 | feature | [feature-s02-contact-tracker.md](feature-s02-contact-tracker.md) | Log contact clicks and redirect via /go/[channel] | S-02 | both | implemented |
+| 2026-10-24 | feature | [feature-a01-admin-shell.md](feature-a01-admin-shell.md) | Build the role-aware admin shell with sidebar and UserButton | A-01 | both | draft |
 | 2026-10-22 | feature | [feature-f05-clerk-staff-auth.md](feature-f05-clerk-staff-auth.md) | Protect /admin with Clerk staff auth and roles | F-05 | both | implemented |
 | 2026-10-21 | feature | [feature-s01-site-layout-shell.md](feature-s01-site-layout-shell.md) | Build the site layout shell from database data | S-01 | both | implemented |
 | 2026-10-21 | feature | [feature-f08-ci-lighthouse-budget.md](feature-f08-ci-lighthouse-budget.md) | Add Lighthouse report and JS budget gate to CI | F-08 | both | implemented |
