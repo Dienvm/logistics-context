@@ -819,7 +819,7 @@ Thời gian: 2–3 tuần (trừ T7, CN).
 - [ ] **E1-03 EU zone 7 (Cyprus, Malta).** `VN - EU!H7` = 4.811.104 cho 0,5 kg, đắt hơn cả 10,5 kg (4.694.242); `H8:H26` (1,0–10,0 kg) để trống. →
 - [x] **E1-04 Singapore → VN: hai tab "SEA".** Tab thứ 17 `SEA SING - VN (HÀNG THƯỜNG)` và tab thứ 18 `SEA SING - VN (HÀNG TẠP)`. → Owner 2026-10-25: tên tab là chuẩn. Cả hai đều đi tàu: hàng thường 8–7 USD/kg (đã gồm giao nội thành HCM), hàng tạp Sing → HCM 9–8,4 USD/kg và Sing → HN 10–9,4 USD/kg. AIR (tab 20) là đi bay.
 - [ ] **E1-05 Câu chép nhầm giữa các tab.** `VN - MALAY (SEA)!A11:A12` và `VN - SINGAPORE (SEA)!A15:A16` ghi "nhận hàng sau 2–4 ngày kể từ ngày bay / bay mỗi ngày" trong tab đường biển. Lịch tàu và thời gian thực của SG sea là gì? →
-- [ ] **E1-06 Mỹ bay chậm: tiêu đề ảnh "Huế – USA".** 🖼 Chỉ áp dụng gửi từ Huế, hay mọi điểm gửi? →
+- [x] **E1-06 Mỹ bay chậm: tiêu đề ảnh "Huế – USA".** → Owner 2026-10-26: chỉ gửi từ Huế.
 
 **Khung cân nặng hở, chồng hoặc khó hiểu**
 
@@ -946,4 +946,9 @@ Thời gian: 2–3 tuần (trừ T7, CN).
 | 2026-10-26 | Bố cục: **tab hình thức/dịch vụ + chip điểm gửi**. Bên dưới là bảng giá, thông tin, "Phụ thu theo mặt hàng" ▸, "Bảo hiểm & khiếu nại" ▸ của đúng lựa chọn đó. Mọi bảng đều có trong HTML (SEO); JS chỉ dùng để ẩn/hiện. Máy tính cước: chọn hình thức, điểm gửi, kg, D × R × C. |
 | 2026-10-26 | Cân quy đổi = (Dài × Rộng × Cao, cm) / 5000; trọng lượng tính cước lấy số lớn hơn giữa cân thực và cân quy đổi. Hệ số chia đặt theo từng bảng giá (Hàn → VN dùng /4500). Máy tính nhỏ trên trang tuyến cũng có ô nhập kích thước. |
 | 2026-10-26 | Roadmap row mới **A-02b**, chia 2 spec: (1) schema, import, trang tuyến, tuyến mới, máy tính; (2) admin sửa bảng giá dịch vụ, phụ thu, chính sách. |
-| 2026-10-26 | **Chờ owner kiểm tra xong checklist §E1** rồi mới viết spec. |
+| 2026-10-26 | ~~Chờ owner kiểm tra xong checklist §E1 rồi mới viết spec.~~ Thay bằng dòng dưới. |
+| 2026-10-26 | Owner: "triển khai theo giá gửi trong file excel, các giá trị này có thể tuỳ chỉnh tại trang admin nên có thể cập nhật sau". Nhập **đúng như Excel**; 30 mục §E1 còn mở thành **Q-29**, sửa sau trong admin. Đây là xác nhận theo rule 1 (ghi vào `owner-confirmations.json` → `rateCards`). |
+| 2026-10-26 | Khung cân giữ **nguyên mốc của sale**. Cân rơi vào khoảng hở giữa hai khung thì hiện "Liên hệ" (ghi vào Q-29). Tách "tối thiểu nhận" và "tối thiểu tính cước". |
+| 2026-10-26 | Các dòng "hàng fake" **hiển thị nguyên văn** (owner quyết sau khi được báo rủi ro pháp lý và uy tín). Admin có thể ẩn từng dòng. |
+| 2026-10-26 | Mỹ bay chậm: chỉ áp dụng **gửi từ Huế** (theo tiêu đề ảnh). |
+| 2026-10-26 | Spec đã duyệt: `specs/feature-a02b-rate-cards-public.md` (phần 1), `specs/feature-a02b-rate-cards-admin.md` (phần 2). |

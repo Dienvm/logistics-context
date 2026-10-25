@@ -8,8 +8,8 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
-| 2026-10-26 | feature | [feature-a02b-rate-cards-admin.md](feature-a02b-rate-cards-admin.md) | Edit rate cards, surcharges and policies from the admin | A-02b | both | draft |
-| 2026-10-26 | feature | [feature-a02b-rate-cards-public.md](feature-a02b-rate-cards-public.md) | Show the retail price list as per-route rate cards | A-02b | both | draft |
+| 2026-10-26 | feature | [feature-a02b-rate-cards-admin.md](feature-a02b-rate-cards-admin.md) | Edit rate cards, surcharges and policies from the admin | A-02b | both | approved |
+| 2026-10-26 | feature | [feature-a02b-rate-cards-public.md](feature-a02b-rate-cards-public.md) | Show the retail price list as per-route rate cards | A-02b | both | approved |
 | 2026-10-24 | feature | [feature-a03b-blog-post-editor.md](feature-a03b-blog-post-editor.md) | Write and publish blog posts from the admin | A-03b | both | in_implementation |
 | 2026-10-24 | feature | [feature-a03-pages-and-translations.md](feature-a03-pages-and-translations.md) | Edit pages and their translations from the admin | A-03 | both | in_implementation |
 | 2026-10-24 | feature | [feature-a02-routes-rates-editor.md](feature-a02-routes-rates-editor.md) | Edit route rates and route flags from the admin | A-02 | both | in_implementation |

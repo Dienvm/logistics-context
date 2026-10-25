@@ -1,7 +1,7 @@
 ---
 title: Edit rate cards, surcharges and policies from the admin
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: A-02b
 priority: must-have
@@ -13,7 +13,7 @@ updated: 2026-10-26
 
 ### Problem Statement
 
-Part 1 (`feature-a02b-rate-cards-public.md`) imports the sales retail list as rate cards and shows them publicly. The owner decided (2026-10-26) to publish the Excel values as written and **correct them later in the admin**: 31 open checklist items in `data/retail-price-list.md` §E1, plus future price changes.
+Part 1 (`feature-a02b-rate-cards-public.md`) imports the sales retail list as rate cards and shows them publicly. The owner decided (2026-10-26) to publish the Excel values as written and **correct them later in the admin**: 30 open checklist items in `data/retail-price-list.md` §E1 (Q-29), plus future price changes.
 
 After part 1, the admin can edit bands only. It cannot edit:
 
@@ -34,7 +34,7 @@ Roadmap: **A-02b**, part 2 of 2.
 - **Card form:**
   - tab label and place label (VI/EN);
   - method, currency, transit min/max + note, schedule;
-  - rounding step, volumetric divisor, minimum chargeable kg;
+  - rounding step, volumetric divisor, acceptance minimum kg, billing minimum kg;
   - active flag, sort.
 - **Columns:** add, rename (VI/EN label + description), reorder, deactivate.
 - **Bands** (the part-1 editor, now inside its card): per column when columns exist.
@@ -59,21 +59,29 @@ Every save invalidates `route:{key}` + `menu` and shows the public preview of th
   - **transit:** min ≤ max, both 0–90;
   - **rounding step:** one of 0,1 / 0,5 / 1 kg or empty;
   - **divisor:** an integer 1000–10000;
-  - **minimum kg:** ≥ 0;
+  - **minimums:** each ≥ 0, acceptance ≤ billing when both are set;
   - **currency:** one of the enum values.
-  - Changing the currency of a card that has bands asks for confirmation ("giá hiện có sẽ được hiểu theo tiền tệ mới") and does not convert values.
+  - The currency **cannot be changed while the card has bands** (minor-unit exponents differ: 100.000 đ would read as 1.000,00 US$). The form shows "Xoá các khung giá trước khi đổi tiền tệ".
 - [ ] **AC-03** Given the columns editor:
   - adding a column to a card that has bands asks whether to copy the bands' edges into the new column with "Liên hệ" prices;
   - deactivating a column hides it publicly and keeps its bands.
 - [ ] **AC-04** Given the policy editor, the sections render publicly in the saved order under "Bảo hiểm & khiếu nại" (part 1, AC-12). "Copy to other cards" overwrites the chosen cards' section of the same kind after a confirmation.
 - [ ] **AC-05** Given the surcharge editor:
   - items accept free text for the price (e.g. "120K/chai + 500K an ninh") because they are informational (not in the calculator);
-  - an item with `is_active = false` is hidden publicly, which is how the counterfeit-goods rows from part 1 R1 are switched on or off;
+  - an item with `is_active = false` is hidden publicly; this is how the owner hides a row (e.g. "hàng fake" rows, which part 1 publishes verbatim);
   - lists can be linked to several cards.
-- [ ] **AC-06** Given any save, the actions:
-  - follow the A-02 pattern: guard → Zod parse → use case in a transaction → `updateTag(routeTag(key))` + `updateTag(MENU_TAG)`;
-  - set `routes.admin_edited_at/by`;
-  - make `pnpm db:seed` and `db:import-rate-cards` (without `--replace --force`) skip a route that has admin edits, and the import prints that it skipped.
+- [ ] **AC-06** Given any save, the actions follow the A-02 pattern: guard → Zod parse → use case in a transaction → `updateTag(routeTag(key))` + `updateTag(MENU_TAG)`. They set `routes.admin_edited_*` and `rate_cards.admin_edited_*`. The import's skip and `--force` rules from part 1 (AC-02) apply unchanged.
+- [ ] **AC-06b** Mutation matrix. Each edit shows on the listed public surfaces after save; the PR records ✓ per row.
+
+  | Edit | Route page | Calculator | Hero / menu / hub "Từ" | JSON-LD |
+  |---|---|---|---|---|
+  | Band price | ✓ | ✓ | ✓ | ✓ |
+  | Card transit / schedule / rounding / minimums / divisor | ✓ facts line | ✓ | ✓ transit | — |
+  | Card active flag / sort / labels | ✓ tabs, chips | ✓ options | ✓ | ✓ |
+  | Column rename / reorder / deactivate | ✓ | ✓ options | ✓ if per-kg | — |
+  | Surcharge item edit / deactivate | ✓ | — | — | — |
+  | Policy section edit / copy | ✓ | — | — | — |
+- [ ] **AC-06c** Part 2 drops the deprecated `routes` columns (`transit_days_*`, `transit_note`, `flight_schedule`, `methods`, `volumetric_divisor`, `weight_rounding_kg`) in a migration after confirming no reader remains (`grep`).
 - [ ] **AC-07** Given a route page preview in the admin, it renders the public `RateCardSection` for the edited card with visibility forced to shown (A-02 preview pattern).
 - [ ] **AC-08** Given `/admin/routes`, the list shows per route the number of active cards, the currencies used, and the last edit date and editor.
 
@@ -125,7 +133,7 @@ Every save invalidates `route:{key}` + `menu` and shows the public preview of th
   2. Add a column "Hàng giá trị cao" to `sg-vn` air, copy the edges, then set 15 US$. The public transposed table shows the row.
   3. Create a card "Tàu · TP.HCM" on `ph` with one band and activate it. A new tab appears publicly. Delete it and the tab is gone.
   4. Edit the EU "Bảo hiểm" section, copy it to no other card, and save; the public text is updated.
-  5. Deactivate the SGN surcharge item "Fake thương hiệu (quần áo)"; it is hidden publicly.
+  5. Deactivate the SGN surcharge item "Fake thương hiệu (quần áo)", which part 1 imports active (owner decision: verbatim). It is hidden publicly; reactivate it and it shows again.
   6. Run `pnpm db:import-rate-cards --replace` again: `tw` is reported as skipped (admin-edited).
   7. Log in as `sales` and POST a card action: 403.
   8. axe at 1280 on the admin route page: zero serious or critical issues. Keyboard pass through the card form and reorder buttons.
