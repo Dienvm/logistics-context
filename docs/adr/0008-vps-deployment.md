@@ -1,6 +1,6 @@
 # ADR 0008 — VPS deployment: Docker Compose + Caddy, images built in CI
 
-- Status: Accepted (2026-10-26)
+- Status: Accepted (2026-10-26) · Amended 2026-10-26 (L-00 spec review): host redirects in Caddy, cache volume scoped to `.next/cache/images`, deploy gated on `verify` + `security`, DNS cutover moved to L-00
 - Amends: ADR 0001 / `AGENTS.md` §3 "Hosting" row (VPS deployment shape), `docs/context/06-architecture.md` (hosting, preview mode, client IP, env)
 - Owner repo: both
 - Roadmap: L-00 (new), L-01, L-02
@@ -15,15 +15,15 @@ The owner has provisioned the server: a **Hostinger** KVM VPS in **Jakarta, Indo
 
 1. **Runtime: Docker Compose with two services on the VPS.**
    - `app`: the Next 16 build with `output: 'standalone'`, running `node server.js` as a non-root user in a Node 22 image, as **one process**. It listens on the Compose network only.
-   - `caddy`: Caddy 2 is the only public listener (80/443). It terminates TLS with automatic Let's Encrypt certificates for `43logistics.vn` and `www.43logistics.vn` and reverse-proxies to `app`. The `www` → apex redirect stays in the app (`check:redirects --host-checks`), so Caddy forwards both hosts unchanged.
-   - Both services use `restart: unless-stopped`. Caddy's certificate data and the Next image-optimisation cache (`.next/cache`) are named volumes, so a redeploy keeps them.
-2. **Build in CI, deploy by pull.** A GitHub Actions workflow in the app repo runs on every push to `main`:
+   - `caddy`: Caddy 2 is the only public listener (80/443). It terminates TLS with automatic Let's Encrypt certificates for `43logistics.vn` and `www.43logistics.vn` and reverse-proxies to `app`. Caddy also does the host redirects: `http://` (both hosts) and `https://www` each answer one explicit **301** to `https://43logistics.vn{uri}`. The app has no host redirect, and `check:redirects --host-checks` expects 301, not Caddy's default 308.
+   - Both services use `restart: unless-stopped`. Caddy's data and config and the Next image-optimisation cache (`.next/cache/images` only) are named volumes, so a redeploy keeps them. The rest of `.next/cache` always comes from the new image, so no stale build cache survives a deploy.
+2. **Build in CI, deploy by pull.** A GitHub Actions workflow in the app repo runs for a commit on `main` once `verify` and `security` have passed for that exact SHA and it is still the head of `main`:
    - It builds the Docker image with the production build-time environment (`NEXT_PUBLIC_*`, and the database URL, because the shell is prerendered against Supabase at build).
    - It pushes the image to GHCR (`ghcr.io/dienvm/43logistics.vn`), tagged with the commit SHA and `latest`.
    - It connects over SSH and runs `docker compose pull app && docker compose up -d app`.
    - The secrets live in a GitHub `production` environment (`DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` and the build env). The VPS is never used as a build machine.
    - Runtime secrets live in an `.env` file on the VPS, readable by the deploy user only, and never in the image.
-   - **Rollback** is `docker compose up -d` with an earlier SHA tag.
+   - **Rollback** is `docker compose up -d` with an earlier known-good SHA tag. A failed health probe restores the last known-good tag automatically. Migrations must stay compatible with the previous release (expand, then contract).
 3. **No staging or preview environment.** Only production runs on the VPS.
    - Preview mode (unverified facts shown with a badge) exists only under `next dev` (`pnpm dev:local`). The `VERCEL_ENV` branch of the fact-visibility gate and the `VERCEL_ENV` env entry are removed (L-00), so every `next build` hides unverified facts.
    - L-01 QA runs on a local production build (`pnpm build && pnpm start` against the Supabase project). `check:redirects` keeps running in the `verify` CI workflow against `next start`.
@@ -53,4 +53,4 @@ The owner has provisioned the server: a **Hostinger** KVM VPS in **Jakarta, Indo
   - One process on 2 vCPU limits throughput. It is enough for a marketing site with cached shells. Scaling needs a new ADR (Decision 4).
 - **Location:** Jakarta sits close to Supabase `ap-southeast-1` (Singapore), which keeps DB round trips short. It is a little further from Vietnamese visitors than Singapore would be, but cached shells make that cost small. L-01/L-02 should check TTFB from Vietnam.
 - **Still open (Q-15):** who administers the VPS, and who holds DNS access for `43logistics.vn`.
-- **Follow-up:** new roadmap task **L-00 Deployment pipeline** (Dockerfile, `compose.yaml`, `Caddyfile`, deploy workflow, host hardening, `VERCEL_ENV` removal) before L-01. L-01 becomes a QA pass on a local production build, and L-02 cuts DNS over to the VPS.
+- **Follow-up:** new roadmap task **L-00 Deployment pipeline** (Dockerfile, `compose.yaml`, `Caddyfile`, deploy workflow, host hardening, `VERCEL_ENV` removal) before L-01. The owner moved the DNS cutover into L-00 (2026-10-26): the site goes live, indexed, before L-01. L-01 becomes a QA pass on production plus a local production build. L-02 keeps Search Console, monitoring and the watch.
