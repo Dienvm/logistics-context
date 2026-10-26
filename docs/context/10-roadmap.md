@@ -79,8 +79,9 @@
 
 ## Phase 5 — Launch
 
-- [ ] **L-01 Staging QA** — everything in `09-migration.md` step 7, plus a full manual pass of the flows that have no automated tests (ADR 0004): price calculation per route, the full consent matrix (ADR 0004 Decision 2), `/go/[channel]` logging, lead form, language switch. Price evidence: approved rates **and** hand-calculated S-03 worked examples per route. Launch gate: answers behind every published fact plus Q-15, Q-17, Q-20. `pnpm check:redirects --strict` must pass (F-07).
-- [ ] **L-02 Go-live** — DNS, Search Console sitemap, monitoring (Sentry or similar, uptime), 4-week watch. `pnpm check:redirects --base https://43logistics.vn --host-checks --strict` must pass in production (F-07).
+- [ ] **L-00 Deployment pipeline** (ADR 0008, owner_repo: app) — `output: 'standalone'` + Dockerfile (Node 22, non-root), `compose.yaml` (`app` + `caddy`, named volumes for Caddy data and `.next/cache`), `Caddyfile` (apex + `www` to `app`), a GitHub Actions deploy workflow (build → GHCR → SSH pull, `production` environment secrets), host hardening (key-only SSH, deploy user, firewall 22/80/443, unattended upgrades, Hostinger backups), removal of the `VERCEL_ENV` branch from the fact-visibility gate and env, and the Vercel comment in `ip-hash.ts`. *Accept:* a push to `main` deploys a new SHA-tagged container that answers over HTTPS on the VPS; rollback to the previous tag is shown once; `next build` never badges unverified facts.
+- [ ] **L-01 Staging QA** — on a local production build (`pnpm build && pnpm start` against the Supabase project; no staging host, ADR 0008): everything in `09-migration.md` step 7, plus a full manual pass of the flows that have no automated tests (ADR 0004): price calculation per route, the full consent matrix (ADR 0004 Decision 2), `/go/[channel]` logging, lead form, language switch. Price evidence: approved rates **and** hand-calculated S-03 worked examples per route. Launch gate: answers behind every published fact plus Q-15, Q-17, Q-20. `pnpm check:redirects --strict` must pass (F-07).
+- [ ] **L-02 Go-live** — DNS cutover to the VPS (Q-15), Search Console sitemap, monitoring (Sentry or similar, uptime, VPS disk and container health), 4-week watch. `pnpm check:redirects --base https://43logistics.vn --host-checks --strict` must pass in production (F-07).
 
 ## Phase 6 — Later
 
