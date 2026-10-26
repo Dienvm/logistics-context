@@ -70,7 +70,7 @@ Emit with a `<JsonLd data={...} />` server component (`<script type="application
 | --- | --- |
 | All pages | `WebSite` (name "43 Logistics", alternateName "43Logistics.vn", url, inLanguage) + `Organization` (logo SVG/PNG URL, `sameAs` Facebook, `contactPoint` { telephone "+84979222357", contactType "customer support", availableLanguage ["vi"] — add "en" only after Q-03 confirms English support }) |
 | Home, Contact, About | `LocalBusiness` per office (Đà Nẵng, TP.HCM): name, address (`PostalAddress` with confirmed new admin names), `geo`, telephone, `openingHoursSpecification` from settings, `url`, `image` |
-| Route pages | (S-04 as built: `Service` with `Offer` only for a shown verified public from-price, `FAQPage` only with published FAQ rows, `BreadcrumbList` from the breadcrumbs; OG image deferred) `Service` { serviceType "International parcel shipping", provider → Organization, areaServed → `Country` {name}, `offers`: `Offer` with `priceSpecification` `UnitPriceSpecification` { price, priceCurrency "VND", unitCode "KGM", referenceQuantity, eligibleQuantity (min/max kg) }, `validFrom`/`validThrough` from rates } + `BreadcrumbList` + `FAQPage` (Google shows FAQ rich results only for some authoritative sites; still valid markup) |
+| Route pages | (A-02b **Offer currency rule**: one `Offer` per route page, for its derived "Từ X/kg" price only, in the currency that price is quoted in (`priceCurrency` = ISO code: VND, USD, SGD or KRW; never converted); `price` is the major-unit decimal string ("94000", "7.00"); no Offer without a shown verified public "Từ" price; `areaServed` lists the zone countries on the EU route, else the route's country.) (S-04 as built: `Service` with `Offer` only for a shown verified public from-price, `FAQPage` only with published FAQ rows, `BreadcrumbList` from the breadcrumbs; OG image deferred) `Service` { serviceType "International parcel shipping", provider → Organization, areaServed → `Country` {name}, `offers`: `Offer` with `priceSpecification` `UnitPriceSpecification` { price, priceCurrency "VND", unitCode "KGM", referenceQuantity, eligibleQuantity (min/max kg) }, `validFrom`/`validThrough` from rates } + `BreadcrumbList` + `FAQPage` (Google shows FAQ rich results only for some authoritative sites; still valid markup) |
 | Hubs | `ItemList` of route services + `BreadcrumbList` |
 | Blog post | `BlogPosting` (headline, image, datePublished, dateModified, author `Organization`, inLanguage, mainEntityOfPage) + `BreadcrumbList`. S-11 emits all but `image` (no covers until A-04); the blog index emits an `ItemList` of its articles. `author` stays the `Organization` even when the article shows a staff byline (A-03b). The blog filter (A-03b) is client-only: no URL, no `searchParams`, no change to the index's canonical, metadata, JSON-LD or sitemap entry; categories have no archive URL |
 | Policy pages | `WebPage` + `BreadcrumbList` |
@@ -158,7 +158,7 @@ The client link (`ContactLink`) mints the `event_id` on `click` (Enter included)
 | Event | When | Parameters |
 | --- | --- | --- |
 | `click_zalo` / `click_call` / `click_whatsapp` / `click_messenger` | Contact button click | `event_id`, `route_key`, `placement` (header, hero, sticky_bar, rate_table, footer…), `locale` |
-| `calculate_quote` | Calculator returns a result | `route_key`, `weight_kg`, `chargeable_kg`, `estimate_vnd`, `locale` |
+| `calculate_quote` | Calculator returns a result | `route_key`, `weight_kg`, `chargeable_kg`, `currency` (the rate card's: VND, USD, SGD, KRW), `estimate_amount` (major units, null for "Liên hệ"), `estimate_vnd` (only when `currency` is VND), `locale` (A-02b) |
 | `generate_lead` | Lead form success | `event_id`, `route_key`, `lead_id`, `locale`, `value` (estimate if any), `currency: 'VND'` |
 | `form_start` / `form_error` | First field focus / validation error | `form: 'lead'`, `field` |
 | `view_route` | Route page view | `route_key`, `direction` |
@@ -198,7 +198,7 @@ S-13 as built (43logistics.vn PRs #36, #37; owner decisions 2026-10-24):
 ### New GTM container setup (Q-13; the legacy `GTM-WF967MKT` is retired)
 
 1. Create a Web container for `43logistics.vn`; set `NEXT_PUBLIC_GTM_ID` on the server. The site already sends Consent Mode v2 `default`/`update` and loads GTM only after ads consent, so keep the container's built-in consent checks on ("Require additional consent" for ad tags).
-2. Data-layer variables to create: `event_id`, `route_key`, `placement`, `locale`, `weight_kg`, `chargeable_kg`, `estimate_vnd`, `form`, `field`, `lead_id`, `currency`.
+2. Data-layer variables to create: `event_id`, `route_key`, `placement`, `locale`, `weight_kg`, `chargeable_kg`, `estimate_vnd`, `estimate_amount`, `form`, `field`, `lead_id`, `currency`.
 3. Custom-event triggers: `click_zalo`, `click_call`, `click_whatsapp`, `click_messenger` (contact conversions), `calculate_quote`, `form_start`, `form_error`, `generate_lead` (primary conversion; `event_id` = `lead_id` for de-duplication with the server-side APIs in T-01).
 4. Add tags only for the ad platforms confirmed in Q-13 (e.g. Google Ads conversion on `generate_lead` and `click_zalo`; Meta/TikTok pixels only if chosen). No GA4 unless an ADR adds it (analytics lane is PostHog, ADR 0002).
 5. Publish, then check in GTM Preview with consent accepted (S-13 acceptance).

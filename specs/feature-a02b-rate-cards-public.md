@@ -1,11 +1,13 @@
 ---
 title: Show the retail price list as per-route rate cards
 type: feature
-status: approved
+status: in_implementation
 owner_repo: both
 roadmap: A-02b
 priority: must-have
-blocked_by_questions: [Q-04, Q-05, Q-08, Q-09, Q-25, Q-29]
+blocked_by_questions: [Q-04, Q-05, Q-08, Q-09, Q-25, Q-30]
+branch: feat/a02b-rate-cards-public
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/45
 updated: 2026-10-26
 ---
 

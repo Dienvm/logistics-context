@@ -3,8 +3,8 @@
 ## Principles
 
 - Structure and translations are separate tables: `pages` ↔ `page_translations (page_id, locale)`, same for routes, FAQs, goods rules, testimonials, posts, categories, menu items, media alt text. Adding a locale = add an enum value + rows; no schema change per locale.
-- **Facts are data, not copy:** `routes` (transit, schedule, methods, divisor, rounding) and `route_rates` (weight bands, prices, validity) feed rate tables, the calculator, mega menu, JSON-LD and OG images.
-- Money: integer VND (`bigint`, mode `number`). Weights: `numeric(8,2)` kg. Timestamps: `timestamptz` UTC.
+- **Facts are data, not copy:** `rate_cards` (method × service × place: currency, transit, schedule, rounding, divisor, minimums, policies), their `route_rates` bands and `rate_card_columns`, and the linked surcharge lists feed the price section, the calculator, mega menu, hubs, JSON-LD and OG images (A-02b, ADR 0007). Route-level summaries (hero transit, methods, "Từ X") are derived on read from the active cards.
+- Money: an integer in the minor unit of the card's currency (`bigint`, mode `number`): VND and KRW have none, USD and SGD have cents (exponents in `modules/pricing/domain/money.ts`). Prices are never converted between currencies. Weights: `numeric(9,3)` kg on bands and card minimums. Timestamps: `timestamptz` UTC.
 - Legacy traceability: `legacy_wp_id`, `legacy_url` columns for imported rows.
 - Verification is per **route**, not per rate: `routes.is_verified = false` on every legacy-seeded route until operations confirm, and it covers that route's transit facts and all its `route_rates` bands. The UI shows a rate table only when `routes.is_verified = true` (otherwise "Liên hệ để nhận giá mới nhất"). `route_rates` has no verified flag.
 
@@ -16,7 +16,11 @@ profiles (Clerk users) ─┬─< posts >─┬─ post_translations
                         ├─< leads.assigned_to
                         └─< goods_rules.approved_by
 pages ─< page_translations          media ─< media_translations
-pages ─ routes ─< route_rates
+pages ─ routes ─< rate_cards ─< route_rates ─< route_rate_translations
+              │          ├─< rate_card_translations (tab, place, transit note, schedule, policies jsonb)
+              │          ├─< rate_card_columns ─< rate_card_column_translations
+              │          └─< rate_card_surcharge_lists >─ surcharge_lists (same route)
+              ├─< surcharge_lists ─< surcharge_items ─< surcharge_item_translations
               ├─< route_translations
               ├─< goods_rules ─< goods_rule_translations   (route_id null = global rule)
               ├─< faqs ─< faq_translations                  (or faqs.page_id)
@@ -168,25 +172,48 @@ export const routeTranslations = pgTable('route_translations', {
   shortPitch: text('short_pitch'),
 }, (t) => [primaryKey({ columns: [t.routeId, t.locale] })]).enableRLS()
 
+// A-02b (migration 0009, ADR 0007): prices live in rate cards. Enums: currency_code
+// (VND, USD, SGD, KRW), policy_kind, surcharge_list_kind (item, fee), quote_mode
+// (quotable, contact); shipping_method gains road and hand_carry.
+export const rateCards = pgTable('rate_cards', {
+  id, routeId /* FK cascade */, key /* unique per route: 'air-dry-dn' */, method: shippingMethod,
+  tabKey /* groups cards into a service tab: 'air-dry' */, currency: currencyCode,
+  transitDaysMin, transitDaysMax /* smallint, nullable */,
+  weightRoundingKg: numeric(6,3) /* null = no rounding */, volumetricDivisor: integer default 5000,
+  minWeightKg: numeric(9,3) /* acceptance minimum: below → "Liên hệ" */,
+  minChargeableKg: numeric(9,3) /* billing minimum: below → charged at it */,
+  isActive, sort, adminEditedAt, adminEditedBy /* as on routes */, ...timestamps,
+}) // unique (route_id, key)
+export const rateCardTranslations = pgTable('rate_card_translations', {
+  cardId, locale, tabLabel, placeLabel, transitNote, schedule,
+  policies: jsonb /* [{ kind, title, items: string[] }], Zod cardPoliciesSchema */,
+}) // pk (card_id, locale)
+export const rateCardColumns = pgTable('rate_card_columns', {
+  id, cardId /* FK cascade */, key /* unique per card: 'zone-3', 'ca' */, quoteMode, isActive, sort,
+}) // unique (id, card_id): target of the bands' composite FK
+// rate_card_column_translations (column_id, locale) → label, description (EU zone countries)
+
 export const routeRates = pgTable('route_rates', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  routeId: uuid('route_id').notNull().references(() => routes.id, { onDelete: 'cascade' }),
-  method: shippingMethod('method').notNull().default('air'),
-  weightMinKg: numeric('weight_min_kg', { precision: 8, scale: 2 }).notNull(),
-  weightMaxKg: numeric('weight_max_kg', { precision: 8, scale: 2 }),      // null = open-ended ("trên 100kg")
-  pricePerKgVnd: bigint('price_per_kg_vnd', { mode: 'number' }),         // per-kg band
-  flatPriceVnd: bigint('flat_price_vnd', { mode: 'number' }),            // fixed price for the band (e.g. US 5kg)
-  contactForPrice: boolean('contact_for_price').notNull().default(false),
-  promoLabel: text('promo_label'),                                       // 'Đồng giá'
-  validFrom: date('valid_from'),
-  validTo: date('valid_to'),
-  notes: text('notes'),
-  updatedBy: text('updated_by'),                                         // A-02: Clerk user ID of the last admin edit, no FK
-  ...timestamps,
+  id, rateCardId /* FK cascade, not null */, columnId /* null on a card without columns */,
+  weightMinKg: numeric(9,3) /* inclusive; "Trên 100 kg" is stored as 100.001 + its label */,
+  weightMaxKg: numeric(9,3) /* inclusive; null = open-ended */,
+  pricePerKgMinor: bigint, flatPriceMinor: bigint /* minor units of the card currency */,
+  contactForPrice, promoLabel, validFrom, validTo, notes, updatedBy, ...timestamps,
 }, (t) => [
-  index('route_rates_route_idx').on(t.routeId, t.method, t.weightMinKg),
-  check('route_rates_price_ck', sql`${t.contactForPrice} or ${t.pricePerKgVnd} is not null or ${t.flatPriceVnd} is not null`),
-]).enableRLS()
+  index('route_rates_card_idx').on(t.rateCardId, t.columnId, t.weightMinKg),
+  foreignKey((column_id, rate_card_id) → rate_card_columns (id, card_id)).onDelete('cascade'), // a column belongs to the band's card
+  check('route_rates_price_ck', contact_for_price or price_per_kg_minor or flat_price_minor is not null),
+])
+// route_rate_translations (rate_id, locale) → weight_label, price_label: the sale's wording
+// surcharge_lists (route_id, key unique per route, kind, sort) + surcharge_list_translations (title, footnote)
+// surcharge_items (list_id, is_active, sort) + surcharge_item_translations (item, price TEXT, note):
+//   the price is informational text, never summed by a quote
+// rate_card_surcharge_lists (card_id, list_id) pk + sort; the import checks both share the route
+// Every new table: RLS on, no policies.
+
+// Deprecated since A-02b (kept one release, not read, dropped in part 2):
+// routes.methods, transit_days_min/max, transit_note, flight_schedule, volumetric_divisor,
+// weight_rounding_kg (migration comments mark them).
 
 // ───────────────────────── goods rules, FAQs, testimonials
 export const goodsRules = pgTable('goods_rules', {
@@ -398,15 +425,17 @@ export const db = drizzle(client, { schema, casing: 'snake_case' })
 
 `drizzle.config.ts`: `dialect: 'postgresql'`, `schema: './db/schema'`, `out: './db/migrations'`, `dbCredentials.url = process.env.DATABASE_URL_DIRECT`.
 
-## Pricing rules — how `routes` + `route_rates` become a quote (S-03)
+## Pricing rules — how a rate card becomes a quote (S-03, A-02b)
 
-The price engine is `43logistics.vn/modules/pricing/domain/{weight,quote}.ts`, exposed client-safe through `modules/pricing/client.ts`. Rows are mapped by `infrastructure/quote-mappers.ts` (`numeric` strings → integer grams; a malformed value throws with its column name). Owner decisions 2026-10-22, open points in Q-25:
+The price engine is `43logistics.vn/modules/pricing/domain/{weight,quote}.ts`, exposed client-safe through `modules/pricing/client.ts`. One quote is for **one rate card**, in its currency. Rows are mapped by `infrastructure/rate-card-mappers.ts` (`numeric` strings → integer grams; a malformed value throws with its column name). Owner decisions 2026-10-22 and 2026-10-26, open points in Q-25 and Q-30:
 
-- **Units:** integer grams; actual weight rounded **up** to the gram. Volumetric = L×W×H / `routes.volumetric_divisor`, rounded up to the gram, only when all three dimensions are given. Chargeable = max(actual, volumetric), then rounded **up** to `routes.weight_rounding_kg` when set (no default step).
-- **Eligibility:** "Liên hệ" when `is_verified = false` (unless preview) or `prices_public = false`. Only bands of the requested `method` whose `valid_from`/`valid_to` window contains today (Asia/Ho_Chi_Minh, inclusive) count; `routes.methods` is not consulted.
-- **Bands:** `[weight_min_kg, weight_max_kg]` inclusive, `null` max open-ended. Several covering → the **highest minimum** wins; a tie on it → "Liên hệ" (`ambiguous_band`). No covering band → `no_band`.
-- **Modes:** `contact_for_price` → `contact_band`; flat only → that amount; per-kg only → price × chargeable kg, half up to the đồng (bigint); both set → `ambiguous_band`.
-- **Not in the engine:** VAT, insurance, surcharges, minimum charge, promos (Q-04, Q-07, Q-09). Evidence: `pnpm price:examples` (worked examples, compared by hand; ADR 0004).
+- **Weight pipeline (integer grams, no intermediate whole-kg rounding):** actual rounded **up** to the gram; volumetric = L×W×H / `rate_cards.volumetric_divisor` (5000, Korea → VN 4500), only when all three dimensions are given; chargeable = max(actual, volumetric); rounded **up** to `weight_rounding_kg` when set (set only where the source states it or a flat per-step table implies it); below `min_weight_kg` → "Liên hệ" (`below_minimum`); raised to `min_chargeable_kg` when set; then the band is picked.
+- **Eligibility:** "Liên hệ" when the route has `is_verified = false` (unless preview) or `prices_public = false`. Only bands of the card and requested column whose `valid_from`/`valid_to` window contains today (Asia/Ho_Chi_Minh, inclusive) count.
+- **Columns:** a `contact` column always quotes "Liên hệ" (`contact_column`) and shows its band's `price_label`; a `quotable` column uses its per-kg or flat bands. No quantity input.
+- **Bands:** the sale's literal edges, `[weight_min_kg, weight_max_kg]` inclusive, `null` max open-ended; "Trên X kg" is X.001 with the label. Several covering → the **highest minimum** wins; a tie on it → "Liên hệ" (`ambiguous_band`). No covering band (a gap between the sale's bands) → `no_band`, listed under Q-30.
+- **Modes:** `contact_for_price` → `contact_band`; flat only → that amount; per-kg only → price × chargeable kg, half up to the minor unit (bigint); both set → `ambiguous_band`.
+- **"Từ X/kg" (hero, mega menu, hubs, JSON-LD):** the currency of the first active card (sort order) with an eligible per-kg band, then the lowest eligible per-kg band in that currency over all active cards and quotable columns (`domain/from-price.ts`). Transit = min of the cards' minimums and max of their maximums; methods = the set of card methods (`domain/route-summary.ts`).
+- **Not in the engine:** VAT, insurance, surcharge lists, promos (Q-04, Q-07, Q-09). Evidence: `pnpm price:examples` (worked examples on `rate-cards.json`, compared by hand; ADR 0004) and `pnpm price:cards` (every stored card).
 
 ## `site_settings` keys (validated with Zod)
 
@@ -464,7 +493,7 @@ Upload pipeline (server action): validate type/size → convert to WebP/AVIF (sh
 ## Seed
 
 `pnpm db:seed` (`scripts/seed.ts`, F-04) reads the following from `43logistics.vn/data/seed/`, or from `$SEED_DATA_DIR` when set:
-- `routes.legacy.json`: routes, rates and translations, with `isVerified` that must be `false`;
+- `routes.legacy.json`: routes, legacy rates and translations, with `isVerified` that must be `false` (the 8 A-02b routes carry no rates: their prices are rate cards);
 - `site-settings.legacy.json`;
 - `pages.json`: 22 IA pages from `03`. Route pages take their slugs and names from the routes file;
 - `menus.json`: `header`, `footer-services` and `footer-policies`, 27 items;
@@ -475,12 +504,14 @@ Every file is validated with Zod, including cross-file references, before anythi
 
 Re-runs are idempotent and respect ownership:
 - routes and settings are refreshed only while `is_verified = false`, and a route only while `admin_edited_at` is also null (A-02);
-- an unverified, never admin-edited route's rate bands are replaced; a verified or admin-edited route is never touched, and the seed prints the admin-edited keys it skipped;
+- an unverified, never admin-edited route's legacy bands become one `legacy-{method}` rate card per method (VND), rewritten only when the seed's bands or facts differ, unless the route already has imported (non-legacy) cards; a verified or admin-edited route is never touched, and the seed prints the admin-edited keys it skipped;
 - `pnpm db:confirm` likewise leaves `is_verified` of an admin-edited route alone (it prints "skipped (edited in admin): {key}"): once edited in `/admin/routes/`, the admin is the route's only source;
 - pages, menus and all translations are insert-only, and `pnpm db:confirm` skips pages edited in `/admin/pages/` (`admin_edited_at` set; it prints "skipped (edited in admin): {key}"), so an editor's text and status are never overwritten (A-03);
 - `pnpm db:confirm` likewise skips a listed post edited in `/admin/posts/` (`posts.admin_edited_at` set; it prints "skipped (edited in admin): {vi slug}"), and stamps `post_translations.published_at` (coalesce) when it publishes one (A-03b); `pnpm db:seed` stays insert-only for posts;
 - a page translation's `h1` defaults to its title; `pages.json` gives an explicit `h1` where they differ (hubs, calculator, goods, blog index: their loaders read the DB `h1` since A-03, migration `0007` copied the previous `messages` H1 into existing rows).
 
 **Privacy policy version (A-03):** the version stored on each lead (`leads.consent_policy_version`) is the `effectiveDate` of the published VI `policy-privacy` translation's `policy` block (`getPrivacyPolicyVersion()`, cached under `page:policy-privacy`). Without a published VI privacy policy the lead form is off. A published VI privacy text change must come with a later `effectiveDate` (the admin action refuses it otherwise).
+
+**Retail price list (A-02b):** `pnpm db:import-rate-cards` loads `43logistics.vn/data/seed/rate-cards.json` (the owner-confirmed list, `owner-confirmations.json` → `rateCards`). Without a flag it is a dry run printing a per-band diff; `--replace` writes a JSON backup of what it deletes to `43logistics.vn/.backups/` (gitignored), then replaces each listed route's cards, bands, columns, surcharge lists and policies, sets `prices_public` where the file says so, and applies the file's targeted copy fixes (block by index, replaced only while it still equals the seeded block, else reported as a conflict; FAQ by sort) in one transaction, holding row locks on the listed routes. The backup holds the full stored rows (ids, validity, notes, flags, audit fields). Routes edited in the admin (route or any card `admin_edited_at`) are skipped unless `--force`; routes absent from the file are never touched; an unchanged route is not rewritten. `pnpm db:confirm` verifies the `rateCards` routes only once they have imported cards.
 
 Legacy route-level `notes` (e.g. "Giá chưa bao gồm VAT") have no column. They are page copy for the route-page tasks and aren't seeded.

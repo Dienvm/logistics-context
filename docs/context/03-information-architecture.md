@@ -22,9 +22,17 @@
 │   ├── /gui-hang-di-dai-loan/                                     | /en/shipping-to-taiwan/
 │   ├── /gui-hang-di-nhat-ban/                                     | /en/shipping-to-japan/
 │   ├── /gui-hang-di-thai-lan/                                     | /en/shipping-to-thailand/
-│   └── /gui-hang-di-my/                                           | /en/shipping-to-usa/
+│   ├── /gui-hang-di-my/                                           | /en/shipping-to-usa/
+│   ├── /gui-hang-di-philippines/                                  | /en/shipping-to-philippines/   (A-02b)
+│   ├── /gui-hang-di-canada/                                       | /en/shipping-to-canada/        (A-02b)
+│   ├── /gui-hang-di-anh/                                          | /en/shipping-to-uk/            (A-02b)
+│   ├── /gui-hang-di-uc/                                           | /en/shipping-to-australia/     (A-02b)
+│   └── /gui-hang-di-chau-au/                                      | /en/shipping-to-europe/        (A-02b)
 ├── /nhap-hang/                     Hub: Nhận hàng về Việt Nam    | /en/ship-to-vietnam/
 │   ├── /gui-hang-tu-singapore-ve-viet-nam/                        | /en/singapore-to-vietnam-shipping/
+│   ├── /gui-hang-tu-dai-loan-ve-viet-nam/                         | /en/taiwan-to-vietnam-shipping/  (A-02b)
+│   ├── /gui-hang-tu-han-quoc-ve-viet-nam/                         | /en/korea-to-vietnam-shipping/   (A-02b)
+│   ├── /gui-hang-tu-nhat-ban-ve-viet-nam/                         | /en/japan-to-vietnam-shipping/   (A-02b)
 │   ├── /gui-hang-tu-malaysia-ve-viet-nam/   (only if confirmed)
 │   └── /gui-hang-tu-thai-lan-ve-viet-nam/   (only if confirmed)
 ├── /tinh-cuoc/                     Shipping calculator           | /en/shipping-calculator/
@@ -50,9 +58,17 @@
 | `kr` | outbound | KR | gui-hang-di-han-quoc | shipping-to-korea | Hàn Quốc | South Korea | P0 |
 | `tw` | outbound | TW | gui-hang-di-dai-loan | shipping-to-taiwan | Đài Loan | Taiwan | P0 |
 | `jp` | outbound | JP | gui-hang-di-nhat-ban | shipping-to-japan | Nhật Bản | Japan | P0 |
-| `th` | outbound | TH | gui-hang-di-thai-lan | shipping-to-thailand | Thái Lan | Thailand | P0 |
+| `th` | outbound | TH | gui-hang-di-thai-lan | shipping-to-thailand | Thái Lan | Thailand | P0 (road from TP.HCM since A-02b, not air) |
 | `us` | outbound | US | gui-hang-di-my | shipping-to-usa | Mỹ | United States | P0 |
 | `sg-vn` | inbound | SG | gui-hang-tu-singapore-ve-viet-nam | singapore-to-vietnam-shipping | Singapore → Việt Nam | Singapore → Vietnam | P0 |
+| `ph` | outbound | PH | gui-hang-di-philippines | shipping-to-philippines | Philippines | Philippines | A-02b |
+| `ca` | outbound | CA | gui-hang-di-canada | shipping-to-canada | Canada | Canada | A-02b |
+| `gb` | outbound | GB | gui-hang-di-anh | shipping-to-uk | Anh | United Kingdom | A-02b |
+| `au` | outbound | AU | gui-hang-di-uc | shipping-to-australia | Úc | Australia | A-02b |
+| `eu` | outbound | EU (the EU flag; zones list the countries) | gui-hang-di-chau-au | shipping-to-europe | Châu Âu | Europe | A-02b |
+| `tw-vn` | inbound | TW | gui-hang-tu-dai-loan-ve-viet-nam | taiwan-to-vietnam-shipping | Đài Loan → Việt Nam | Taiwan → Vietnam | A-02b |
+| `kr-vn` | inbound | KR | gui-hang-tu-han-quoc-ve-viet-nam | korea-to-vietnam-shipping | Hàn Quốc → Việt Nam | Korea → Vietnam | A-02b |
+| `jp-vn` | inbound | JP | gui-hang-tu-nhat-ban-ve-viet-nam | japan-to-vietnam-shipping | Nhật Bản → Việt Nam | Japan → Vietnam | A-02b |
 | `my-vn` | inbound | MY | gui-hang-tu-malaysia-ve-viet-nam | malaysia-to-vietnam-shipping | Malaysia → Việt Nam | Malaysia → Vietnam | P2, `NEEDS CONFIRMATION` |
 | `th-vn` | inbound | TH | gui-hang-tu-thai-lan-ve-viet-nam | thailand-to-vietnam-shipping | Thái Lan → Việt Nam | Thailand → Vietnam | P2, `NEEDS CONFIRMATION` |
 
@@ -124,6 +140,13 @@ Pages are published by the owner through `data/owner-confirmations.json` (`pages
 
 Narrative content is `page_translations.blocks` (validated, VI + EN); goods and FAQs are `goods_rules`/`faqs` rows approved or published by `db:confirm` (`routeContent`).
 
+**A-02b price section (rate cards, ADR 0007):** one page per country per direction; inside it the "Bảng giá" section has
+- **service tabs** (`rate_cards.tab_key`: "Bay · hàng khô", "Bay · đông lạnh", "Tàu", "Xe", "Xách tay", "Bay nhanh", "Bay chậm") and **place chips** inside a tab ("Gửi từ" outbound, "Nhận tại" inbound), shown only when there is a choice;
+- for the selected card: the band table (weight → price; item → price when the card has one band per column; weight × column with a column picker below 768 px for EU zones, US CA / outside CA, MY sea cargo classes), the facts line (only the set fields: transit, schedule, acceptance and billing minimums, rounding, divisor), then collapsible "Phụ thu theo mặt hàng", "Phí khác" and "Bảo hiểm & khiếu nại";
+- every card in the server HTML: with JS off they stack, each under its "tab · place" heading; a small island only switches them and shares the selection with the mini calculator.
+
+The hero's transit and methods and every "Từ X/kg" (hero, mega menu, hubs) are derived from the active cards (07 "Pricing rules"); the hero no longer shows a flight schedule (schedules are per card). The "methods" content block accepts `road` and `hand_carry` items.
+
 ### Inbound route page (SG → VN)
 
 Same template (S-04: prices "liên hệ", no rate table or calculator while `prices_public = false` or unverified; the inbound blocks below stay hidden until Q-02/Q-05 are answered) with inbound-specific blocks: overseas warehouse address + how to send to it, repack/consolidation, delivery to HN/HCM, permit/checkout/order services ("checkout, order, làm permit" on old page — `NEEDS CONFIRMATION`), declared value + insurance rules. Prices may be "liên hệ" if the business keeps them private.
@@ -145,8 +168,8 @@ The inbound hub lists only active inbound routes (SG→VN; Q-05). Published by t
 
 As built (S-07), on the `[slug]` dispatch (page key `calculator`, published via `db:confirm`):
 
-- **Inputs:** route (grouped outbound/inbound, quotable routes only), method (when the route has more than one), actual weight (kg), optional L×W×H (cm). No goods type (no approved per-type pricing). `?route=<key>&kg=<n>` preselects them; an unknown or non-quotable key falls back to the first quotable route. Inputs live in a `useReducer` (in memory, no persist). The route pages and `/tinh-cuoc/` share one calculator island (`QuoteCalculator`), because every page prefetches the same client JS and a second island broke the ADR 0006 budget; Zustand was dropped for the same reason (owner decision, 2026-10-22).
-- **Output:** chargeable weight (+ volumetric), the band used, the estimated price, verified transit days, caveats (not a final quote; VAT and surcharges excluded, Q-04/Q-25). "Liên hệ" results show the Zalo and call CTAs.
+- **Inputs:** route (grouped outbound/inbound, quotable routes only), the rate card (service and place, the same tabs and chips as the price section; on a route page the selection is shared with it), the price column when the card has columns (zone, goods type), actual weight (kg), optional L×W×H (cm) (A-02b). No goods type (no approved per-type pricing). `?route=<key>&kg=<n>` preselects them; an unknown or non-quotable key falls back to the first quotable route. Inputs live in a `useReducer` (in memory, no persist). The route pages and `/tinh-cuoc/` share one calculator island (`QuoteCalculator`), because every page prefetches the same client JS and a second island broke the ADR 0006 budget; Zustand was dropped for the same reason (owner decision, 2026-10-22).
+- **Output:** actual, volumetric and chargeable weight with "Cân nặng quy đổi = Dài × Rộng × Cao (cm) ÷ {card divisor}", the band used, the estimated price in the card's currency (no conversion), verified transit days, caveats (not a final quote; VAT and surcharges excluded, Q-04/Q-25). "Liên hệ" results show the Zalo and call CTAs.
 - **Actions:** "Gửi kết quả qua Zalo" copies a text summary (route, method, weights, estimate, page URL with parameters) and opens Zalo through `/go/zalo/` (`placement=calculator`) in a new tab, because `zalo.me` takes no prefilled text; if the clipboard is unavailable, the text is shown to copy by hand. "Gọi {hotline}". "Nhận báo giá chính xác" (priced results only, while the lead form is on) prefills route and weight and jumps to the "Nhận báo giá" section `#bao-gia` below the calculator (S-08).
 - Routes without public prices are listed below as "Liên hệ" links to their route pages.
 - Pure client computation from the bands the route pages show (embedded in the server render, no fetch); pushes `calculate_quote` to `dataLayer` once per settled result (500 ms debounce).
