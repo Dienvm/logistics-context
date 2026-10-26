@@ -36,6 +36,7 @@ Use these terms consistently in UI strings, content and machine-translation prom
 | Giao tận nhà / tận nơi | Door-to-door delivery | |
 | Lấy hàng tận nhà | Home pickup | |
 | Kho | Warehouse | |
+| Điểm thu gom (hàng hóa) | Collection point | A warehouse location that receives customers' parcels |
 | Mã vận đơn, tracking | Tracking number | |
 | Bảo hiểm hàng hóa | Cargo insurance | |
 | Đền bù, bồi thường | Compensation | |

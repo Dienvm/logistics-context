@@ -20,11 +20,14 @@
 
 ## Locations
 
-| Location | Address as shown on old site | Notes |
+| Location | Address (owner list, 2026-10-26, post-2025 ward names) | Notes |
 | --- | --- | --- |
-| Đà Nẵng (head office / warehouse) | "24 Bình Hòa 6, Khuê Trung, Cẩm Lệ" · schema: "24 Bình Hoà 6, Phường Khuê Trung", "Quận Cẩm Lệ", "Đà Nẵng", postal code "50700" | Ward/district names may have changed after the 01/07/2025 administrative reform — `NEEDS CONFIRMATION` Address **Confirmed as shown** by the owner, 2026-10-22 (ward names after the reform still open, Q-02). |
-| TP. Hồ Chí Minh | "34 Nguyễn Trọng Lội, Phường 4, Tân Bình" (contact page: "34 Nguyễn Trọng Lội, P4, Tân Bình") | Same reform caveat Address **Confirmed as shown** by the owner, 2026-10-22 (ward names after the reform still open, Q-02). |
-| Hà Nội | Route pages claim "kho ở Hà Nội – TP.HCM – Đà Nẵng" but no address anywhere | `NEEDS CONFIRMATION` — do not show until confirmed |
+| Đà Nẵng (head office / warehouse) | "24 Bình Hoà 6, P. Cẩm Lệ" | **Confirmed** by the owner, 2026-10-26 (was "24 Bình Hòa 6, Khuê Trung, Cẩm Lệ" before the 01/07/2025 reform; the old postal code 50700 is no longer published) |
+| TP. Hồ Chí Minh (warehouse) | "5/5 Nguyễn Văn Vĩnh, P. Tân Sơn Nhất" | **Confirmed** by the owner, 2026-10-26; replaces "34 Nguyễn Trọng Lội, P4, Tân Bình" |
+| Hà Nội (warehouse) | "526 Phúc Diễn, P. Xuân Phương, Nam Từ Liêm" | **Confirmed** by the owner, 2026-10-26 |
+| Huế (warehouse) | "06 Phạm Văn Đồng, P. Vĩ Dạ" | **Confirmed** by the owner, 2026-10-26 |
+| Quảng Bình (warehouse / collection point) | "60B Lý Thường Kiệt, P. Đồng Hới" | **Confirmed** by the owner, 2026-10-26. Stored with province "Quảng Trị" (Quảng Bình merged into Quảng Trị in 2025); shown under the name "Quảng Bình" |
+| Quảng Trị (warehouse / collection point) | "Thôn Tân Lộc, Xã Cửa Việt" | **Confirmed** by the owner, 2026-10-26 |
 | Overseas | Singapore → VN page mentions "kho Singapore" (receive, sort, repack) | Address `NEEDS CONFIRMATION` |
 
 ## Contact channels
