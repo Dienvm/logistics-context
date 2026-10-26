@@ -1,6 +1,6 @@
 # ADR 0001 — Initial architecture for the 43logistics.vn rebuild
 
-- Status: Accepted (2026-10-20) · Amended by ADR 0002 (2026-10-20): folder layout, linter, analytics lanes, Clerk scope · Amended by ADR 0006 (2026-10-21): Cache Components enabled in F-01; next-intl/Clerk compatibility verified in F-03/F-05
+- Status: Accepted (2026-10-20) · Amended by ADR 0002 (2026-10-20): folder layout, linter, analytics lanes, Clerk scope · Amended by ADR 0006 (2026-10-21): Cache Components enabled in F-01; next-intl/Clerk compatibility verified in F-03/F-05 · Amended by ADR 0008 (2026-10-26): hosting is a Hostinger VPS (Docker Compose + Caddy, images built in CI), not Vercel
 - Context: replace a WordPress + Elementor site with a fast, bilingual, measurable lead-generation site. See `docs/context/02-legacy-audit.md`.
 
 ## Decisions

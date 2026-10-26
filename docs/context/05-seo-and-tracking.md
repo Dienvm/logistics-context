@@ -144,7 +144,7 @@ Cookie format (F-06; `modules/tracking`):
 
 Rules (S-02):
 
-- **Unpublished → 404.** The target is published only under the fact-visibility rule (verified, or preview mode: `PREVIEW_UNVERIFIED=1` under `next dev` / Vercel preview). Otherwise, or when the channel's field is missing or malformed, or the channel is unknown (`/go/email/`, `/go/ZALO/`), the response is `404` and no row is written. There is no fallback number. Until Q-06 is verified, production CTAs 404 (L-01 checklist).
+- **Unpublished → 404.** The target is published only under the fact-visibility rule (verified, or preview mode: `PREVIEW_UNVERIFIED=1` under `next dev`, ADR 0008). Otherwise, or when the channel's field is missing or malformed, or the channel is unknown (`/go/email/`, `/go/ZALO/`), the response is `404` and no row is written. There is no fallback number. Until Q-06 is verified, production CTAs 404 (L-01 checklist).
 - **Methods.** `GET` redirects and logs; `HEAD` answers with the same status and `Location` but logs nothing; other methods get `405` (`Allow: GET, HEAD`). Every `/go` response has `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow`.
 - **Bots** (UA allowlist in `modules/tracking/domain/bot.ts`: `…bot/`, crawlers, link previewers, Lighthouse) get the redirect but no row.
 - **Placements** (allowlist, else `null`): `header` (incl. the top-bar hotline), `hero` (home and route heroes, S-05/S-04), `rate_table` and `calculator` (route pages, S-04), `cta_band` (offer and closing bands, S-05b), `sticky_bar`, `footer`, `lead_form` (S-08), `contact_page` (Contact channel buttons) and `not_found` (404 CTAs, S-09). New placements are added to `CONTACT_PLACEMENTS` in `modules/contact/constants.ts`.

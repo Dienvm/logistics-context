@@ -21,7 +21,7 @@ GTM (ads lane, Consent Mode v2) + server-side conversions (Meta CAPI, TikTok Eve
 PostHog (product-analytics lane, after consent, via /ingest rewrite) — ADR 0002
 ```
 
-Hosting: the owner chose a **self-managed VPS** running the Next 16 Node server (Q-15, 2026-10-23), not Vercel. Provider, region and DNS access are still open (Q-15); the deployment shape (reverse proxy, process manager, cache handler, preview environment) needs an ADR before L-02. Supabase region close to Vietnam (Singapore, `ap-southeast-1`). Note: the fact-visibility gate and the client-IP source below were written against Vercel (`VERCEL_ENV`, `x-forwarded-for`) and must be re-checked for the VPS setup.
+Hosting (ADR 0008): a **Hostinger VPS** in Jakarta (Ubuntu 26.04 LTS, 2 vCPU, 8 GB RAM, weekly backups), not Vercel. Docker Compose runs two services: `app`, the Next 16 `output: 'standalone'` server as **one process** on the internal network, and `caddy`, the only public listener, which terminates TLS (automatic Let's Encrypt) and reverse-proxies to `app`. GitHub Actions builds the image on every push to `main`, pushes it to GHCR (SHA + `latest` tags) and deploys over SSH (`docker compose pull app && up -d app`). Rollback means running an earlier SHA tag. Runtime secrets are in an `.env` on the VPS, never in the image. Nothing is built on the VPS. There is **no staging or preview environment**. Built by L-00. Still open (Q-15): VPS administrator, DNS access. Supabase region close to Vietnam (Singapore, `ap-southeast-1`).
 
 ## Folder structure
 
@@ -96,7 +96,7 @@ const nextConfig: NextConfig = {
 | Lead form / contact events | Not cached; Server Action / route handler |
 | Request-specific bits (attribution cookie, consent) | Read inside a `<Suspense>` boundary or on the client; never inside a cached function |
 
-A-02 rate and route edits call `updateTag(routeTag(key))` **and** `updateTag(MENU_TAG)` after the transaction commits (not `revalidateTag('menu','max')`), so the mega menu and from-prices are fresh on the first request after a save. Validity windows still roll over within the rate reads' `cacheLife('hours')`. Tag invalidation is per server process: fine for one VPS process (Q-15), revisit with a shared cache handler at L-02.
+A-02 rate and route edits call `updateTag(routeTag(key))` **and** `updateTag(MENU_TAG)` after the transaction commits (not `revalidateTag('menu','max')`), so the mega menu and from-prices are fresh on the first request after a save. Validity windows still roll over within the rate reads' `cacheLife('hours')`. Tag invalidation is per server process. That is correct because ADR 0008 runs exactly one app process (default cache handler, no cluster, no replicas). Scaling out needs a shared cache handler and a new ADR.
 
 Note: in Next 16 `revalidateTag` takes a second `cacheLife` argument; `updateTag` and `refresh` exist only in Server Actions. `params`, `searchParams`, `cookies()`, `headers()` are async.
 
@@ -108,7 +108,7 @@ Site shell (S-01, as built): `app/[locale]/(site)/layout.tsx` composes the heade
 
 `MENU_TAG` is defined in `modules/routes/constants.ts`, the lowest of the three modules that use it. Client islands that need the current path (contact links' `?from=`, the language switch) read `window.location.pathname` / the page's `hreflang` links after hydration and re-read them when `<head>` changes (every client navigation rewrites it). They don't use `usePathname`: it ships `next/navigation` (~8 KiB gz), suspends on routes with unknown params under Cache Components, and under the proxy's locale rewrite its server value (`/vi/…`) differs from the browser's (`/…`). The mobile drawer's Sheet is loaded on first open (`next/dynamic`), and its groups are native `<details>`, to keep the shell within the JS budget (S-01 measured +42.4 KiB over the 134.3 KiB baseline locally).
 
-**Unverified facts and preview mode (rule 1, S-01).** `shared/lib/fact-visibility.ts` returns `shown` (verified), `badged` (unverified, preview mode) or `hidden`. Preview mode needs `PREVIEW_UNVERIFIED=1` **and** `next dev` or `VERCEL_ENV=preview`; a production build without `VERCEL_ENV=preview` always hides. Each module applies the gate on the server (`pricing` to card prices and transit days, `contact` to phones, offices, hours, social, legal name), so a hidden value never reaches HTML, RSC payloads or island props. The shell is prerendered at **build**, so visibility follows the build environment: preview and production are separate builds, and a preview deployment is never promoted to production without a rebuild in the production environment.
+**Unverified facts and preview mode (rule 1, S-01).** `shared/lib/fact-visibility.ts` returns `shown` (verified), `badged` (unverified, preview mode) or `hidden`. Preview mode needs `PREVIEW_UNVERIFIED=1` **and** `next dev`; every `next build` always hides (ADR 0008: no staging or preview host). *Today the code also accepts `VERCEL_ENV=preview`; L-00 removes that branch.* Each module applies the gate on the server (`pricing` to card prices and transit days, `contact` to phones, offices, hours, social, legal name), so a hidden value never reaches HTML, RSC payloads or island props. The shell is prerendered at **build**, so visibility follows the build environment: the CI image is a production build, and badged facts exist only in `pnpm dev` / `pnpm dev:local`.
 
 i18n with Cache Components: pass `locale` explicitly into cached query functions (it becomes part of the cache key). Layouts, pages and `shared/i18n/request.ts` read the locale from `next/root-params`, not `setRequestLocale` (see `08`). Verified in F-03 and recorded in ADR 0006 (compatibility record).
 
@@ -202,8 +202,8 @@ Never mirror server data into Zustand. `QueryClientProvider` mounts only in `/ad
 | `SUPABASE_SERVICE_ROLE_KEY` | server | Storage uploads, admin ops |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET` | public/server | Staff auth |
 | `NEXT_PUBLIC_SITE_URL` | public | `https://43logistics.vn` in production. **Indexing switch (S-10):** only a build with exactly this origin gets `index, follow` and a crawlable robots.txt; any other value or unset (local, staging, previews) is `noindex` with `Disallow: /`. Absolute URLs in canonical, hreflang, JSON-LD, sitemap and RSS come from it |
-| `PREVIEW_UNVERIFIED` | server | `1` shows unverified seed facts with a "chưa xác nhận" badge, only under `next dev` or `VERCEL_ENV=preview` (S-01). Set it on the Vercel **Preview** environment only, never Production |
-| `VERCEL_ENV` | server (set by Vercel) | `production` / `preview` / `development`; read by the fact-visibility gate |
+| `PREVIEW_UNVERIFIED` | server | `1` shows unverified seed facts with a "chưa xác nhận" badge, only under `next dev` (S-01, ADR 0008). Local development only; it has no effect in any build |
+| `VERCEL_ENV` | server | **Removed by L-00 (ADR 0008).** Still parsed today and read by the fact-visibility gate. Never set it on the VPS |
 | `NEXT_PUBLIC_GTM_ID` | public | `GTM-WF967MKT` or new |
 | `META_PIXEL_ID`, `META_CAPI_TOKEN` | server | Meta CAPI |
 | `TIKTOK_PIXEL_ID`, `TIKTOK_EVENTS_TOKEN` | server | TikTok Events API |
@@ -224,7 +224,7 @@ Validate with a Zod `env.ts` at boot; never commit `.env*`.
 - **Types:** `tsc --noEmit` strict.
 - **No automated tests in the initial build phase (ADR 0004).** No Vitest, Playwright or `tests/` folder. Keep the price engine, slug/URL, metadata and JSON-LD builders, redirect loader and Zod schemas as pure typed functions so tests can be added later.
 - **Manual verification per PR** (spec's "Manual verification plan"): home → route → calculator → Zalo click (`/go/zalo` 302 + `contact_events` row), lead form happy/error paths, language switch keeps the equivalent page, admin rate edit → public page shows the new price; 360/768/1280 px, keyboard, reduced motion, axe DevTools scan.
-- **SEO checks (manual per page type):** 1 `h1`, canonical, hreflang pairs reciprocal, JSON-LD valid (Rich Results Test); `check:redirects` (script, not a test suite) in CI against the preview deploy.
+- **SEO checks (manual per page type):** 1 `h1`, canonical, hreflang pairs reciprocal, JSON-LD valid (Rich Results Test); `check:redirects` (script, not a test suite) in the `verify` CI workflow against `next start` (no preview deploy, ADR 0008).
 - **Scripts kept in CI (not test suites):** gitleaks, `i18n:check`, `check:redirects` (every PR from F-07), and `perf:report` (F-08).
   - `perf:report` runs Lighthouse with 3 mobile runs per route in `43logistics.vn/data/perf-budget.json`.
   - It **blocks** on the ADR 0006 app-JS budget, an unstable script request set, or a route that can't be measured.
