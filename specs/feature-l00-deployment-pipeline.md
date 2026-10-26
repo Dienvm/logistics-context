@@ -1,7 +1,7 @@
 ---
 title: Deploy the app to the VPS and cut DNS over
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: L-00
 priority: must-have
