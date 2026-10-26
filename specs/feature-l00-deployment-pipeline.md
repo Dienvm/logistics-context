@@ -1,7 +1,9 @@
 ---
 title: Deploy the app to the VPS and cut DNS over
 type: feature
-status: approved
+status: in_implementation
+branch: feat/l-00-deployment-pipeline
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/47
 owner_repo: both
 roadmap: L-00
 priority: must-have
