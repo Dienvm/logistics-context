@@ -443,7 +443,7 @@ The price engine is `43logistics.vn/modules/pricing/domain/{weight,quote}.ts`, e
 | --- | --- |
 | `company` | `{ brandName: "43 Logistics", legalName: null, taxCode: null, alternateName: "43Logistics.vn", logoMediaId }` |
 | `contact` | `{ phoneDisplay: "0979 222 357", phoneE164: "+84979222357", zalo: "0979222357", whatsapp: "84979222357", messenger: "43logistics", email: "43logistics.danang@gmail.com" }` |
-| `offices` | `[{ key: "danang", name: "Đà Nẵng", street: "24 Bình Hòa 6", ward, district, city: "Đà Nẵng", postalCode: "50700", lat, lng, isWarehouse: true }, { key: "hcm", name: "TP. Hồ Chí Minh", street: "34 Nguyễn Trọng Lội", … }]` |
+| `offices` | `[{ key: "danang", name: { vi: "Đà Nẵng", en: "Da Nang" }, street: "24 Bình Hoà 6", ward: "Phường Cẩm Lệ", district?, city: "Đà Nẵng", postalCode?, country: "VN", isWarehouse: true }, { key: "hcm", street: "5/5 Nguyễn Văn Vĩnh", … }, hanoi, hue, quang-binh, quang-tri (six warehouses, owner 2026-10-26)]` |
 | `hours` | `{ display: { vi, en }, spec: [{ days: ["Mo","Tu","We","Th","Fr","Sa"], opens: "08:00", closes: "18:00" }] }` — NEEDS CONFIRMATION |
 | `social` | `{ facebook: "https://www.facebook.com/43logistics" }` |
 | `tracking` | `{ gtmId: "GTM-WF967MKT" }` |

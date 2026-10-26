@@ -89,7 +89,7 @@
 ### Home `/`
 
 1. Hero: H1 promise (e.g. "Gửi hàng đi nước ngoài, nhận tận nhà"), sub-line with real facts, **route picker → calculator**, CTA Zalo + Gọi. Static image (real photo), no carousel.
-2. Route bento grid: one card per active route (flag, name, "từ X đ/kg", "Y–Z ngày", badge e.g. "Đồng giá").
+2. Route bento grid: the main active routes only, in admin sort order (the first 7 outbound + the first inbound, 4 × 3 on desktop; flag, name, "từ X đ/kg", "Y–Z ngày", badge e.g. "Đồng giá"), then a "Xem tất cả tuyến gửi hàng" button to the outbound hub and a "Nhận hàng về Việt Nam" link to the inbound hub (owner request 2026-10-26: 16+ routes are too many for home).
 3. Why us (4): đa dạng hình thức (bay/biển), nhanh, cước rõ ràng, thủ tục đơn giản (đóng gói, cân kiểm, thông quan).
 4. Process (4 steps) — see `01-business.md`.
 5. Proof: real photos (team/warehouse) + consented testimonials + chat screenshots (blurred).
@@ -97,7 +97,7 @@
 7. Latest guides (3 posts).
 8. Offices + hours (static map image → Google Maps link).
 
-Built in S-05 and redesigned in S-05b (owner review 2026-10-22, old-site order + quynam.vn structure) as: hero (pill, H1 with the slogan "nhanh, rẻ, dễ dàng", sub-line, Zalo + "Gọi {hotline}", route picker; photo with floating service/price chips) → service strip (4 points) → rates bento (destination photos, featured first route, inbound wide) → why us (4 icon cards) → process timeline → new-customer offer band → real photos gallery + blurred customer chat wall (+ consented testimonials) → latest guides → dark closing band with CTAs and office cards. Stats, partners and FAQ wait for owner content (Q-23, Q-08, FAQ copy).
+Built in S-05 and redesigned in S-05b (owner review 2026-10-22, old-site order + quynam.vn structure) as: hero (pill, H1 with the slogan "nhanh, rẻ, dễ dàng", sub-line, Zalo + "Gọi {hotline}", route picker; photo with floating service/price chips) → service strip (4 points) → rates bento (destination photos, featured first route, inbound wide) → why us (4 icon cards) → process timeline → new-customer offer band → real photos gallery + blurred customer chat wall (+ consented testimonials) → latest guides → dark closing band with CTAs and one card per office/warehouse, each with its map (six warehouses since 2026-10-26). Stats, partners and FAQ wait for owner content (Q-23, Q-08, FAQ copy).
 
 Deliberate deviations, each closed by its owning task:
 
@@ -118,7 +118,7 @@ Deliberate deviations, each closed by its owning task:
 8. Compensation summary + link to `/chinh-sach-den-bu/`.
 9. FAQ (from `faqs`) → `FAQPage` JSON-LD.
 10. Testimonials for this route.
-11. Related routes + related guides.
+11. Related routes (4, same direction first, then the two hub links) + related guides.
 12. Final CTA band.
 
 **As built (S-04):** one template, `app/[locale]/(site)/[slug]/page.tsx`. The H1 is "Gửi hàng đi {country}" until an editor writes one (the seed stores only the route name). The order follows the list above:
