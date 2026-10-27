@@ -182,6 +182,8 @@ export const rateCards = pgTable('rate_cards', {
   weightRoundingKg: numeric(6,3) /* null = no rounding */, volumetricDivisor: integer default 5000,
   minWeightKg: numeric(9,3) /* acceptance minimum: below → "Liên hệ" */,
   minChargeableKg: numeric(9,3) /* billing minimum: below → charged at it */,
+  localDeliveryFeeMinor: bigint /* destination delivery fee per shipment, card currency (0010) */,
+  localDeliveryFreeFromKg: numeric(9,3) /* fee applies while chargeable < this; both null or both set */,
   isActive, sort, adminEditedAt, adminEditedBy /* as on routes */, ...timestamps,
 }) // unique (route_id, key)
 export const rateCardTranslations = pgTable('rate_card_translations', {
@@ -429,7 +431,7 @@ export const db = drizzle(client, { schema, casing: 'snake_case' })
 
 The price engine is `43logistics.vn/modules/pricing/domain/{weight,quote}.ts`, exposed client-safe through `modules/pricing/client.ts`. One quote is for **one rate card**, in its currency. Rows are mapped by `infrastructure/rate-card-mappers.ts` (`numeric` strings → integer grams; a malformed value throws with its column name). Owner decisions 2026-10-22 and 2026-10-26, open points in Q-25 and Q-30:
 
-- **Weight pipeline (integer grams, no intermediate whole-kg rounding):** actual rounded **up** to the gram; volumetric = L×W×H / `rate_cards.volumetric_divisor` (5000, Korea → VN 4500), only when all three dimensions are given; chargeable = max(actual, volumetric); rounded **up** to `weight_rounding_kg` when set (set only where the source states it or a flat per-step table implies it); below `min_weight_kg` → "Liên hệ" (`below_minimum`); raised to `min_chargeable_kg` when set; then the band is picked.
+- **Weight pipeline (integer grams, no intermediate whole-kg rounding):** actual rounded **up** to the gram; volumetric = L×W×H / `rate_cards.volumetric_divisor` (5000, Korea → VN 4500), only when all three dimensions are given; chargeable = max(actual, volumetric); rounded **up** to `weight_rounding_kg` when set (set only where the source states it or a flat per-step table implies it); below `min_weight_kg` → "Liên hệ" (`below_minimum`); raised to `min_chargeable_kg` when set; then the band is picked. The estimate adds `local_delivery_fee_minor` once when the chargeable weight is below `local_delivery_free_from_kg` (SG/MY/AU air < 11 kg, KR/TW air < 3 kg, TW → VN < 5 kg, from `data/retail-price-list.md`).
 - **Eligibility:** "Liên hệ" when the route has `is_verified = false` (unless preview) or `prices_public = false`. Only bands of the card and requested column whose `valid_from`/`valid_to` window contains today (Asia/Ho_Chi_Minh, inclusive) count.
 - **Columns:** a `contact` column always quotes "Liên hệ" (`contact_column`) and shows its band's `price_label`; a `quotable` column uses its per-kg or flat bands. No quantity input.
 - **Bands:** the sale's literal edges, `[weight_min_kg, weight_max_kg]` inclusive, `null` max open-ended; "Trên X kg" is X.001 with the label. Several covering → the **highest minimum** wins; a tie on it → "Liên hệ" (`ambiguous_band`). No covering band (a gap between the sale's bands) → `no_band`, listed under Q-30.
