@@ -1,7 +1,7 @@
 ---
 title: Edit route rates and route flags from the admin
 type: feature
-status: in_implementation
+status: implemented
 owner_repo: both
 roadmap: A-02
 priority: must-have
@@ -9,6 +9,8 @@ blocked_by_questions: [Q-04, Q-25]
 updated: 2026-10-24
 branch: feat/a02-routes-rates-editor
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/40
+implementation_commit: 51331416dd80c3768788db7c9719ee80baf7b64a
+implemented_date: 2026-10-27
 ---
 
 ## Feature: Edit route rates and route flags from the admin

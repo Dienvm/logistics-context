@@ -2,6 +2,45 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-27 — Write and publish blog posts from the admin
+
+- Spec: [specs/feature-a03b-blog-post-editor.md](../specs/feature-a03b-blog-post-editor.md) · Roadmap: A-03b
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/44 (ba83069)
+- Owner: both
+- Summary: post editor for fields and `richText` blocks, categories, "Tạo bản nháp EN" and a publish workflow under `/admin/posts/`; cover images stay with A-04.
+  - CI on the merge commit: lint/typecheck/build/redirects passed, the Lighthouse gate hit its 9-minute deadline (fixed by sharding in PR #46); `main` is green since. Migration `0008` still has to be confirmed on Supabase.
+
+## 2026-10-27 — Edit pages and their translations from the admin
+
+- Spec: [specs/feature-a03-pages-and-translations.md](../specs/feature-a03-pages-and-translations.md) · Roadmap: A-03
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/41 (0e2476f)
+- Owner: both
+- Summary: form-based block editor per block type, SEO fields with counters, draft → review → published and "Create EN draft" under `/admin/pages/`; slug editing moved to A-08.
+  - Codex fixes in PR #43 (d40ddcc, `verify` green); the merge commit's own run was cancelled by the next push.
+
+## 2026-10-27 — Edit route rates and route flags from the admin
+
+- Spec: [specs/feature-a02-routes-rates-editor.md](../specs/feature-a02-routes-rates-editor.md) · Roadmap: A-02
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/40 (5133141)
+- Owner: both
+- Summary: band CRUD, validity dates, the admin-only `is_verified` toggle and a public-table preview under `/admin/routes/`; saves call `updateTag` for the route and the menu.
+  - Roadmap stays partial: the owner's browser check of the public refresh is open, and A-02b part 2 moves band editing onto rate cards. Lighthouse gate on the merge commit hit its deadline (fixed in PR #46).
+
+## 2026-10-27 — Build the role-aware admin shell with sidebar and UserButton
+
+- Spec: [specs/feature-a01-admin-shell.md](../specs/feature-a01-admin-shell.md) · Roadmap: A-01
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/39 (33a57b6)
+- Owner: both
+- Summary: `/admin` shell with role-filtered sidebar, Clerk `<UserButton>`, a per-shell TanStack Query provider and guarded `ComingSoon` pages for the later sections; public routes +13 B gz. CI green on the merge commit.
+
+## 2026-10-27 — Add the About, Contact, policy and 404 pages
+
+- Spec: [specs/feature-s09-about-contact-policies-404.md](../specs/feature-s09-about-contact-policies-404.md) · Roadmap: S-09
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/27 (c94ff3a)
+- Owner: both
+- Summary: policy template (TOC, "Cập nhật" date), About, Contact (channels, quote form, offices) and the localized 404; menus link only published pages, so the footer has no `#` links.
+  - The merge commit failed the JS gate because the Maps iframe counted as app JS; ADR 0006 was amended 2026-10-24 to budget first-party JS only (PR #32), and `main` passes. Lighthouse/axe evidence deferred (phase 1).
+
 ## 2026-10-22 — Build the shipping calculator page
 
 - Spec: [specs/feature-s07-calculator-page.md](../specs/feature-s07-calculator-page.md) · Roadmap: S-07

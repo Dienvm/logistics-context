@@ -1,9 +1,11 @@
 ---
 title: Add the About, Contact, policy and 404 pages
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/s09-about-contact-policies-404
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/27
+implementation_commit: c94ff3ac6971e785e5600a4ad6c371870a20db1e
+implemented_date: 2026-10-27
 owner_repo: both
 roadmap: S-09
 priority: must-have

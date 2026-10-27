@@ -1,7 +1,7 @@
 ---
 title: Edit pages and their translations from the admin
 type: feature
-status: in_implementation
+status: implemented
 owner_repo: both
 roadmap: A-03
 priority: must-have
@@ -9,6 +9,8 @@ blocked_by_questions: [Q-01, Q-08, Q-09, Q-16, Q-17, Q-23, Q-24]
 updated: 2026-10-24
 branch: feat/a03-pages-and-translations
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/41
+implementation_commit: 0e2476fc7c79b4f520c1af6f93c2032166641042
+implemented_date: 2026-10-27
 ---
 
 ## Feature: Edit pages and their translations from the admin

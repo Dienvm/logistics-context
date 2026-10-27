@@ -11,10 +11,10 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 | 2026-10-26 | feature | [feature-l00-deployment-pipeline.md](feature-l00-deployment-pipeline.md) | Deploy the app to the VPS and cut DNS over | L-00 | both | in_implementation |
 | 2026-10-26 | feature | [feature-a02b-rate-cards-admin.md](feature-a02b-rate-cards-admin.md) | Edit rate cards, surcharges and policies from the admin | A-02b | both | approved |
 | 2026-10-26 | feature | [feature-a02b-rate-cards-public.md](feature-a02b-rate-cards-public.md) | Show the retail price list as per-route rate cards | A-02b | both | in_implementation |
-| 2026-10-24 | feature | [feature-a03b-blog-post-editor.md](feature-a03b-blog-post-editor.md) | Write and publish blog posts from the admin | A-03b | both | in_implementation |
-| 2026-10-24 | feature | [feature-a03-pages-and-translations.md](feature-a03-pages-and-translations.md) | Edit pages and their translations from the admin | A-03 | both | in_implementation |
-| 2026-10-24 | feature | [feature-a02-routes-rates-editor.md](feature-a02-routes-rates-editor.md) | Edit route rates and route flags from the admin | A-02 | both | in_implementation |
-| 2026-10-23 | feature | [feature-s09-about-contact-policies-404.md](feature-s09-about-contact-policies-404.md) | Add the About, Contact, policy and 404 pages | S-09 | both | in_implementation |
+| 2026-10-24 | feature | [feature-a03b-blog-post-editor.md](feature-a03b-blog-post-editor.md) | Write and publish blog posts from the admin | A-03b | both | implemented |
+| 2026-10-24 | feature | [feature-a03-pages-and-translations.md](feature-a03-pages-and-translations.md) | Edit pages and their translations from the admin | A-03 | both | implemented |
+| 2026-10-24 | feature | [feature-a02-routes-rates-editor.md](feature-a02-routes-rates-editor.md) | Edit route rates and route flags from the admin | A-02 | both | implemented |
+| 2026-10-23 | feature | [feature-s09-about-contact-policies-404.md](feature-s09-about-contact-policies-404.md) | Add the About, Contact, policy and 404 pages | S-09 | both | implemented |
 | 2026-10-23 | feature | [feature-s08-lead-form.md](feature-s08-lead-form.md) | Add the quote request form to the calculator page | S-08 | both | implemented |
 | 2026-10-22 | feature | [feature-s07-calculator-page.md](feature-s07-calculator-page.md) | Build the shipping calculator page | S-07 | both | implemented |
 | 2026-10-22 | feature | [feature-s04b-route-page-content.md](feature-s04b-route-page-content.md) | Fill the route pages with the owner's content | S-04b | both | implemented |
@@ -24,7 +24,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 | 2026-10-22 | feature | [feature-s05-home.md](feature-s05-home.md) | Build the home page from database data | S-05 | both | implemented |
 | 2026-10-22 | feature | [feature-s03-price-engine.md](feature-s03-price-engine.md) | Add the pure price engine for quotes | S-03 | both | implemented |
 | 2026-10-22 | feature | [feature-s02-contact-tracker.md](feature-s02-contact-tracker.md) | Log contact clicks and redirect via /go/[channel] | S-02 | both | implemented |
-| 2026-10-24 | feature | [feature-a01-admin-shell.md](feature-a01-admin-shell.md) | Build the role-aware admin shell with sidebar and UserButton | A-01 | both | in_implementation |
+| 2026-10-24 | feature | [feature-a01-admin-shell.md](feature-a01-admin-shell.md) | Build the role-aware admin shell with sidebar and UserButton | A-01 | both | implemented |
 | 2026-10-22 | feature | [feature-f05-clerk-staff-auth.md](feature-f05-clerk-staff-auth.md) | Protect /admin with Clerk staff auth and roles | F-05 | both | implemented |
 | 2026-10-21 | feature | [feature-s01-site-layout-shell.md](feature-s01-site-layout-shell.md) | Build the site layout shell from database data | S-01 | both | implemented |
 | 2026-10-21 | feature | [feature-f08-ci-lighthouse-budget.md](feature-f08-ci-lighthouse-budget.md) | Add Lighthouse report and JS budget gate to CI | F-08 | both | implemented |

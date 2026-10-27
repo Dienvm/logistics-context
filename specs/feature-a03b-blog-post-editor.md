@@ -1,9 +1,11 @@
 ---
 title: Write and publish blog posts from the admin
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/a03b-blog-post-editor
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/44
+implementation_commit: ba83069b23c6d5538d17ce6358c47ce8a7784920
+implemented_date: 2026-10-27
 owner_repo: both
 roadmap: A-03b
 priority: must-have
