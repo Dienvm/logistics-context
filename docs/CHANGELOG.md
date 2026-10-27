@@ -2,6 +2,16 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-28 — Edit rate cards, surcharges and policies from the admin
+
+- Spec: [specs/feature-a02b-rate-cards-admin.md](../specs/feature-a02b-rate-cards-admin.md) · Roadmap: A-02b (part 2)
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/55 (e858ba1); context: https://github.com/Dienvm/logistics-context/pull/76
+- Owner: both
+- Summary: `/admin/routes/{key}/` edits everything the price-list import writes, so sales errors no longer need a developer.
+  - Cards (create in a tab, facts, VI/EN copy, delivery fee, reorder in the tab or by tab, delete), price columns (add, rename, reorder, hide; copy band edges as "Liên hệ"), policy sections with "copy to other cards", surcharge lists and rows (free-text prices, hide a row), card ↔ list links, a per-card public preview; `/admin/routes/` shows active cards and currencies.
+  - Every save locks the route, stamps route and card `admin_edited_*` and invalidates `route:{key}` + `menu`; the import skips edited routes, and `--force` now also restores hidden rows.
+  - Migration `0011` drops the deprecated `routes` card facts (applied on Supabase 2026-10-28 after deploy). CI green on the merge commit (verify, Lighthouse shards, gitleaks, deploy); owner browser check passed.
+
 ## 2026-10-27 — Write and publish blog posts from the admin
 
 - Spec: [specs/feature-a03b-blog-post-editor.md](../specs/feature-a03b-blog-post-editor.md) · Roadmap: A-03b

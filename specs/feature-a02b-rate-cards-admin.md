@@ -1,9 +1,11 @@
 ---
 title: Edit rate cards, surcharges and policies from the admin
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/a02b-rate-cards-admin
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/55
+implementation_commit: e858ba16566937b2540d2aacde282a0d33512a0a
+implemented_date: 2026-10-28
 owner_repo: both
 roadmap: A-02b
 priority: must-have
