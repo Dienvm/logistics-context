@@ -146,13 +146,7 @@ export const routes = pgTable('routes', {
   pageId: uuid('page_id').references(() => pages.id),
   direction: routeDirection('direction').notNull(),
   countryCode: text('country_code').notNull(),              // ISO 3166-1 alpha-2 of the foreign country
-  methods: shippingMethod('methods').array().notNull().default(sql`'{}'::shipping_method[]`),
-  transitDaysMin: smallint('transit_days_min'),
-  transitDaysMax: smallint('transit_days_max'),
-  transitNote: text('transit_note'),                        // e.g. 'ngày làm việc kể từ ngày bay'
-  flightSchedule: text('flight_schedule'),                  // e.g. 'Thứ 3-5-7'
-  volumetricDivisor: integer('volumetric_divisor').notNull().default(5000),
-  weightRoundingKg: numeric('weight_rounding_kg', { precision: 4, scale: 2 }), // e.g. 0.5 for US
+  // transit, methods, schedule, divisor and rounding live on each rate card (A-02b)
   pricesPublic: boolean('prices_public').notNull().default(true),
   isActive: boolean('is_active').notNull().default(true),
   isVerified: boolean('is_verified').notNull().default(false), // legacy seed = false until ops confirms
@@ -213,9 +207,9 @@ export const routeRates = pgTable('route_rates', {
 // rate_card_surcharge_lists (card_id, list_id) pk + sort; the import checks both share the route
 // Every new table: RLS on, no policies.
 
-// Deprecated since A-02b (kept one release, not read, dropped in part 2):
-// routes.methods, transit_days_min/max, transit_note, flight_schedule, volumetric_divisor,
-// weight_rounding_kg (migration comments mark them).
+// Dropped in A-02b part 2 (migration 0011, after a grep showed no reader): routes.methods,
+// transit_days_min/max, transit_note, flight_schedule, volumetric_divisor, weight_rounding_kg.
+// The seed's routes.legacy.json keeps those fields: they feed the legacy-{method} cards only.
 
 // ───────────────────────── goods rules, FAQs, testimonials
 export const goodsRules = pgTable('goods_rules', {
@@ -513,6 +507,14 @@ Re-runs are idempotent and respect ownership:
 - a page translation's `h1` defaults to its title; `pages.json` gives an explicit `h1` where they differ (hubs, calculator, goods, blog index: their loaders read the DB `h1` since A-03, migration `0007` copied the previous `messages` H1 into existing rows).
 
 **Privacy policy version (A-03):** the version stored on each lead (`leads.consent_policy_version`) is the `effectiveDate` of the published VI `policy-privacy` translation's `policy` block (`getPrivacyPolicyVersion()`, cached under `page:policy-privacy`). Without a published VI privacy policy the lead form is off. A published VI privacy text change must come with a later `effectiveDate` (the admin action refuses it otherwise).
+
+**Admin rate cards and surcharges (A-02b part 2):** `/admin/routes/{key}/` edits everything the import writes, behind `requireSection('routes')` (admin and editor; sales gets 403):
+
+- **Cards:** create (in an existing tab or a new one; the card and tab keys are made once from the VI labels and never renamed, because the import matches them), edit facts and copy, reorder among the tab's cards or move the whole tab, delete (bands, columns, copy and list links cascade). A new card lands last in its tab. The tab label is one value per tab: saving it on one card writes it to every card of the tab. VI labels are required; EN labels are required while the route is active and optional on an inactive route (the EN page then falls back to VI). The currency can't change while the card has bands (minor-unit exponents differ).
+- **Columns:** add, rename, reorder, deactivate (hidden publicly, bands kept); no delete. The first column of a card that already has bands takes those bands over; a later column can copy the card's distinct band edges as "Liên hệ" bands.
+- **Policies:** ordered sections per locale in `rate_card_translations.policies`; "copy to other cards" overwrites the target's first section of the same kind (or appends) after a confirmation.
+- **Surcharge lists and items:** CRUD, item reorder and `is_active` (how the owner hides a row); a list links to any cards of its route.
+- Every write locks the route row, stamps `routes.admin_edited_*` (and `rate_cards.admin_edited_*` for card edits) in the same transaction, then calls `updateTag(route:{key})` + `updateTag(menu)`. The import's skip/`--force` rules apply unchanged; its snapshot treats a missing EN row as the VI text, as the public pages do.
 
 **Retail price list (A-02b):** `pnpm db:import-rate-cards` loads `43logistics.vn/data/seed/rate-cards.json` (the owner-confirmed list, `owner-confirmations.json` → `rateCards`). Without a flag it is a dry run printing a per-band diff; `--replace` writes a JSON backup of what it deletes to `43logistics.vn/.backups/` (gitignored), then replaces each listed route's cards, bands, columns, surcharge lists and policies, sets `prices_public` where the file says so, and applies the file's targeted copy fixes (block by index, replaced only while it still equals the seeded block, else reported as a conflict; FAQ by sort) in one transaction, holding row locks on the listed routes. The backup holds the full stored rows (ids, validity, notes, flags, audit fields). Routes edited in the admin (route or any card `admin_edited_at`) are skipped unless `--force`; routes absent from the file are never touched; an unchanged route is not rewritten. `pnpm db:confirm` verifies the `rateCards` routes only once they have imported cards.
 
