@@ -36,6 +36,7 @@ menu_items ─< menu_item_translations     site_settings (key → jsonb)     red
 > - **`pages.route_id → routes.id`** replaces `routes.page_id`. `content` owns the page↔route link, so module schema imports stay acyclic.
 > - **`menu_items.key`** (`not null`, `unique(menu, key)`): a stable key such as `header.outbound`.
 > - **`site_settings.is_verified`** (`boolean not null default false`): only verified keys are published (rule 1).
+> - **`site_settings.updated_by`** (`text null`, migration `0013`, A-09): the admin who last saved the key. `pnpm db:seed` refreshes an unverified key's value only while `updated_by` is null, so an admin edit is never overwritten by the seed.
 > - `pages.parent_id` and `menu_items.parent_id` are self-referencing FKs.
 >
 > Layout:
