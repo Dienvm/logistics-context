@@ -25,7 +25,7 @@ pages ─ routes ─< rate_cards ─< route_rates ─< route_rate_translations
               ├─< goods_rules ─< goods_rule_translations   (route_id null = global rule)
               ├─< faqs ─< faq_translations                  (or faqs.page_id)
               ├─< testimonials ─< testimonial_translations
-              ├─< leads
+              ├─< leads ─< lead_events      (A-06 timeline; lead_exports = export log)
               └─< contact_events
 menu_items ─< menu_item_translations     site_settings (key → jsonb)     redirects
 ```
@@ -360,12 +360,37 @@ export const leads = pgTable('leads', {
   adsConsent: boolean('ads_consent').notNull().default(false),
   status: leadStatus('status').notNull().default('new'),
   assignedTo: text('assigned_to').references(() => profiles.clerkUserId),
-  notes: text('notes'),
+  notes: text('notes'),                                     // legacy; read-only "Ghi chú cũ" since A-06 (notes are lead_events)
   ...timestamps,
 }, (t) => [
   index('leads_status_created_idx').on(t.status, t.createdAt),
   index('leads_ip_hash_created_idx').on(t.ipHash, t.createdAt),   // S-08 rate limit (migration 0002)
 ]).enableRLS()
+
+// A-06 (migration 0012): the admin inbox. Staff ids are Clerk user ids without a foreign key,
+// so the history survives a stale or missing profiles row. Append-only: no edit, no delete (Q-17).
+export const leadEventKind = pgEnum('lead_event_kind', ['status', 'assign', 'note'])
+export const leadEvents = pgTable('lead_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').notNull().references(() => leads.id),
+  kind: leadEventKind('kind').notNull(),
+  fromStatus: leadStatus('from_status'), toStatus: leadStatus('to_status'),      // kind = status
+  fromAssignee: text('from_assignee'), toAssignee: text('to_assignee'),          // kind = assign (null = unassigned)
+  note: text('note'),                                                            // kind = note (1–2000 chars)
+  actorId: text('actor_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(), // written as clock_timestamp() under the lead's row lock
+}, (t) => [index('lead_events_lead_created_idx').on(t.leadId, t.createdAt)]).enableRLS()
+
+// Written before any CSV byte leaves the server; a failed insert means no export (A-06 AC-08).
+export const leadExportOutcome = pgEnum('lead_export_outcome', ['ok', 'refused'])
+export const leadExports = pgTable('lead_exports', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  actorId: text('actor_id').notNull(),
+  filters: jsonb('filters').notNull(),                       // the list's URL filters
+  rowCount: integer('row_count').notNull(),                  // rows exported, or the matching total when refused (> 10 000)
+  outcome: leadExportOutcome('outcome').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}).enableRLS()
 
 // S-08b (migration 0004): rotating OAuth tokens of the sales notifiers (Zalo OA). Server-only
 // secrets, never rendered; one row per provider, updated under SELECT … FOR UPDATE.
