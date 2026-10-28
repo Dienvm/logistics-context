@@ -1,7 +1,9 @@
 ---
 title: Edit FAQs, goods rules, testimonials and site settings in the admin
 type: feature
-status: approved
+status: in_implementation
+branch: feat/a05-a09-admin-lists-settings
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/61
 owner_repo: both
 roadmap: A-05, A-09
 priority: must-have
