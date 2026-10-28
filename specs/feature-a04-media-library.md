@@ -1,7 +1,7 @@
 ---
 title: Upload, describe and place photos from a media library
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: A-04
 priority: must-have
@@ -81,23 +81,35 @@ A new block `{ type: "image", mediaId }` renders one photo at full content width
   - an empty alt VI or alt EN (whitespace only counts as empty);
   - an alt over 250 characters.
 
-  If the database insert fails after the Storage upload, the uploaded objects are removed, so no orphan files remain.
-- [ ] **AC-04 Library.** Given 50 images, `/admin/media/` shows 48 newest-first and `?page=2` shows the other 2. `?q=` matches alt VI, alt EN or the original file name (case- and diacritic-insensitive: `kho` finds "Kho hàng"). An invalid `?page` falls back to 1. Each tile shows the alt VI, pixel size, file size, date (Asia/Ho_Chi_Minh) and usage count.
+  **Partial failure:**
+  - if the OG upload fails after the master upload, the master is removed;
+  - if the database insert fails after both uploads, both objects are removed;
+  - in both cases no `media` row is written.
+
+  If that cleanup itself fails, the error response and the server log name the exact object paths left behind, for manual removal.
+- [ ] **AC-04 Library.** Given 50 images, `/admin/media/` shows 48 newest-first and `?page=2` shows the other 2. `?q=` matches alt VI, alt EN or the stored path, whose file part is the slug of the original name. The schema has no original-name column, and A-04 adds none. Matching ignores case and diacritics: `hang` finds "Kho hàng", and `KHO` finds it too. An invalid `?page` falls back to 1. Each tile shows the alt VI, pixel size, file size, date (Asia/Ho_Chi_Minh) and usage count.
 - [ ] **AC-05 Usage list.** The detail page lists, with links to their editors, every:
   - post whose `cover_id` is the image;
   - page translation whose `og_image_id` is the image (page and locale);
   - page or post translation whose `blocks` contain `{ type: "image", mediaId }` for it (page or post and locale);
-  - testimonial whose `avatar_id` is the image.
+  - testimonial whose `avatar_id` is the image. Until A-05 ships the testimonial editor, these entries are plain text ("Testimonial" + its locale count), with no link, and still block deletion.
 
   An image used nowhere says so in one sentence. The library's usage count equals the length of this list.
 - [ ] **AC-06 Edit text.** Saving alt VI/EN or a caption on the detail page validates the input as in AC-03. The new alt/caption appears on every public page in the usage list after the save, without a rebuild (its cache tags are updated, rule 5).
-- [ ] **AC-07 Delete.** Delete is enabled only when the usage list is empty. It removes the `media` row, its translations (cascade) and both Storage objects. A delete that races with a new FK reference fails without deleting anything, and the page reports the image as in use.
+- [ ] **AC-07 Delete.** Delete is enabled only when the usage list is empty.
+  - **What it removes:** the `media` row, its translations (cascade), then both Storage objects. The rows go first, so the FKs still guard them.
+  - **Lock protocol:**
+    - the delete transaction takes `SELECT … FOR UPDATE` on the `media` row, re-runs the usage scan, and deletes only if the scan is empty;
+    - every save that writes a cover, OG image or `image` block (page translation, post, post translation) takes `SELECT … FOR SHARE` on each referenced `media` row in ascending id order, holds the locks until commit, and refuses an id that no longer exists (field error).
+  - **Concurrent case:** a block save and a delete of the same image never both succeed, in either order. Either the save fails with "ảnh không còn tồn tại", or the delete fails and the page reports the image as in use.
+  - **Object cleanup failure:** if deleting a Storage object fails after the rows are gone, the delete still succeeds. The server log and the result message name the exact object paths left for manual cleanup. No page references those files.
 - [ ] **AC-08 Picker.** In the post editor (cover), the page translation form (OG image) and the block editor (`image` block), staff can open `MediaPicker`, search, upload a new image (AC-02/AC-03 rules apply) and choose one; the choice is saved with the form's existing action. Clearing a cover or OG image sets the column to `null`. Saving an id that doesn't exist in `media` is refused with a field error.
 - [ ] **AC-09 Image block.**
   - **About and posts:** an `image` block is accepted, but at least one `richText` block is still required.
   - **Contact:** the page accepts zero or more `image` blocks and nothing else.
   - **Route, policy and other pages:** an `image` block is refused (`blockInvalid`).
   - **Public render:** each block shows one image with the alt of the page's locale and that locale's caption under it, if any.
+  - **Order:** blocks render in their stored order, `richText` and `image` mixed. A post `richText → image → richText` shows the image between the two text sections. The table of contents covers the headings of every `richText` segment, and heading ids stay unique across segments. Today `load-blog.ts:69-71` joins the post's richText into one markdown and `about-page.tsx` takes richText sections only; both change.
   - **Missing image:** a block whose `mediaId` no longer exists is skipped on the public page and logged with its page/post key and block index only.
 - [ ] **AC-10 Blog cover and JSON-LD.** A published post with a cover shows it on its card (both locales' index pages) and in the post hero. The hero image is the post's LCP element, so it gets `priority` and correct `sizes`. `BlogPosting.image` is the absolute URL of the cover's OG JPEG, and the post's `og:image` is the same URL with `width` 1200, `height` 630 and the locale's alt. A post without a cover keeps today's markup and emits no `image`.
 - [ ] **AC-11 Page OG image.** A page translation with `og_image_id` emits `og:image` (absolute OG JPEG URL, 1200×630, locale alt) and `twitter:image` from every page type's `generateMetadata`. Without it, no `og:image` is emitted. The VI and EN translations are independent.
@@ -106,14 +118,27 @@ A new block `{ type: "image", mediaId }` renders one photo at full content width
   - `redirect-map.csv` row `/wp-content/uploads/*` has status 410.
   - `check:redirects` reports it PASS, and no PENDING A-04 entry remains (neither uploads nor attachment slugs).
   - Other `/wp-content/*` paths are not covered (404).
+- [ ] **AC-12b Attachment slugs.**
+  - **Given** the WordPress attachment-slug URL `/see_5123/` (from the `SEE_5123` file in `data/media-inventory.csv`) and `/en/see_5123/`.
+  - **Then** each renders the localized 404 page with `noindex`, exactly like any unknown slug. No redirect and no media handler exist for them.
+  - **Known gap:** the HTTP status of that 404 is the existing streamed-render soft-404 issue (status 200), owned by the roadmap Phase 2 note "Soft 404" and fixed before launch (L-01). A-04 does not fix it.
+  - **Checker:** `check:redirects` no longer lists an attachment-slug entry. The entry is removed by owner decision, not reported as passing.
 - [ ] **AC-13 Public JS and privacy.**
   - Public routes ship no new client JS. The picker, uploader and block editor stay inside `/admin`, and `perf:report` stays within the ADR 0006 budget.
   - `SUPABASE_SERVICE_ROLE_KEY` is read only in `server-only` code.
   - No public HTML contains a signed URL, a service key or a `private` bucket path.
-- [ ] **AC-14 Storage off.** Without `NEXT_PUBLIC_SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY`:
-  - `/admin/media/` shows one sentence that Storage isn't configured, and upload/delete are disabled;
-  - the build passes;
-  - public pages render without images rather than failing.
+- [ ] **AC-14 Storage configuration.** Public reads and staff writes are configured separately:
+  - **Public read** needs only `NEXT_PUBLIC_SUPABASE_URL`. The Dockerfile already passes it as a build `ARG`, and it builds the URLs and `remotePatterns`.
+  - **Upload and delete** need `SUPABASE_SERVICE_ROLE_KEY`, read at runtime only. It is never a build argument.
+  - **(a) No `NEXT_PUBLIC_SUPABASE_URL`:**
+    - the build passes;
+    - Storage-backed images (covers, `image` blocks, OG) are omitted, with no broken `<img>` and no `og:image`;
+    - static `public/images/` photos render unchanged;
+    - `/admin/media/` says Storage isn't configured.
+  - **(b) URL set, no service key:**
+    - public pages show Storage images normally;
+    - `/admin/media/` lists images, but upload and delete are disabled with one sentence saying the server key is missing;
+    - a direct upload or delete request is refused.
 - [ ] **AC-15 Buckets.** `pnpm storage:setup` creates the buckets, and a second run changes nothing:
 
   | Bucket | Read access | Size limit | MIME types |
@@ -159,7 +184,7 @@ A new block `{ type: "image", mediaId }` renders one photo at full content width
 | app | content blocks | `modules/content/application/info-blocks.ts` (`image` block), `page-blocks.ts` (`about` kind + new `contact` kind), `modules/content/domain/page-type-rules.ts` (`contact: "contact"`), `modules/content/ui/admin/{block-editor,block-fields,info-block-fields,initial-blocks,editable-block}.tsx/.ts`, `modules/content/ui/blocks/` (public image block) |
 | app | post editor | `modules/content/application/{admin-post-schemas,save-post}.ts`, `modules/content/ui/admin/posts/post-fields-form.tsx` (cover picker) |
 | app | page editor | `modules/content/application/{admin-page-schemas,save-page-translation}.ts`, `modules/content/ui/admin/translation-form*.tsx` (OG picker) |
-| app | public UI | `modules/content/ui/blog/{blog-post-card,blog-post-hero}.tsx`, `modules/content/ui/info/{about-page,contact-page}.tsx`, `modules/content/infrastructure/blog-queries.ts` + info/page queries (join media + locale translation) |
+| app | public UI | `modules/content/ui/blog/{blog-post-card,blog-post-hero,blog-post-page}.tsx`, `modules/content/application/{load-blog,load-info-page,markdown-outline}.ts` (ordered mixed blocks instead of one joined markdown; outline across segments), `modules/content/ui/blocks/{rich-text,table-of-contents}.tsx`, `modules/content/ui/info/{about-page,contact-page}.tsx`, `modules/content/infrastructure/blog-queries.ts` + info/page queries (join media + locale translation) |
 | app | SEO | `modules/seo/domain/blog-posting-json-ld.ts`, `modules/seo/application/{blog-metadata,info-page-metadata,home-metadata,hub-metadata,route-metadata,calculator-metadata,goods-metadata}.ts` (shared OG helper), `modules/seo/domain/gone-paths.ts` (uploads pattern + stale comment), `modules/seo/application/redirect-rules.ts`, `scripts/redirects/plan.ts` |
 | app | proxy / config | `proxy.ts` (matcher entry for `/wp-content/uploads/:path*`), `next.config.ts` (`images.remotePatterns`; upload body limit if needed) |
 | app | env | `shared/config/env.server.ts` (`SUPABASE_SERVICE_ROLE_KEY`), `shared/config/env.public.ts` (`NEXT_PUBLIC_SUPABASE_URL`), `.env.example`, `deploy/env.template` |
@@ -196,53 +221,104 @@ A new block `{ type: "image", mediaId }` renders one photo at full content width
 - **Risk: upload body size.** The default Server Action body limit is 1 MB. Raising it globally would also raise the public lead action's limit, so use a route handler for uploads. `proxy.ts` runs on `/admin/*` and `/api/*`, and Next 16 buffers proxied request bodies up to a configurable limit. Check that limit against Next 16.4 and either set it to 16 MB or exclude the upload path from the matcher.
 - **Risk: sharp in Docker.** sharp is only a transitive dependency of next today. Add it directly and confirm the standalone image loads it on the VPS architecture (L-00 Dockerfile).
 - **Risk: Contact block kind.** Changing Contact from `none` to `contact` must keep its seeded empty `blocks` valid. `db:confirm` and the seed parse Contact without change.
-- **Risk: JSON references.** Block references are JSON, not FKs. Deleting relies on the usage scan (AC-05/AC-07), and a stale reference is skipped at render (AC-09).
+- **Risk: JSON references.** Block references are JSON, not FKs. The lock protocol of AC-07 (`FOR UPDATE` on delete, `FOR SHARE` on reference-writing saves) closes the race, and a stale reference that slips in through the database is skipped at render (AC-09).
 - **Risk: shared database.** Local dev writes to the production Supabase project and Storage (owner setup). Test uploads must be deleted after checking.
 
 ### Manual Verification Plan
 
 Phase 2 rule (owner): static checks and a logic review by the implementer. The browser, axe and Lighthouse passes on public pages are carried to the owner and listed in the PR.
 
-**Seed needs:**
-- 3 test images: a phone JPEG with EXIF orientation 6 and GPS, a PNG under 2560 px, and a HEIC;
-- a `.jpg` that is really a PDF;
-- one published draft-safe test post;
-- the About and Contact pages.
+**Fixtures:**
+- **Files:** a phone JPEG with EXIF orientation 6 and GPS; a PNG under 2560 px; a HEIC; a PDF renamed `.jpg`; a 16 MB JPEG.
+- **Pagination:** 50 `media` rows inserted into the local Docker database (`pnpm db:local`, then `pnpm dev:local`). Their Storage objects need not exist, so broken thumbnails are expected there.
+- **Content:** one draft test post, `/gioi-thieu/` / `/en/about/` and `/lien-he/` / `/en/contact/`.
 
-**Steps (implementer: code review and local run; owner: browser):**
+**Steps.** The implementer does the code review and the local run; the owner does the browser pass.
 
-1. **Access:** as `sales`, open `/admin/media/` → 403. As `editor` → the library. (AC-01)
-2. **Accepted upload:** upload the JPEG with both alts. Then check:
-   - the Storage object path, the 2560 px edge, upright orientation and no GPS (`exiftool` on the downloaded object);
-   - the OG JPEG at 1200×630;
-   - the `media` row and both translations. (AC-02)
+1. **Access (AC-01):**
+   - as `sales`, `GET /admin/media/` and `/admin/media/{id}/` → 403;
+   - as `sales`, `curl -X POST` to the upload route handler (session cookie copied from the browser) → 403, and nothing written;
+   - as `sales`, call the save-text and delete actions (replayed request) → 403;
+   - as `editor` → the library opens.
+2. **Accepted upload (AC-02):** upload the phone JPEG with both alts. Then check:
+   - the Storage path `media/YYYY/MM/{uuid}-{slug}.webp`;
+   - the 2560 px longest edge, upright orientation, and no EXIF/GPS (`exiftool` on the downloaded object);
+   - `og/media/{id}.jpg` at 1200×630;
+   - the `media` row and both translations.
 
-   Upload the PNG: its size is unchanged.
-3. **Refused uploads:** upload the HEIC, the fake `.jpg`, a 16 MB file and an empty alt EN. Each gives a field error, and the Storage and table counts are unchanged. (AC-03)
-4. **Library:** search `kho` and an EN alt word; open `?page=2` and `?page=abc`. (AC-04)
-5. **Picker and usage:** set the image as the test post's cover, as the About VI OG image, and as an `image` block on About EN and on Contact VI. Then:
-   - the detail page lists all four places with links (AC-05, AC-08);
-   - delete is disabled (AC-07).
-6. **Public render:**
-   - `/kinh-nghiem/` card and post hero show the cover;
-   - view-source shows `BlogPosting.image` and `og:image` (1200×630);
-   - `/en/…/about` shows the EN alt and caption;
+   Then upload the PNG: its size is unchanged.
+3. **Refused uploads (AC-03):** upload the HEIC, the fake `.jpg`, the 16 MB file, then the JPEG with alt EN `"  "`. Each gives its field error, and the Storage object count and `media` row count are unchanged.
+
+   **Failure injection:** temporarily make the OG upload throw (local edit, reverted after). The master object is removed and no row is written. Then make the DB insert throw: both objects are removed.
+4. **Library (AC-04):** on the local Docker database with 50 rows:
+   - `/admin/media/` shows 48;
+   - `?page=2` shows 2;
+   - `?page=abc` shows page 1.
+
+   On the real library:
+   - `?q=hang` finds the image whose alt VI is "Kho hàng";
+   - `?q=KHO` finds it too;
+   - an alt EN word finds it.
+5. **Picker and usage (AC-05, AC-08):** set the uploaded image as:
+   - the test post's cover;
+   - the `/gioi-thieu/` VI OG image;
+   - an `image` block between two richText blocks on About VI;
+   - an `image` block on Contact VI.
+
+   The detail page lists all four with links, and delete is disabled. Then:
+   - saving the cover with a random uuid gives a field error (AC-08);
+   - adding an `image` block to a route page or a policy page is refused with `blockInvalid` (AC-09).
+6. **Public render (AC-09–AC-11):**
+   - `/kinh-nghiem/` card and the post hero show the cover;
+   - the post's view-source has `BlogPosting.image` and `og:image` (1200×630, alt);
+   - `/gioi-thieu/` shows text → image → text with the VI alt and caption, and its TOC/heading ids stay unique;
    - `/lien-he/` shows the photo section;
-   - the About VI `<head>` has `og:image` and About EN has none. (AC-09–AC-11)
-7. **Alt edit:** edit alt VI, reload the About page: the new alt shows without a rebuild. (AC-06)
-8. **Delete:** remove all four uses; delete is enabled; delete. The rows and both objects are gone, and the About EN page still renders. (AC-07)
-9. **Stale reference:** put a random uuid in an About block via the DB. The page renders, the block is skipped, and one log line appears. (AC-09)
-10. **Legacy URLs:** `curl -sI` the three `/wp-content/uploads/...` URLs from AC-12 → 410, no `Location`; `pnpm check:redirects` shows no PENDING A-04. (AC-12)
-11. **Storage off:** unset both env vars, then `pnpm build` passes, `/admin/media/` shows the not-configured sentence, and public pages render. (AC-14)
-12. **Buckets:** run `pnpm storage:setup` twice. The second run reports no change. (AC-15)
-13. **Clean up:** delete every test image, cover, OG choice and block from the shared database.
-14. **Owner (browser):**
-    - 360/768/1280 px on the library, picker, `/kinh-nghiem/`, a post, About and Contact;
-    - keyboard through the picker dialog;
-    - an axe scan with zero serious/critical issues;
-    - Lighthouse mobile on a post with a cover, consent rejected: SEO 100, a11y ≥ 95, LCP recorded vs `main`. (AC-10, AC-13)
+   - `/gioi-thieu/` `<head>` has `og:image`, and `/en/about/` has none.
 
-**Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `build`, `i18n:check`, `check:redirects` (0 FAIL), `tokens:check`; gitleaks via the pre-commit hook. `proxy.ts` changes (matcher + 410), so the consent matrix (ADR 0004 Decision 2) is re-run for `43l_attr` on a landing URL with `gclid`; carried to the owner with step 14 if not run. No automated tests (ADR 0004).
+   Set an OG image on one page of each remaining type (home, hub, route, calculator, goods, blog index), and confirm `og:image` in each `<head>`.
+7. **Alt edit (AC-06):** edit alt VI on the detail page and reload `/gioi-thieu/`. The new alt is in the `<img>` without a rebuild.
+8. **Concurrent delete (AC-07):** remove every use except the About VI block. In two tabs, start a delete and a re-save of About VI with that block. Run each order twice, using `pg_sleep` in a local transaction to hold the lock. Exactly one succeeds, and the other shows its message.
+9. **Delete (AC-07):** remove all uses and delete the image. The rows and both objects are gone, and the pages still render.
+
+   Then make an object delete throw (local edit): the delete succeeds, and the message and log name the remaining paths.
+10. **Stale reference (AC-09):** put a random uuid into an About block via the local database. The page renders, the block is skipped, and one log line names the page key and block index.
+11. **Legacy URLs (AC-12, AC-12b):** for each of `/wp-content/uploads/2023/12/SEE_5123.webp`, `/wp-content/uploads/` and `/wp-content/uploads`, run `curl -s -o /dev/null -w '%{http_code} %{size_download} %{redirect_url}\n' http://localhost:3100{path}` → `410 0` with no redirect, and `cache-control: public, max-age=3600`.
+
+    `/see_5123/` and `/en/see_5123/` show the localized 404 with `noindex`; the status is whatever the L-01 soft-404 item leaves it. `pnpm check:redirects` reports no PENDING A-04 and 0 FAIL.
+12. **Storage configuration (AC-14):**
+    - (a) build and start without `NEXT_PUBLIC_SUPABASE_URL`: covers, blocks and OG are omitted, static photos show, and `/admin/media/` says not configured;
+    - (b) URL set, no service key: public Storage images show, upload and delete are disabled, and a direct POST is refused.
+13. **Buckets (AC-15):** run `pnpm storage:setup` twice. The second run reports no change.
+14. **Clean up:** delete every test image, cover, OG choice and block from the shared production database and Storage.
+15. **Owner (browser, AC-10, AC-13):**
+    - 360/768/1280 px on the library, the picker, `/kinh-nghiem/`, a post with a cover, `/gioi-thieu/` and `/lien-he/`;
+    - keyboard through the picker dialog;
+    - reduced motion;
+    - axe scan, 0 serious/critical;
+    - Lighthouse mobile on the post with a cover and on `/gioi-thieu/`, consent rejected. Record SEO (100) and a11y (≥ 95), which are binding, plus performance, LCP, CLS and TBT vs `main` (ADR 0009), and the app JS delta from `perf:report` (≤ 50 KB gz, ADR 0006).
+
+**AC → step matrix:**
+
+| AC | Steps |
+| --- | --- |
+| 01 | 1 |
+| 02 | 2 |
+| 03 | 3 |
+| 04 | 4 |
+| 05 | 5 |
+| 06 | 7 |
+| 07 | 8, 9 |
+| 08 | 5 |
+| 09 | 5, 6, 10 |
+| 10 | 6, 15 |
+| 11 | 6 |
+| 12 | 11 |
+| 12b | 11 |
+| 13 | 15 + view-source grep for `service_role` / `private/` / `token=` |
+| 14 | 12 |
+| 15 | 13 |
+
+**Validation commands:** `pnpm -C 43logistics.vn lint`, `typecheck`, `check:boundaries`, `build`, `i18n:check`, `check:redirects` (0 FAIL), `tokens:check`; gitleaks via the pre-commit hook. `proxy.ts` changes (matcher + 410), so the consent matrix (ADR 0004 Decision 2) is re-run for `43l_attr` on a landing URL with `gclid`; carried to the owner with step 15 if not run. No automated tests (ADR 0004).
 
 ### Implementation Hints
 
@@ -255,7 +331,7 @@ Phase 2 rule (owner): static checks and a logic review by the implementer. The b
   - `og:image` and `BlogPosting.image` need absolute URLs, and the Storage URL already is one.
 - **410:** add `/^\/wp-content\/uploads(\/.*)?$/` to `GONE_PATTERNS`, and add `"/wp-content/uploads/:path*"` to the `proxy.ts` matcher, because the catch-all skips paths whose last segment has a dot. Fix the stale comment in `gone-paths.ts:2`. Set the uploads entry in `redirect-rules.ts`/`plan.ts` to checked with an expected 410 and a sample path, and remove the attachment-slug deferral.
 - **Storage client:** use `@supabase/storage-js` or plain `fetch` against the Storage REST API. Either is server-only behind `import "server-only"`; prefer the smaller dependency.
-- **Upload order:** process with sharp → upload both objects → insert rows in one transaction → on a DB error, delete the objects. On delete: delete the rows (FKs block it if still used) → then the objects.
+- **Upload order:** process with sharp → upload master → upload OG (on failure, remove the master) → insert rows in one transaction (on failure, remove both). On delete: lock and re-scan, then delete the rows (FKs still guard them) → commit → delete the objects, logging any failed path. Locks are taken in ascending media id order and held until commit (AC-07).
 - **Upload validation:** use `sharp(buffer, { limitInputPixels: … }).metadata()` to sniff the format, and keep sharp's default decompression-bomb guard.
 - **Lessons:**
   - `2026-10-23-s08-lead-form`: list every file a new prop or enum value threads through (block kind, picker prop, OG field).
