@@ -133,6 +133,8 @@ Cookie format (F-06; `modules/tracking`):
 
 `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `gclid`, `gbraid`, `wbraid`, `fbclid` (→ build `_fbc`), `ttclid`, `landing_path`, `referrer`, `first_seen_at`. Attached to every `leads` and `contact_events` row.
 
+**Reporting source (A-06 inbox, A-07 report):** each `leads` / `contact_events` row gets one source from its stored attribution, in this order: a click ID (`gclid`/`gbraid`/`wbraid` → Google Ads, `fbclid` → Facebook Ads, `ttclid` → TikTok Ads), else `utm_source` (trimmed, lowercased), else the referrer host (`referrer` holds a bare host; an older full URL is reduced to its host), else **unknown** ("Không rõ nguồn": no campaign link, or no ads consent). Keys: `click:{network}`, `utm:{value}`, `ref:{host}`, `unknown`. One pure function and its SQL twin (`modules/tracking`, `deriveTrafficSource()` / `trafficSourceKeySql()`) serve the inbox list, filter and CSV and the weekly report, so they always agree.
+
 ### Contact click tracker
 
 `/go/[channel]/?from={path}&eid={uuid}&placement={p}&route={key}` (route handler `app/go/[channel]/route.ts`, `channel ∈ zalo | call | whatsapp | messenger`, exact lower case; S-02):
