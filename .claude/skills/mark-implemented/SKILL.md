@@ -73,7 +73,7 @@ Before marking this spec implemented, confirm:
    - OR explicit waiver: "checks not applicable because ___"
 
 3. Public pages changed?
-   - Lighthouse mobile ≥ 90 / 100 / ≥ 95 and SEO checks (H1, canonical, hreflang, JSON-LD): evidence | N/A
+   - Lighthouse mobile: SEO 100 / accessibility ≥ 95 (binding); performance, LCP, CLS recorded vs `main` (ADR 0009, report-only); SEO checks (H1, canonical, hreflang, JSON-LD): evidence | N/A
 
 4. Release / deploy (if applicable):
    - Deployed to preview/production? (yes / no / not yet / N/A)

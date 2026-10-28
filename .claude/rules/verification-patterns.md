@@ -24,7 +24,7 @@ The initial build phase has **no Vitest, Playwright or `tests/` folder**. Don't 
    - keyboard pass;
    - `prefers-reduced-motion`;
    - axe DevTools (or axe-core injected via CDP) at 360 and 1280 px with 0 serious/critical issues.
-5. Changed public pages: Lighthouse mobile scores, LCP/CLS/INP and the initial first-party JS (gz) with consent rejected. A budget miss blocks the PR.
+5. Changed public pages: Lighthouse mobile scores, LCP/CLS/INP and the initial first-party JS (gz) with consent rejected. A JS budget miss blocks the PR; lab performance/LCP are compared with `main` and explained when clearly worse, while field Core Web Vitals (p75) are the binding gate (ADR 0009).
 6. Consent, tracking, `proxy.ts` or lead changes: re-run the consent matrix (ADR 0004 Decision 2).
 7. Record everything in the PR "Verification" section. Never claim a check you didn't run; write "not available — reason".
 

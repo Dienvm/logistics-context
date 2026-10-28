@@ -119,7 +119,7 @@ Info pages (S-09, `modules/seo` `InfoJsonLd`):
 - LCP image: `next/image` with `priority`, correct `sizes`, AVIF/WebP, ≤ 150 KB at 1280 px wide.
 - Fonts: 2 families, `display: swap`, subsets latin + vietnamese, preload via `next/font`.
 - Third-party: GTM loaded with `@next/third-parties/google` `GoogleTagManager` only after the user grants ads consent (basic mode: no GTM request before that); PostHog initialised lazily only after analytics consent (no `posthog.init` at module load); no Maps iframe (static map image + link); no chat widget scripts.
-- Budgets (ADR 0006): framework baseline (134.3 KB gz on Next 16.4.2 / React 19.3.1) + ≤ 50 KB gz app JS per route; LCP < 2.5 s, INP < 200 ms, CLS < 0.1 (reserve space for sticky bar and images).
+- Budgets (ADR 0006): framework baseline (134.3 KB gz on Next 16.4.2 / React 19.3.1) + ≤ 50 KB gz app JS per route; LCP < 2.5 s, INP < 200 ms, CLS < 0.1 at p75 of field data (ADR 0009; Lighthouse lab numbers are recorded, not binding) (reserve space for sticky bar and images).
 
 ## Tracking plan
 
@@ -208,6 +208,6 @@ S-13 as built (43logistics.vn PRs #36, #37; owner decisions 2026-10-24):
 - [ ] Message match: H1, price and offer equal the ad text (variant via `/lp/{campaign}/` content or `?v=` mapped server-side — never reflect raw query text).
 - [ ] One primary CTA (Zalo) + one secondary (call); no full navigation.
 - [ ] Above the fold on 360×640: H1, from-price, days, CTA.
-- [ ] LCP < 2.5 s on 4G; no carousel, no map iframe.
+- [ ] Lab LCP recorded (field p75 < 2.5 s is the gate, ADR 0009); no carousel, no map iframe.
 - [ ] `noindex, follow`; canonical to itself; UTM captured.
 - [ ] Conversion events verified in GTM preview + platform test tools before launch.

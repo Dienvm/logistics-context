@@ -20,7 +20,7 @@ This folder is the project memory for the 43logistics.vn rebuild. It was produce
 | `11-open-questions.md` | Facts the owner must confirm (Q-IDs) | Before writing any business fact |
 | `12-glossary.md` | VI ↔ EN terms | Copy, translations, UI strings |
 | `legacy-copy/*.md` | Verbatim old page text (unverified raw material) | Rewriting content |
-| `../adr/*.md` | Architecture decisions (0001 initial, 0002 template stack, 0003 workspace & workflow, 0004 code-only delivery, no automated tests, 0005 feature modules + clean architecture, 0006 Next 16 Cache Components + JS budget, 0007 rate cards and currencies, 0008 VPS deployment) | Before changing stack/architecture |
+| `../adr/*.md` | Architecture decisions (0001 initial, 0002 template stack, 0003 workspace & workflow, 0004 code-only delivery, no automated tests, 0005 feature modules + clean architecture, 0006 Next 16 Cache Components + JS budget, 0007 rate cards and currencies, 0008 VPS deployment, 0009 field Core Web Vitals gate) | Before changing stack/architecture |
 | `../proposals/*.md` | Undecided options (front matter `status`) — see table below | Before proposing something similar |
 | `../../specs/INDEX.md` | Implementation specs tied to roadmap IDs | Before implementing / picking work |
 | `../../lessons/INDEX.md` | Lessons with follow-ups | Before implementing (watch-outs) |

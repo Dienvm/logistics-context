@@ -1,6 +1,6 @@
 # ADR 0006 — Next 16 runtime: Cache Components on, and the JS budget split
 
-- Status: Accepted (2026-10-21)
+- Status: Accepted (2026-10-21) · Amended by ADR 0009 (2026-10-28): LCP/INP/CLS are judged on field data (p75); Lighthouse lab performance/LCP are report-only
 - Amends:
   - ADR 0002 §2 (Cache Components "enabled only after a recorded compatibility check") and §7 (the 120 KB budget sentence);
   - ADR 0001's compatibility timing;
