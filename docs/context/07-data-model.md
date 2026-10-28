@@ -88,7 +88,7 @@ export const profiles = pgTable('profiles', {
 export const media = pgTable('media', {
   id: uuid('id').primaryKey().defaultRandom(),
   bucket: text('bucket').notNull().default('media'),
-  path: text('path').notNull(),                             // e.g. uploads/2023/12/SEE_5123.webp
+  path: text('path').notNull(),                             // e.g. 2026/10/{id}-kho-hang.webp (A-04)
   mime: text('mime').notNull(),
   width: integer('width'),
   height: integer('height'),
@@ -483,7 +483,10 @@ Route pages mostly render from route data; blocks only add editorial sections, s
 **Info pages (S-09, `modules/content/application/info-blocks.ts`):**
 
 - `policy` { `effectiveDate`: ISO date, `markdown`: ≤ 40 000 chars }: the whole body of a policy page. A policy translation holds **exactly one** valid `policy` block; its `effectiveDate` is the "Cập nhật" date and the `WebPage` `dateModified`, so editing other fields of the page never changes it.
-- `richText` { `markdown`: ≤ 40 000 chars }: About sections, rendered in order as one body.
+- `richText` { `markdown`: ≤ 40 000 chars }: About and post sections.
+- `image` { `mediaId`: uuid } (A-04): one library photo at content width. Only the id is stored; alt and caption come from `media_translations` in the page's locale at render time, so an alt edit needs no block rewrite. A block whose image no longer exists is skipped and logged (page/post key and block index).
+- **Per page type (A-04, `validatePageBlocks`):** About and posts (`about` kind) take `richText` and `image` blocks in any order, with at least one `richText`; they render in stored order, the table of contents spans every text segment and heading ids stay unique across segments. Contact (`contact` kind) takes zero or more `image` blocks, shown as a photo section after the offices. Route, policy and other pages refuse `image` (`blockInvalid`).
+- **References are JSON, not FKs:** every save that writes a cover, an OG image or an `image` block (page translation, post, post translation, EN drafts) locks the referenced `media` rows `FOR SHARE` in ascending id order; the media delete locks its row `FOR UPDATE` and re-scans usage before deleting (AC-07).
 - Markdown renders on the server through `react-markdown` without raw HTML (shown as text) or images; headings are demoted below the page H1.
 - **Seed copy:** `data/seed/info-pages.json` lists the pages whose copy lives in `data/seed/info-pages/{key}.{vi|en}.md` (policies get the manifest's `effectiveDate`). `pnpm db:seed` re-parses them with the strict page schema and writes them only into translations whose `blocks` is still `[]`, so an editor's text is never overwritten.
 - **Every write path validates a policy translation with the same check (`findPolicyBlock`) before saving or publishing:** `pnpm db:seed` parses page blocks strictly (a bad seed file fails); `pnpm db:confirm` refuses to publish a `policy` page whose translation lacks exactly one valid block and names the page and locale; A-03's page actions must run `parseInfoBlocks`/`findPolicyBlock` before saving. The render-time 404 for an invalid policy is only a guard.
@@ -506,11 +509,13 @@ using ((select auth.jwt()->>'role') in ('admin','sales'));
 
 | Bucket | Access | Contents |
 | --- | --- | --- |
-| `media` | public read, server-only write | Site images; migrated files keep `uploads/YYYY/MM/<name>` paths for the `/wp-content/uploads/*` rewrite; new uploads `YYYY/MM/<uuid>-<slug>.<ext>` |
-| `og` | public read | Generated/override OG images |
-| `private` | signed URLs only | Unredacted customer screenshots, files attached to leads (if added later) |
+| `media` | public read, server-only write; 15 MB, `image/webp` | Site images: one WebP master per upload at `YYYY/MM/<id>-<slug>.webp` (upload month in Asia/Ho_Chi_Minh; slug of the original file name; `<id>` = `media.id`). No `uploads/` paths: legacy WordPress URLs are not kept (owner 2026-10-28, A-04) |
+| `og` | public read; `image/jpeg` | `media/<id>.jpg`: the 1200×630 centre-cover JPEG of each library image (`og:image`, `BlogPosting.image`); later generated OG images (S-10) |
+| `private` | signed URLs only | Unredacted customer screenshots, files attached to leads (if added later; A-05) |
 
-Upload pipeline (server action): validate type/size → convert to WebP/AVIF (sharp) with max edge 2560 px → compute width/height/blur → require alt text VI (+ EN) → insert `media` + `media_translations`.
+`pnpm storage:setup` creates or aligns the three buckets (idempotent, never deletes).
+
+Upload pipeline (A-04, route handler `POST /api/admin/media`): ≤ 15 MB → format sniffed by sharp (JPEG/PNG/WebP/AVIF; HEIC refused) → EXIF auto-rotate, all metadata stripped → WebP master (longest edge ≤ 2560, never upscaled) + OG JPEG + width/height/bytes/blur → alt VI and EN required (≤ 250 chars), captions optional → upload master, then OG (else remove the master) → insert `media` + both `media_translations` in one transaction (else remove both objects). A cleanup that fails names the leftover paths in the response and the log.
 
 ## Seed
 

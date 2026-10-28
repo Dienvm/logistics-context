@@ -9,7 +9,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
 | 2026-10-28 | feature | [feature-a05-a09-admin-lists-settings.md](feature-a05-a09-admin-lists-settings.md) | Edit FAQs, goods rules, testimonials and site settings in the admin | A-05, A-09 | both | in_implementation |
-| 2026-10-28 | feature | [feature-a04-media-library.md](feature-a04-media-library.md) | Upload, describe and place photos from a media library | A-04 | both | approved |
+| 2026-10-28 | feature | [feature-a04-media-library.md](feature-a04-media-library.md) | Upload, describe and place photos from a media library | A-04 | both | in_implementation |
 | 2026-10-28 | feature | [feature-a07-contact-analytics.md](feature-a07-contact-analytics.md) | Count contacts and leads per week by channel, route, source | A-07 | both | implemented |
 | 2026-10-28 | feature | [feature-a06-leads-inbox.md](feature-a06-leads-inbox.md) | Work quote requests from an admin leads inbox | A-06 | both | implemented |
 | 2026-10-26 | feature | [feature-l00-deployment-pipeline.md](feature-l00-deployment-pipeline.md) | Deploy the app to the VPS and cut DNS over | L-00 | both | in_implementation |
