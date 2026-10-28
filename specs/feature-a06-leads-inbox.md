@@ -1,9 +1,11 @@
 ---
 title: Work quote requests from an admin leads inbox
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/a06-leads-inbox
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/58
+implementation_commit: 526ea531195337e669ecb364757a178ccef70ab9
+implemented_date: 2026-10-28
 owner_repo: both
 roadmap: A-06
 priority: must-have

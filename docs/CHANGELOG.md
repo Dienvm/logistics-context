@@ -2,6 +2,16 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-28 — Work quote requests from an admin leads inbox
+
+- Spec: [specs/feature-a06-leads-inbox.md](../specs/feature-a06-leads-inbox.md) · Roadmap: A-06
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/58 (526ea53); context: https://github.com/Dienvm/logistics-context/pull/79
+- Owner: both
+- Summary: `/admin/leads/` lets admin and sales list, filter (status, route, source, Vietnam days, owner) and work quote requests: detail with timeline, status/owner/note actions under a row lock, logged CSV export, new-lead sidebar badge; `editor` gets 403 (`requireSection("leads")`).
+  - Evidence: `verify` and `gitleaks` green on the merge commit; Lighthouse waived (admin only, no public route changed; phase-2 rule). Lint, typecheck, boundaries, build, i18n and redirects (135 pass, 0 fail) passed locally.
+  - Not yet deployed. Migration `0012` (`lead_events`, `lead_exports`, additive) must be applied on Supabase before or with the deploy, or the inbox pages fail.
+  - Carried to the owner: the Docker fixture run (spec steps 1–10) and the browser pass (360/768/1280 px, keyboard, axe).
+
 ## 2026-10-28 — Show the retail price list as per-route rate cards
 
 - Spec: [specs/feature-a02b-rate-cards-public.md](../specs/feature-a02b-rate-cards-public.md) · Roadmap: A-02b (part 1; A-02b ticked with part 2)
