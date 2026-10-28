@@ -271,7 +271,7 @@ Keep this table true. When a task adds or renames a script, update its row in th
 - [ ] New public page: metadata + canonical + hreflang + JSON-LD validated (Rich Results Test or a schema validator).
 - [ ] No hard-coded business facts; strings in `messages/*` for both VI and EN.
 - [ ] Lighthouse mobile on the changed page, consent rejected: 100 SEO and ≥ 95 accessibility (binding); performance, LCP, CLS and TBT recorded and compared with `main` (target ≥ 90; a clear regression, ≥ 3 points or ≥ 0.3 s LCP, is explained in the PR; ADR 0009); the app JS delta over the framework baseline (≤ 50 KB gz, ADR 0006). A JS budget miss blocks the PR.
-  - CI (F-08) **enforces the JS budget** for every route in `43logistics.vn/data/perf-budget.json`; add new public routes there.
+  - CI (F-08) **enforces the JS budget** for every route in `43logistics.vn/data/perf-budget.json` whenever Lighthouse runs; add new public routes there. To stay inside GitHub's free 2,000 CI minutes (owner, 2026-10-28: no paid minutes), Lighthouse runs only on a manual dispatch or on a PR labelled `lighthouse`: **every PR that changes a public page carries the label**; admin-only PRs don't.
   - CI also **reports** LCP/CLS/TBT and the scores, which don't block; the manual measurement above stays the binding evidence for them.
 - [ ] Consent matrix (ADR 0004) re-run when the change touches consent, tracking, `proxy.ts` or lead processing.
 - [ ] Context updated in the same change set if a decision or fact changed:
