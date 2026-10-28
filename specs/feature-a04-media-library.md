@@ -1,7 +1,9 @@
 ---
 title: Upload, describe and place photos from a media library
 type: feature
-status: approved
+status: in_implementation
+branch: feat/a04-media-library
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/60
 owner_repo: both
 roadmap: A-04
 priority: must-have

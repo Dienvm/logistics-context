@@ -40,7 +40,10 @@ Title/description patterns (defaults when the editor leaves fields empty — alw
 | Calculator | `Tính cước gửi hàng đi nước ngoài` | `Shipping Cost Calculator` |
 | Blog post | `{Post title}` | `{Post title}` |
 
-Open Graph images: `app/[locale]/(site)/[...]/opengraph-image.tsx` with `next/og` `ImageResponse` — flag + "Gửi hàng đi {Nước}" + "từ {min}đ/kg" + logo, 1200×630, brand colours. Note in Next 16 the `params` passed to metadata image routes is a Promise.
+Open Graph images:
+
+- **As built (A-04):** a page translation's `og_image_id` and a post's `cover_id` emit `og:image` (the image's 1200×630 JPEG derivative in the public `og` bucket, `og/media/{id}.jpg`, absolute Storage URL, with width, height and the locale's alt) plus `twitter:image`, from every page type's `generateMetadata` (`modules/seo` `withOgImage`). The page then repeats the site `openGraph` defaults (Next replaces `openGraph` as a whole). Without one, no `og:image` is emitted; VI and EN are independent.
+- **Planned (S-10 open item, Q-11 logo):** generated route images `app/[locale]/(site)/[...]/opengraph-image.tsx` with `next/og` `ImageResponse` — flag + "Gửi hàng đi {Nước}" + "từ {min}đ/kg" + logo, 1200×630, brand colours, and a default site image. Note in Next 16 the `params` passed to metadata image routes is a Promise.
 
 ## Hreflang & canonical
 
@@ -72,7 +75,7 @@ Emit with a `<JsonLd data={...} />` server component (`<script type="application
 | Home, Contact, About | `LocalBusiness` per office (Đà Nẵng, TP.HCM): name, address (`PostalAddress` with confirmed new admin names), `geo`, telephone, `openingHoursSpecification` from settings, `url`, `image` |
 | Route pages | (A-02b **Offer currency rule**: one `Offer` per route page, for its derived "Từ X/kg" price only, in the currency that price is quoted in (`priceCurrency` = ISO code: VND, USD, SGD or KRW; never converted); `price` is the major-unit decimal string ("94000", "7.00"); no Offer without a shown verified public "Từ" price; `areaServed` lists the zone countries on the EU route, else the route's country.) (S-04 as built: `Service` with `Offer` only for a shown verified public from-price, `FAQPage` only with published FAQ rows, `BreadcrumbList` from the breadcrumbs; OG image deferred) `Service` { serviceType "International parcel shipping", provider → Organization, areaServed → `Country` {name}, `offers`: `Offer` with `priceSpecification` `UnitPriceSpecification` { price, priceCurrency "VND", unitCode "KGM", referenceQuantity, eligibleQuantity (min/max kg) }, `validFrom`/`validThrough` from rates } + `BreadcrumbList` + `FAQPage` (Google shows FAQ rich results only for some authoritative sites; still valid markup) |
 | Hubs | `ItemList` of route services + `BreadcrumbList` |
-| Blog post | `BlogPosting` (headline, image, datePublished, dateModified, author `Organization`, inLanguage, mainEntityOfPage) + `BreadcrumbList`. S-11 emits all but `image` (no covers until A-04); the blog index emits an `ItemList` of its articles. `author` stays the `Organization` even when the article shows a staff byline (A-03b). The blog filter (A-03b) is client-only: no URL, no `searchParams`, no change to the index's canonical, metadata, JSON-LD or sitemap entry; categories have no archive URL |
+| Blog post | `BlogPosting` (headline, image, datePublished, dateModified, author `Organization`, inLanguage, mainEntityOfPage) + `BreadcrumbList`. `image` is the absolute URL of the cover's OG JPEG when the post has a cover (A-04), else omitted; the blog index emits an `ItemList` of its articles. `author` stays the `Organization` even when the article shows a staff byline (A-03b). The blog filter (A-03b) is client-only: no URL, no `searchParams`, no change to the index's canonical, metadata, JSON-LD or sitemap entry; categories have no archive URL |
 | Policy pages | `WebPage` + `BreadcrumbList` |
 
 Do not output `AggregateRating`/`Review` unless reviews are real, collected on-site, and policy-compliant.
@@ -91,10 +94,10 @@ Info pages (S-09, `modules/seo` `InfoJsonLd`):
 - **As built (F-07):** `next.config.ts` `redirects()` is generated from the CSV at build by `modules/seo` (`loadRedirectMap` → `buildNextRedirects`).
   - **Rules:** 43 exact rows give 80 rules, each `statusCode: 301` (not `permanent: true`, which emits 308). Non-file sources appear with and without the trailing slash, so slash-less legacy URLs are still one hop; config redirects run before `proxy.ts`.
   - **Validation:** the CSV is checked with Zod at build: header, status codes, same-origin destinations, no duplicates, no overlap with `proxy.ts` rules, and a named handler for each of the 6 wildcard rows. A malformed CSV fails the build with the line and field.
-  - **Uploads:** the `/wp-content/uploads/*` rewrite to Storage is owned by **A-04**. Owner note (2026-10-21): old WordPress URLs like these won't appear on the new site, so A-04 confirms whether they're preserved at all.
-- **`?attachment_id=`** on `/`, `/vi` or `/index.php` → 301 `/` in `proxy.ts`, with precedence `page_id` > `p` > `attachment_id`; the legacy params are removed and others kept. Attachment **slugs** → A-04.
+  - **Uploads (A-04, owner 2026-10-28):** WordPress media URLs are not kept. `/wp-content/uploads`, `/wp-content/uploads/` and everything below it (dotted file names included, via an explicit `proxy.ts` matcher entry) answer an empty 410 with `cache-control: public, max-age=3600`; other `/wp-content/*` paths are ordinary 404s. `check:redirects` checks three samples.
+- **`?attachment_id=`** on `/`, `/vi` or `/index.php` → 301 `/` in `proxy.ts`, with precedence `page_id` > `p` > `attachment_id`; the legacy params are removed and others kept. Attachment **slugs** (`/{attachment-slug}/`) have no handler (owner, 2026-10-28; A-04): they render the localized 404 with `noindex` like any unknown slug (status: the L-01 soft-404 item).
 - **Exception (owner, F-07):** legacy ID params on non-root legacy URLs (e.g. `/home1/?page_id=705`) are bypassed. They're ordinary params there, and the second hop is accepted.
-- 410 rows (`/tieu-de/`, `/portfolio/*`, `/wp-admin/*`, `/wp-login.php`, `/xmlrpc.php`, `/wp-json/*`): handled in `proxy.ts` (F-06), which returns an empty 410 with `cache-control: public, max-age=3600`.
+- 410 rows (`/tieu-de/`, `/portfolio/*`, `/wp-admin/*`, `/wp-login.php`, `/xmlrpc.php`, `/wp-json/*`, `/wp-content/uploads/*`): handled in `proxy.ts` (F-06), which returns an empty 410 with `cache-control: public, max-age=3600`.
 - Old query URLs `/?page_id={id}`, `/?p={id}` (also on `/vi` and `/index.php`): mapped through `43logistics.vn/data/legacy-wp-ids.json` (21 IDs; the sources per ID are in `specs/feature-f06-proxy-composition.md`) in one 301.
   - `page_id` wins over `p`, and other parameters are kept.
   - An ID mapped to `gone` (832) → 410; an unknown ID → 301 to `/` (owner decision).

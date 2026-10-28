@@ -45,7 +45,7 @@ Security: never commit the SQL dump, `wp-config.php`, or exported leads. The old
    - read from a local MySQL/MariaDB restore of the dump (or from the SQLite conversion used in the analysis);
    - parse `_elementor_data` JSON for price lists, FAQs, testimonials; parse `post_content` HTML → markdown blocks for blog posts;
    - write rows as `draft` — nothing auto-publishes.
-4. **Media:** for each `media-inventory.csv` row with `action = migrate`: download, convert (sharp → WebP + AVIF, max 2560 px), upload to `media/uploads/YYYY/MM/<original-name>.webp`, keep `legacy_url`; generate alt VI/EN (human-reviewed). Banners/tiles with baked-in text are **not** migrated — they are redesigned.
+4. **Media (C-04):** for each `media-inventory.csv` row with `action = migrate`: download and run it through the A-04 upload pipeline (sharp → WebP master ≤ 2560 px + 1200×630 OG JPEG), stored like any new upload at `media/YYYY/MM/<id>-<slug>.webp` (not `uploads/…`: the legacy `/wp-content/uploads/*` URLs answer 410 and are not kept, owner 2026-10-28), keeping `legacy_url` / `legacy_wp_id` for reference; alt VI/EN written or reviewed by a person. Banners/tiles with baked-in text are **not** migrated — they are redesigned.
 5. **Rewrite content** using `legacy-copy/*.md` as raw material: fix facts with the owner, unique copy per route (Taiwan ≠ Japan), remove competitor link, fix typos, add EN.
 6. **Redirects:** load `43logistics.vn/data/redirect-map.csv` into `next.config.ts` `redirects()` + `proxy.ts` (410, legacy IDs) and the `redirects` table.
 7. **Staging QA** (all must pass):
