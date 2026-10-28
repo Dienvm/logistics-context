@@ -8,7 +8,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
-| 2026-10-28 | feature | [feature-a06-leads-inbox.md](feature-a06-leads-inbox.md) | Work quote requests from an admin leads inbox | A-06 | both | approved |
+| 2026-10-28 | feature | [feature-a06-leads-inbox.md](feature-a06-leads-inbox.md) | Work quote requests from an admin leads inbox | A-06 | both | in_implementation |
 | 2026-10-26 | feature | [feature-l00-deployment-pipeline.md](feature-l00-deployment-pipeline.md) | Deploy the app to the VPS and cut DNS over | L-00 | both | in_implementation |
 | 2026-10-26 | feature | [feature-a02b-rate-cards-admin.md](feature-a02b-rate-cards-admin.md) | Edit rate cards, surcharges and policies from the admin | A-02b | both | implemented |
 | 2026-10-26 | feature | [feature-a02b-rate-cards-public.md](feature-a02b-rate-cards-public.md) | Show the retail price list as per-route rate cards | A-02b | both | implemented |

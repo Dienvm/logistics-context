@@ -57,7 +57,7 @@
 - [x] **A-03b Blog post editor** — post fields and `richText` blocks, route filter on `/kinh-nghiem/`, categories, author, cover image (via A-04), "Tạo bản nháp EN" for posts. — spec: specs/feature-a03b-blog-post-editor.md (cover image `posts.cover_id` and `BlogPosting.image` stay with A-04)
 - [ ] **A-04 Media library** — upload (sharp conversion), required alt VI/EN, usage list. Also the blog cover image (`posts.cover_id`, `BlogPosting.image`, A-03b). Owns the `/wp-content/uploads/*` legacy URLs: either a Storage rewrite, or the owner's decision not to keep them (owner note 2026-10-21). Also owns the attachment-slug redirects from `data/media-inventory.csv` (F-07).
 - [ ] **A-05 FAQs, goods rules, testimonials** — with approval (`approved_at`) and consent (`consent_at`) gates.
-- [ ] **A-06 Leads inbox** (sales) — DataTable (TanStack Query + Table), filters (status, route, source, date), status updates, notes, CSV export, attribution detail. *Accept:* `editor` gets 403.
+- [ ] **A-06 Leads inbox** (sales) — server-rendered list with URL filters (status, route, source, date, owner) and pagination, detail timeline, status/owner/note actions, logged CSV export, sidebar badge. *Accept:* `editor` gets 403.
 - [ ] **A-07 Contact analytics** — counts of `contact_events` + leads by channel/route/source per week.
 - [ ] **A-08 Redirects manager** — list/add/edit, hits counter; slug editing for pages (moved from A-03): a published slug change writes a `redirects` row (301, one hop, chains re-pointed), CSV-owned paths (kept URLs and destinations, VI and EN) stay locked, and the runtime lookup answers before any streamed output (no meta-refresh redirect).
 - [ ] **A-09 Settings** — company, contacts, offices, hours, offers (Zod-validated forms).

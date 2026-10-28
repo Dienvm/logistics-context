@@ -1,7 +1,9 @@
 ---
 title: Work quote requests from an admin leads inbox
 type: feature
-status: approved
+status: in_implementation
+branch: feat/a06-leads-inbox
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/58
 owner_repo: both
 roadmap: A-06
 priority: must-have
