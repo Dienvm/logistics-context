@@ -2,6 +2,15 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-28 — Show the retail price list as per-route rate cards
+
+- Spec: [specs/feature-a02b-rate-cards-public.md](../specs/feature-a02b-rate-cards-public.md) · Roadmap: A-02b (part 1; A-02b ticked with part 2)
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/45 (7b69e4b)
+- Owner: both
+- Summary: the sales retail list is imported as per-route rate cards (method × service × place, zone/cargo columns, VND/USD/SGD/KRW, minimums, rounding, divisor), surcharge lists and policy sections; route pages show service tabs and place chips, the calculator quotes per card, 8 new routes (PH, CA, GB, AU, EU, TW→VN, KR→VN, JP→VN).
+  - Evidence: merge-commit `verify` hit the old 9-minute Lighthouse deadline (fixed by PR #46); `main` green since (e858ba1). Lighthouse mobile on production: SEO 100, accessibility 100, performance 85, LCP 3.8–3.9 s, recorded under ADR 0009 (field CWV binding; PR #57 removed font preloads).
+  - Carried to L-01: browser interaction check (tabs, chips, calculator, keyboard, 360/768/1280 px) and the consent matrix for AC-20.
+
 ## 2026-10-28 — Edit rate cards, surcharges and policies from the admin
 
 - Spec: [specs/feature-a02b-rate-cards-admin.md](../specs/feature-a02b-rate-cards-admin.md) · Roadmap: A-02b (part 2)
