@@ -1,9 +1,11 @@
 ---
 title: Count contacts and leads per week by channel, route, source
 type: feature
-status: in_implementation
+status: implemented
 branch: feat/a07-contact-analytics
 implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/59
+implementation_commit: bba9191c8313b6aa4f3cd459a1da1e24cf893bb4
+implemented_date: 2026-10-28
 owner_repo: both
 roadmap: A-07
 priority: must-have

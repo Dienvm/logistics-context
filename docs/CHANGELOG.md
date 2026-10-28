@@ -2,6 +2,15 @@
 
 Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app). Added by `/mark-implemented`; newest first.
 
+## 2026-10-28 — Count contacts and leads per week by channel, route, source
+
+- Spec: [specs/feature-a07-contact-analytics.md](../specs/feature-a07-contact-analytics.md) · Roadmap: A-07
+- Implementation PR: https://github.com/Dienvm/43logistics.vn/pull/59 (bba9191); context: https://github.com/Dienvm/logistics-context/pull/82
+- Owner: both
+- Summary: `/admin/analytics/` (admin, sales) shows server-rendered weekly counts of contact clicks, quote requests and won leads by channel, route or source (4/12/26/52 Monday-start weeks, Asia/Ho_Chi_Minh, CSS bars); one shared source derivation (pure + SQL) also fixes the A-06 bare-host referrer bug and replaces "Trực tiếp" with "Không rõ nguồn".
+  - Evidence: `verify`, `build` and `gitleaks` green on the merge commit; Lighthouse waived (admin only, no public route changed; phase-2 rule), its report-only jobs still running at mark time.
+  - Deploy: the `deploy` job on the merge commit was skipped, so production does not run A-07 yet. No migration.
+
 ## 2026-10-28 — Work quote requests from an admin leads inbox
 
 - Spec: [specs/feature-a06-leads-inbox.md](../specs/feature-a06-leads-inbox.md) · Roadmap: A-06
