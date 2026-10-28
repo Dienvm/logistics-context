@@ -33,8 +33,9 @@ Decision: ADR 0005. The app is organised by **business module**, and each module
 | `media` | `media` + translations, Supabase Storage uploads |
 | `settings` | `site_settings`: company, offices, hours, offers |
 | `seo` | metadata builder, JSON-LD builders, sitemap, `redirects` + the CSV loader |
-| `tracking` | consent, `dataLayer` fan-out, PostHog, server-side conversions |
+| `tracking` | consent, `dataLayer` fan-out, PostHog, server-side conversions, the shared traffic-source derivation (pure + SQL) |
 | `auth` | `profiles`, `requireRole`, Clerk webhook |
+| `analytics` | No tables: the A-07 contact report, composed from the `leads` and `contact` weekly counts |
 
 Add a module only for a new business capability, and record it in this table in the same change.
 
