@@ -315,7 +315,7 @@ Record the evidence for each item, or write "not available — <reason>" when yo
 - [ ] Manual Verification Plan done, with the observed result per AC; axe DevTools scan (360 + 1280 px) for UI changes.
 - [ ] "Outstanding owner questions" list (Q-IDs) ready for the PR, or "none".
 - [ ] 360 / 768 / 1280 px and keyboard-only check of the changed pages (method used).
-- [ ] Public pages changed: Lighthouse mobile ≥ 90 / 100 / ≥ 95, and the SEO checks (H1, canonical, hreflang, JSON-LD).
+- [ ] Public pages changed: Lighthouse mobile SEO 100 / accessibility ≥ 95, performance and LCP recorded vs `main` (ADR 0009), and the SEO checks (H1, canonical, hreflang, JSON-LD).
 - [ ] VI and EN message keys exist for new strings.
 
 Then produce the Step 5 report.

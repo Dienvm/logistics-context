@@ -230,5 +230,5 @@ Validate with a Zod `env.ts` at boot; never commit `.env*`.
   - It **reports** LCP/CLS/TBT and the scores in the job summary and the `lighthouse-report` artifact.
   - Both server-backed steps share `scripts/ci/with-server.sh` (readiness `GET /` = 200, cleanup on exit).
 - **Consent matrix (manual):** initial / accept / selective / withdraw / reload, cookies and storage, server conversions gated; re-run when consent, tracking, `proxy.ts` or leads change (ADR 0004).
-- **Performance:** Lighthouse mobile run manually on the changed page, with LCP/CLS/INP and initial JS (gz, consent rejected) recorded; a budget miss blocks the PR; Lighthouse CI on `/`, one route page and `/lp/sample/` as a report in F-08, with budgets from `AGENTS.md`.
+- **Performance:** Lighthouse mobile run manually on the changed page, with LCP/CLS/INP and initial JS (gz, consent rejected) recorded; a JS budget miss blocks the PR, lab performance/LCP are report-only and field Core Web Vitals (p75, from L-02) are the binding experience gate (ADR 0009); Lighthouse CI on `/`, one route page and `/lp/sample/` as a report in F-08, with budgets from `AGENTS.md`.
 - **Next.js DevTools MCP** can be enabled for agent debugging (Next 16 feature).

@@ -77,7 +77,7 @@ AI tooling: Cursor, Claude Code and Codex read this file; an agent that opens on
 5. **Server first.** Fetch data in Server Components via each module's cached queries (`modules/*/infrastructure`, `"use cache"` + `cacheTag`). Mutate via Server Actions in `modules/*/actions.ts`, then call `updateTag()`/`revalidateTag(tag, 'max')`.
 6. **Drizzle only on the server.** Never import `@/db` from a Client Component (`db/client.ts` imports `server-only`). Never expose `SUPABASE_SERVICE_ROLE_KEY` or `DATABASE_URL` to the client.
 7. **Authorization is explicit.** Every admin Server Action and route handler calls `requireRole([...])` (Clerk `auth()` + role claim). RLS is enabled on all tables as defense in depth (deny-by-default for `anon`/`authenticated`).
-8. **Performance budget (mobile, 4G)**: LCP < 2.5 s, INP < 200 ms, CLS < 0.1 (primary gate). JS: **framework baseline + ≤ 50 KB gz of first-party app JS per route** (ADR 0006; third-party scripts such as the Maps embed are reported separately, amendment 2026-10-24).
+8. **Performance budget (mobile, 4G)**: LCP < 2.5 s, INP < 200 ms, CLS < 0.1 at p75 of **field data** (Search Console CWV / CrUX, from L-02; ADR 0009) are the binding experience gate; Lighthouse lab performance/LCP are recorded per PR, not blocking. JS: **framework baseline + ≤ 50 KB gz of first-party app JS per route** (ADR 0006; third-party scripts such as the Maps embed are reported separately, amendment 2026-10-24).
    - The baseline is the initial JS of the empty placeholder on the current Next/React versions: **134.3 KB gz** (Next 16.4.2 / React 19.3.1). Every Next/React upgrade re-measures it.
    - Measure with Lighthouse mobile on the production build, consent **rejected**, `noModule` chunks excluded; record baseline, route total and app delta. Report third-party tags loaded after consent separately, and keep them deferred.
    - No carousel above the fold.
@@ -269,7 +269,7 @@ Keep this table true. When a task adds or renames a script, update its row in th
 - [ ] Works at 360 px, 768 px and 1280 px; keyboard-navigable; reduced-motion checked.
 - [ ] New public page: metadata + canonical + hreflang + JSON-LD validated (Rich Results Test or a schema validator).
 - [ ] No hard-coded business facts; strings in `messages/*` for both VI and EN.
-- [ ] Lighthouse mobile on the changed page: ≥ 90 performance, 100 SEO, ≥ 95 accessibility; recorded LCP/CLS/INP and the app JS delta over the framework baseline (≤ 50 KB gz, ADR 0006) with consent rejected. A budget miss blocks the PR.
+- [ ] Lighthouse mobile on the changed page, consent rejected: 100 SEO and ≥ 95 accessibility (binding); performance, LCP, CLS and TBT recorded and compared with `main` (target ≥ 90; a clear regression, ≥ 3 points or ≥ 0.3 s LCP, is explained in the PR; ADR 0009); the app JS delta over the framework baseline (≤ 50 KB gz, ADR 0006). A JS budget miss blocks the PR.
   - CI (F-08) **enforces the JS budget** for every route in `43logistics.vn/data/perf-budget.json`; add new public routes there.
   - CI also **reports** LCP/CLS/TBT and the scores, which don't block; the manual measurement above stays the binding evidence for them.
 - [ ] Consent matrix (ADR 0004) re-run when the change touches consent, tracking, `proxy.ts` or lead processing.
