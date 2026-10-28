@@ -83,9 +83,12 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   trailingSlash: true,
   reactCompiler: true,            // optional; measure build time
+  // As built (A-04): the host comes from NEXT_PUBLIC_SUPABASE_URL; unset → no pattern.
   images: { remotePatterns: [{ protocol: 'https', hostname: '<project>.supabase.co', pathname: '/storage/v1/object/public/**' }], formats: ['image/avif', 'image/webp'] },
+  // proxy.ts buffers bodies: raised above the 10 MB default for the 15 MB media upload (A-04).
+  experimental: { proxyClientMaxBodySize: '16mb' },
   async redirects() { return loadRedirectsFromCsv('data/redirect-map.csv') },
-  async rewrites() { return [{ source: '/wp-content/uploads/:path*', destination: 'https://<project>.supabase.co/storage/v1/object/public/media/uploads/:path*' }] },
+  // No /wp-content/uploads rewrite: those URLs answer 410 in proxy.ts (owner 2026-10-28, A-04).
 }
 ```
 
@@ -156,7 +159,7 @@ Clerk's middleware never runs on a public request: the planner decides first, so
 - Driver: `postgres` (postgres.js) with the Supabase **transaction pooler** connection string; `prepare: false` (required for transaction pooling).
 - Single client module `db/client.ts` (`server-only` import guard; replaces the template's `db/db.ts`, which also loads `.env` via dotenv — remove that). Migrations via `drizzle-kit` using the **direct/session** connection string.
 - The app connects with a server role, so **authorization lives in server code**. RLS is still enabled on every table with no `anon`/`authenticated` policies (deny-all) so the Supabase Data API cannot leak data. If client-side supabase-js is ever needed, use Clerk ↔ Supabase native third-party auth (Supabase dashboard → Auth → Third-party → Clerk) and add policies on `auth.jwt()->>'sub'` — the old Clerk "Supabase JWT template" is deprecated.
-- Storage: uploads via server action using the service-role key (`SUPABASE_SERVICE_ROLE_KEY`, server only); reads through public bucket URLs / `next/image`.
+- Storage (A-04, as built): `modules/media/infrastructure/storage.ts` calls the Storage REST API with plain `fetch` (no SDK), `server-only`, with `SUPABASE_SERVICE_ROLE_KEY` read at runtime only (never a build arg). Uploads go through the route handler `POST /api/admin/media` (multipart, one file per request, `requireSection("media")`), not a Server Action, so the 1 MB action body limit of the public lead form stays as it is; `GET /api/admin/media?q=&page=` is the picker's search (TanStack Query). sharp (a direct dependency) sniffs the format (JPEG/PNG/WebP/AVIF; HEIC refused), auto-rotates, strips metadata and writes the WebP master (`media/YYYY/MM/{id}-{slug}.webp`, ≤ 2560 px) and the 1200×630 JPEG (`og/media/{id}.jpg`); the rows are inserted only after both objects exist. Public reads use the public bucket URL through `next/image` (`StaticImage` on public pages). `NEXT_PUBLIC_SUPABASE_URL` alone enables reads; without it Storage images are omitted; without the key, upload and delete are disabled. `pnpm storage:setup` creates the buckets. Admin: `/admin/media/` (library, 48 per page, diacritic-insensitive search in app code), `/admin/media/{id}/` (alt/caption, usage list, delete only when unused); `MediaPicker` in the post (cover), page translation (OG image) and block (`image`) editors. Delete locks the row `FOR UPDATE` and re-scans usage; every save writing an image reference locks it `FOR SHARE` (ascending id order), so a save and a delete never both succeed. Public caches carry `media:{id}` tags, refreshed by alt edits and deletes.
 
 ## Server Actions pattern
 
