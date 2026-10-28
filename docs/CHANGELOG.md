@@ -9,7 +9,7 @@ Cross-repo digest of implemented specs (context workspace + `43logistics.vn` app
 - Owner: both
 - Summary: `/admin/leads/` lets admin and sales list, filter (status, route, source, Vietnam days, owner) and work quote requests: detail with timeline, status/owner/note actions under a row lock, logged CSV export, new-lead sidebar badge; `editor` gets 403 (`requireSection("leads")`).
   - Evidence: `verify` and `gitleaks` green on the merge commit; Lighthouse waived (admin only, no public route changed; phase-2 rule). Lint, typecheck, boundaries, build, i18n and redirects (135 pass, 0 fail) passed locally.
-  - Not yet deployed. Migration `0012` (`lead_events`, `lead_exports`, additive) must be applied on Supabase before or with the deploy, or the inbox pages fail.
+  - Migration `0012` (`lead_events`, `lead_exports`, additive) applied on Supabase 2026-10-28 (13 migrations recorded); the app deploy follows.
   - Carried to the owner: the Docker fixture run (spec steps 1–10) and the browser pass (360/768/1280 px, keyboard, axe).
 
 ## 2026-10-28 — Show the retail price list as per-route rate cards
