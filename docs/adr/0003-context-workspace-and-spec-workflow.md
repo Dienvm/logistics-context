@@ -1,6 +1,6 @@
 # ADR 0003 — Context workspace + app repo, with a spec/lesson workflow
 
-- Status: Accepted (2026-10-20) · Amended by ADR 0004 (2026-10-21): code-only delivery (no test-first / regression tests), open questions don't block tasks · Amended 2026-10-21: Codex debate only in `/feature-bug`, `/implement`, `/proposal`, `/code-review` (Decision 6)
+- Status: Accepted (2026-10-20) · Amended by ADR 0004 (2026-10-21): code-only delivery (no test-first / regression tests), open questions don't block tasks · Amended 2026-10-21: Codex debate only in `/feature-bug`, `/implement`, `/proposal`, `/code-review` (Decision 6) · Amended by ADR 0012 (2026-10-30): one app repo serves every site (43 / AV / GT); no per-brand app forks (Decision 1)
 - Context: The project is split into a context workspace (this folder: AGENTS.md, `docs/`, `data/`, agent skills) and the app repo `43logistics.vn/` (`github.com/Dienvm/43logistics.vn`, declared as a submodule in `.gitmodules`). The agent skills in `.claude/skills` were copied from another project's context repo (Unicity "Foresent robot"). They referenced files, repos and scripts that don't exist here: `docs/v0.2/BLUEPRINT.md`, `foresent-rules`/`foresent-robot`, `yarn`, a Telegram notifier, a submodule preflight script and a tmux Claude↔Codex bridge. Agents following them would stall or invent paths.
 
 ## Decisions

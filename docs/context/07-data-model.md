@@ -6,6 +6,11 @@
 - **Facts are data, not copy:** `rate_cards` (method × service × place: currency, transit, schedule, rounding, divisor, minimums, policies), their `route_rates` bands and `rate_card_columns`, and the linked surcharge lists feed the price section, the calculator, mega menu, hubs, JSON-LD and OG images (A-02b, ADR 0007). Route-level summaries (hero transit, methods, "Từ X") are derived on read from the active cards.
 - Money: an integer in the minor unit of the card's currency (`bigint`, mode `number`): VND and KRW have none, USD and SGD have cents (exponents in `modules/pricing/domain/money.ts`). Prices are never converted between currencies. Weights: `numeric(9,3)` kg on bands and card minimums. Timestamps: `timestamptz` UTC.
 - Legacy traceability: `legacy_wp_id`, `legacy_url` columns for imported rows.
+- **Multi-site (ADR 0012, planned MS-01/MS-03):**
+  - **Site-owned** tables get `site` (`43l | av | gt`, default `43l`) with site-inclusive uniqueness and composite `(parent_id, site)` foreign keys: `site_settings` (primary key `(site, key)`), `pages`/`page_translations`, `menu_items`/translations, `posts`/`categories`/translations/`post_categories`, page-bound `faqs`, `testimonials`, `redirects`, `leads`, `lead_events`, `contact_events`.
+  - **Shared and site-less:** `routes`, every rate-card/rate/surcharge table, `goods_rules`, route-bound `faqs`, `media`, `profiles`.
+  - `oauth_tokens` is keyed by `(provider, account)`.
+  - Migrations go expand → compatible app → constraint switch → contract. The schema below is today's single-site shape until MS-01.
 - Verification is per **route**, not per rate: `routes.is_verified = false` on every legacy-seeded route until operations confirm, and it covers that route's transit facts and all its `route_rates` bands. The UI shows a rate table only when `routes.is_verified = true` (otherwise "Liên hệ để nhận giá mới nhất"). `route_rates` has no verified flag.
 
 ## ER overview
