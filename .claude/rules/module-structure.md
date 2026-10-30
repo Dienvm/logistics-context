@@ -36,6 +36,7 @@ Decision: ADR 0005. The app is organised by **business module**, and each module
 | `tracking` | consent, `dataLayer` fan-out, the consent-gated Cloudflare Web Analytics beacon (ADR 0010), server-side conversions, the shared traffic-source derivation (pure + SQL) |
 | `auth` | `profiles`, `requireRole`, Clerk webhook |
 | `analytics` | No tables: the A-07 contact report, composed from the `leads` and `contact` weekly counts |
+| `indexnow` | No tables: IndexNow pings after admin saves and `/indexnow-key.txt` (G-04). Sits below `content`, `pricing`, `goods` and `routes`, whose actions call it: it reads their tables through `db/schema` (like `media`'s usage scan) and imports only `content/client` (indexability rule) and `seo/client` (origin check) |
 
 Add a module only for a new business capability, and record it in this table in the same change.
 
@@ -77,7 +78,8 @@ Every layer may import its own module's `constants.ts`.
 - **Runtime cycles are forbidden.** Allowed runtime direction for the initial modules:
   - `pricing` → `routes`;
   - `content` → `routes`, `goods` → `routes`;
-  - `seo` → `routes`, `content`, `settings`;
+  - `seo` → `routes`, `content`, `settings`, `goods`;
+  - `content`, `pricing`, `goods`, `routes` (actions) → `indexnow` → `content/client`, `seo/client` (pure entries only);
   - `leads` → `routes`, `tracking`, `content` (the privacy policy version, A-03); `contact` → `settings`, `tracking`.
   - `auth` is used by any admin action.
 
