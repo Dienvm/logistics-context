@@ -8,7 +8,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
-| 2026-10-30 | feature | [feature-ms01-site-expand-migration.md](feature-ms01-site-expand-migration.md) | Add the site dimension beside the existing constraints | MS-01 | both | approved |
+| 2026-10-30 | feature | [feature-ms01-site-expand-migration.md](feature-ms01-site-expand-migration.md) | Add the site dimension beside the existing constraints | MS-01 | both | in_implementation |
 | 2026-10-30 | feature | [feature-l00b-cloudflare-edge.md](feature-l00b-cloudflare-edge.md) | Put Cloudflare in front of the VPS and lock the origin | L-00b | both | in_implementation |
 | 2026-10-30 | feature | [feature-g04-geo-on-site.md](feature-g04-geo-on-site.md) | Make public pages quotable and discoverable by AI assistants | G-04 | both | in_implementation |
 | 2026-10-30 | feature | [feature-s13b-analytics-swap.md](feature-s13b-analytics-swap.md) | Replace PostHog with consent-gated Cloudflare Web Analytics | S-13b | both | in_implementation |
