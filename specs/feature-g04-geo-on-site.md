@@ -1,12 +1,14 @@
 ---
 title: Make public pages quotable and discoverable by AI assistants
 type: feature
-status: approved
+status: in_implementation
 owner_repo: both
 roadmap: G-04
 priority: must-have
 blocked_by_questions: [Q-01, Q-11, Q-23, Q-31]
 updated: 2026-10-30
+branch: feat/g04-geo-on-site
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/65
 ---
 
 ## Feature: Make public pages quotable and discoverable by AI assistants
