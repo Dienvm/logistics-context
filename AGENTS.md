@@ -10,7 +10,7 @@ A rebuild of **https://43logistics.vn**, the marketing + lead-generation site of
 The site exists to do three things, in this order:
 
 1. **Turn visitors into contacts.** The channel priority is Zalo, then phone, then WhatsApp/Messenger, then the quote form. (The old web form produced only 12 leads in about 3 years; customers talk on Zalo.)
-2. **Rank and convert paid traffic** for route keywords: "gửi hàng đi Singapore / Hàn Quốc / Nhật Bản / Đài Loan / Malaysia / Thái Lan / Mỹ" and "gửi hàng Singapore về Việt Nam".
+2. **Rank, get cited by AI assistants (GEO, ADR 0011) and convert paid traffic** for route keywords: "gửi hàng đi Singapore / Hàn Quốc / Nhật Bản / Đài Loan / Malaysia / Thái Lan / Mỹ" and "gửi hàng Singapore về Việt Nam".
 3. **Look trustworthy** with real prices, real transit times, real photos, legal info and policies.
 
 Languages: **Vietnamese (default, no URL prefix)** and **English (`/en/…`)**, built so more locales can be added.

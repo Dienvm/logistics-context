@@ -56,7 +56,7 @@ Open Graph images:
 
 - Sitemap generated from DB: published, indexable pages + posts, both locales, each entry with `alternates.languages`, `lastModified = updated_at`. Excludes `/lp/*`, tags/authors/dates (not recreated).
 - Single `/sitemap.xml`; old `/sitemap_index.xml`, `/post-sitemap.xml`, `/page-sitemap.xml`, `/category-sitemap.xml`, `/post_tag-sitemap.xml`, `/sitemap.rss` 301 → `/sitemap.xml` (see redirect map).
-- robots: allow `/`; disallow `/admin/`, `/api/`, `/go/`; `Sitemap: https://43logistics.vn/sitemap.xml`.
+- robots: allow `/`; disallow `/admin/`, `/api/`, `/go/`; `Sitemap: https://43logistics.vn/sitemap.xml`. `robots.ts` is the only source of crawl rules: no Cloudflare-managed robots.txt or AI-bot blocking (ADR 0011; see "AI assistants (GEO)").
 - RSS: `/kinh-nghiem/rss.xml`, `/en/guides/rss.xml` (route handlers).
 
 S-10 as built (43logistics.vn PR #33):
@@ -87,6 +87,17 @@ Info pages (S-09, `modules/seo` `InfoJsonLd`):
 - **Policy pages:** `WebPage` { name, url, inLanguage, `dateModified` = the `policy` block's `effectiveDate` } + `BreadcrumbList` (from the breadcrumbs).
 - **Contact and About:** `BreadcrumbList` + one `LocalBusiness` per office, only with `offices` verified. It is built by the same `buildLocalBusiness` as home (`domain/local-business.ts`) from the same verified facts (`ui/verified-business.ts`), with the home URL as `url` and `@id` base, so all three pages describe the same entities. Nothing else is emitted without verified offices.
 - **Office maps:** `/lien-he/` and the closing office band (home, calculator, hubs, About, blog) embed a keyless, lazy Google Maps iframe per office (`shared/ui/map-embed.tsx`; 03 Contact, Home 8). **Known exception to rule 14 (owner decision 2026-10-23):** the iframe loads (lazily) without consent and Google may set cookies; the privacy policy discloses it. S-13 must gate it behind consent (click-to-load or the banner) before ads launch.
+
+## AI assistants (GEO, ADR 0011)
+
+Goal: ChatGPT, Google AI Overviews / AI Mode / Gemini, Perplexity, Copilot and Claude can retrieve, quote and recommend 43logistics.vn. Background and audit: `docs/proposals/geo-ai-assistant-visibility.md`.
+
+- **Crawl policy:** search and user-triggered fetchers (Googlebot, Bingbot, OAI-SearchBot, ChatGPT-User, PerplexityBot, Claude-SearchBot, Claude-User) allowed on public paths. Training crawlers (GPTBot, Google-Extended token, CCBot, ClaudeBot) allowed until Q-31 says otherwise. At the edge: Cloudflare "Block AI bots" off, no managed robots.txt, verified bots pass if Bot Fight Mode is ever on (checked in L-00b).
+- **Entity graph (G-04, planned):** `Organization` (`@id` `https://43logistics.vn/#organization`, logo) on every public page; `sameAs`, `alternateName`, `knowsAbout`, `legalName`, `taxID`, `foundingDate` only from verified `site_settings` (Q-31, Q-01, Q-23); `areaServed` from active routes. Route pages add `WebPage` with `dateModified` = latest of translation, active rate cards and published FAQs (never on `Service`).
+- **Quotable facts (G-04, planned):** "Tóm tắt nhanh" / "At a glance" block under the route `<h1>`, derived from the active-card summary (rule 2); route/hub/calculator FAQs in A-05 per locale, restating confirmed rules only.
+- **Discovery (G-04, planned):** Bing Webmaster verification meta and IndexNow, both env-gated (off when unset); IndexNow submits canonical public URLs with the sitemap eligibility, on publish/change/unpublish/delete plus the pages showing a changed rate card, one bounded `after()` attempt. Optional `/llms.txt` with the same eligibility.
+- **Measurement (G-05, planned):** "AI assistant" group in the reporting source below (`chatgpt.com`, `perplexity.ai`, `gemini.google.com`, `copilot.microsoft.com`, `claude.ai` hosts or `utm_source`, after click IDs); monthly prompt panel in `data/geo-prompt-panel.csv`.
+- **Not allowed:** paid links, fake or gated reviews, mass AI-written or programmatic pages, unlabelled sponsored placements.
 
 ## Redirects & legacy URLs
 

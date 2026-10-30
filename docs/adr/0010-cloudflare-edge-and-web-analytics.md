@@ -1,6 +1,6 @@
 # ADR 0010 — Cloudflare edge in front of the VPS; Cloudflare Web Analytics replaces PostHog
 
-- Status: Accepted (2026-10-30)
+- Status: Accepted (2026-10-30) · Amended by ADR 0011 (2026-10-30): Cloudflare AI-bot blocking and managed robots.txt stay off; verified crawlers pass if Bot Fight Mode is turned on
 - Amends: ADR 0002 Decision 8 (the product-analytics lane is Cloudflare Web Analytics, not PostHog) · ADR 0008 Decisions 1, 5 and 6 (Cloudflare proxies in front of Caddy; client IP; firewall) · ADR 0009 Decision 1 (field-data source where CrUX is thin)
 - Owner repo: both
 - Roadmap: L-00b (new), S-13b (new), L-01, L-02
