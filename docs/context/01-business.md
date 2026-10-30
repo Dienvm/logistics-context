@@ -92,6 +92,27 @@ Secondary (not designed for yet): businesses with regular freight, foreigners in
 | Bilingual | VI + EN for home, 7 outbound routes, SG→VN, contact, about |
 | Speed | LCP < 2.5 s mobile on route pages |
 
+## Sister site: AV Logistics (avlogistics.vn, ADR 0012)
+
+A separate legal entity in the group. Facts are confirmed per site (rule 1). Until MS-02 they live in the fork's `avlogistics.vn/app/data/seed/site-settings.legacy.json` and `data/owner-confirmations.json`.
+
+| Field | Value | Status |
+| --- | --- | --- |
+| Brand name | "AV Logistics" | Confirmed (logo, owner 2026-10-30) |
+| Slogan | "Nhanh - An toàn - Tiết kiệm" | Confirmed (logo and office sign) |
+| Legal name | Công ty TNHH Dịch vụ Thương mại Xuất nhập khẩu AV Logistics (EN: AV Logistics Import Export Trading Services Company Limited) | Confirmed (masothue.com, given by the owner 2026-10-30) |
+| Tax code | 0402317649 (active since 2026-01-16) | Confirmed (same source) |
+| Address / warehouse | 20 Tú Quỳ, Phường Hòa Khánh, TP Đà Nẵng; also the receiving warehouse | Confirmed (owner 2026-10-30) |
+| Phone / Zalo | 0905 985 963 (Zalo is the same number) | Confirmed (owner 2026-10-30) |
+| Email | avlogistics.danang@gmail.com | Confirmed (owner `info.txt`) |
+| Routes and retail rate cards | The same as 43 Logistics (shared tables) | Confirmed (owner 2026-10-30: "giống") |
+| Hours | — | `NEEDS CONFIRMATION` (43's T2–T7 08:00–18:00 shown only in preview) |
+| Facebook, Zalo OA, GTM, new-customer offer | Exist; the owner will send them | `NEEDS CONFIRMATION` (owner: "cập nhật sau") |
+| Domain / DNS | `avlogistics.vn` | DNS details pending (owner: "gửi sau") |
+| Brand colours | Forest green #04563C, yellow #F5D30A (from the logo) | Confirmed (logo) |
+
+GT Logistic (`gtlogistic.vn`): nothing confirmed yet (Q-37).
+
 ## Brand voice
 
 - **Vietnamese (target):** like a knowledgeable friend in the trade — clear, concrete numbers (price, days, flight days), few adjectives, address the reader as "bạn" in marketing copy and "quý khách" in policies. Avoid superlatives without proof ("tối ưu nhất", "uy tín nhất").

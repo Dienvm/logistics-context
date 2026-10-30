@@ -1,6 +1,6 @@
 # ADR 0008 — VPS deployment: Docker Compose + Caddy, images built in CI
 
-- Status: Accepted (2026-10-26) · Amended 2026-10-26 (L-00 spec review): host redirects in Caddy, cache volume scoped to `.next/cache/images`, deploy gated on `verify` + `security`, DNS cutover moved to L-00 · Amended by ADR 0010 (2026-10-30): Cloudflare proxy in front of Caddy (nameservers only), client IP from `CF-Connecting-IP`, origin firewall allows only Cloudflare ranges
+- Status: Accepted (2026-10-26) · Amended 2026-10-26 (L-00 spec review): host redirects in Caddy, cache volume scoped to `.next/cache/images`, deploy gated on `verify` + `security`, DNS cutover moved to L-00 · Amended by ADR 0010 (2026-10-30): Cloudflare proxy in front of Caddy (nameservers only), client IP from `CF-Connecting-IP`, origin firewall allows only Cloudflare ranges · Amended by ADR 0012 (2026-10-30): one Caddy in front of one app service per site, one build per site from the same SHA, cross-site invalidation by fan-out (Decisions 1, 2, 4)
 - Amends: ADR 0001 / `AGENTS.md` §3 "Hosting" row (VPS deployment shape), `docs/context/06-architecture.md` (hosting, preview mode, client IP, env)
 - Owner repo: both
 - Roadmap: L-00 (new), L-01, L-02
