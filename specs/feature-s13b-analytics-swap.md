@@ -1,7 +1,9 @@
 ---
 title: Replace PostHog with consent-gated Cloudflare Web Analytics
 type: feature
-status: approved
+status: in_implementation
+branch: feat/s13b-analytics-swap
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/64
 owner_repo: both
 roadmap: S-13b
 priority: must-have
