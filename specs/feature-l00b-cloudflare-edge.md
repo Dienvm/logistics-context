@@ -1,7 +1,9 @@
 ---
 title: Put Cloudflare in front of the VPS and lock the origin
 type: feature
-status: approved
+status: in_implementation
+branch: feat/l00b-cloudflare-edge
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/66
 owner_repo: both
 roadmap: L-00b
 priority: must-have
