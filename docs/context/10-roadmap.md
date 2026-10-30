@@ -113,14 +113,14 @@ One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and 
   - site-scoped roles (Q-36);
   - site column and filter in leads and analytics;
   - leads and consent records store the site and its privacy-policy version.
-- [ ] **MS-05 Revalidate fan-out:** `POST /api/revalidate` (HMAC, tag allowlist from the inventory), `after()` fan-out with one retry, an admin notice on failure, never proxied by Caddy. *Accept:* an admin edit on 43 shows on AV by the second request. — **not done**: AV picks up shared rate edits within `cacheLife('hours')`; menu/route-name edits need an AV redeploy.
+- [ ] **MS-05 Revalidate fan-out:** `POST /api/revalidate` (HMAC, tag allowlist from the inventory), `after()` fan-out with one retry, an admin notice on failure, never proxied by Caddy. *Accept:* an admin edit on 43 shows on AV by the second request. — **code ready 2026-10-30** (app PR #72: `updateSiteTag` + HMAC `POST /api/revalidate`, verified locally; VPS `.env` has `REVALIDATE_SECRET` + `SITE_REVALIDATE_URLS=http://app-av:3000`); live after PR #72 is merged and both services are redeployed.
 - [ ] **MS-06 Build matrix and multi-service deploy** (ADR 0008 amended): — **done manually 2026-10-30** (VPS-built images, `app-av` service); CI build matrix waits for Actions minutes.
   - one image per site from one SHA;
   - Compose `app-43l`/`app-av`/`app-gt` behind one Caddy, with per-service health, digest and rollback;
   - per-site `.env` (salt, recipients, OA account);
   - capacity measured (CPU, RAM, pooler connections, rolling peak, next to `quanly`).
 - [ ] **MS-07 Port the AV skin:** the fork's tokens, assets, home skin and primitives (`Marquee`, `Odometer`, `RevealText`, `ParticleField`) into the app as the `av` site; per-site `app/theme.<site>.css`. *Accept:* route JS within ADR 0006, axe 360/1280 with zero serious issues, contrast pairs, motion review (rules 8–10). — **done 2026-10-30** (PR #71: `html[data-site=av]` palette, AV home/header/footer skin); Lighthouse/axe not run.
-- [ ] **MS-08 AV launch** (owner_repo: both): — **in progress**: app-av live on the VPS; waiting for the owner's DNS (A @/www → VPS); gates Q-33/Q-36 answered 2026-10-30 (AV controller + shared-processing disclosure in the AV privacy policy; staff see all leads); Q-34: AV route pages and blog posts noindex.
+- [ ] **MS-08 AV launch** (owner_repo: both): — **live 2026-10-30**: https://avlogistics.vn on the VPS (Let's Encrypt, www/http → apex 301); Lighthouse mobile home perf 87 / a11y 97 / BP 100 / SEO 100, LCP 3.4 s, first-party JS 180.7 KB (budget 184.3); open: Search Console/Bing for the AV domain, a live quote-form test; gates Q-33/Q-36 answered 2026-10-30 (AV controller + shared-processing disclosure in the AV privacy policy; staff see all leads); Q-34: AV route pages and blog posts noindex.
   - gates: Q-33, Q-36 enforced, per-site consent matrix (ADR 0004), Q-34 duplicate-content decision applied;
   - AV DNS and Cloudflare zone (L-00b settings), Search Console, ADR 0009 field data per domain;
   - retire `Dienvm/avlogistics.vn`.
