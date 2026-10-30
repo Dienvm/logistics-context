@@ -97,8 +97,8 @@
 
 One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and gtlogistic.vn. Each task gets a spec through `/feature-bug`; owner_repo: app unless noted.
 
-- [ ] **MS-01 Expand migration:** `site` enum and columns (default `43l`), composite unique indexes and `(parent_id, site)` foreign keys **beside** the old constraints; `oauth_tokens (provider, account)`. *Accept:* rehearsed on `pnpm db:local`; 43logistics.vn unchanged after apply; old upserts still work.
-- [ ] **MS-02 Site-aware app:**
+- [ ] **MS-01 Expand migration:** `site` enum and columns (default `43l`), composite unique indexes and `(parent_id, site)` foreign keys **beside** the old constraints; `oauth_tokens (provider, account)`. *Accept:* rehearsed on `pnpm db:local`; 43logistics.vn unchanged after apply; old upserts still work. — **done 2026-10-30** (app PR #70, `0014` applied on Supabase).
+- [ ] **MS-02 Site-aware app:** — **done 2026-10-30** (app PR #71, no spec on owner instruction).
   - `SITE` env;
   - site arguments in every site-owned query (part of the cache key) and site-carrying tags;
   - writes set `site` and upsert on the new keys;
@@ -106,21 +106,21 @@ One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and 
   - per-site redirect and legacy-ID maps, IndexNow key/host.
 
   *Accept:* a 43 build is unchanged; an `av` build on the local DB renders AV facts and no 43 site-owned row.
-- [ ] **MS-03 Constraint switch:** `site_settings` primary key `(site, key)`, old single-column uniques dropped, after a backup. Applied after MS-02 is deployed. *Accept:* documented rollback; 43 unchanged.
-- [ ] **MS-04 Admin target site:**
+- [ ] **MS-03 Constraint switch:** `site_settings` primary key `(site, key)`, old single-column uniques dropped, after a backup. Applied after MS-02 is deployed. *Accept:* documented rollback; 43 unchanged. — **done 2026-10-30** (`0015` applied after the PR #71 deploy).
+- [ ] **MS-04 Admin target site:** — **partial 2026-10-30**: leads inbox Website column (staff see every site's leads, owner Q-33/Q-36 answer); AV pages/settings editable only by `db:clone-site` until the switcher.
   - a switcher for the site-owned sections;
   - target-site validation on every read, write, ID lookup and export;
   - site-scoped roles (Q-36);
   - site column and filter in leads and analytics;
   - leads and consent records store the site and its privacy-policy version.
-- [ ] **MS-05 Revalidate fan-out:** `POST /api/revalidate` (HMAC, tag allowlist from the inventory), `after()` fan-out with one retry, an admin notice on failure, never proxied by Caddy. *Accept:* an admin edit on 43 shows on AV by the second request.
-- [ ] **MS-06 Build matrix and multi-service deploy** (ADR 0008 amended):
+- [ ] **MS-05 Revalidate fan-out:** `POST /api/revalidate` (HMAC, tag allowlist from the inventory), `after()` fan-out with one retry, an admin notice on failure, never proxied by Caddy. *Accept:* an admin edit on 43 shows on AV by the second request. — **not done**: AV picks up shared rate edits within `cacheLife('hours')`; menu/route-name edits need an AV redeploy.
+- [ ] **MS-06 Build matrix and multi-service deploy** (ADR 0008 amended): — **done manually 2026-10-30** (VPS-built images, `app-av` service); CI build matrix waits for Actions minutes.
   - one image per site from one SHA;
   - Compose `app-43l`/`app-av`/`app-gt` behind one Caddy, with per-service health, digest and rollback;
   - per-site `.env` (salt, recipients, OA account);
   - capacity measured (CPU, RAM, pooler connections, rolling peak, next to `quanly`).
-- [ ] **MS-07 Port the AV skin:** the fork's tokens, assets, home skin and primitives (`Marquee`, `Odometer`, `RevealText`, `ParticleField`) into the app as the `av` site; per-site `app/theme.<site>.css`. *Accept:* route JS within ADR 0006, axe 360/1280 with zero serious issues, contrast pairs, motion review (rules 8–10).
-- [ ] **MS-08 AV launch** (owner_repo: both):
+- [ ] **MS-07 Port the AV skin:** the fork's tokens, assets, home skin and primitives (`Marquee`, `Odometer`, `RevealText`, `ParticleField`) into the app as the `av` site; per-site `app/theme.<site>.css`. *Accept:* route JS within ADR 0006, axe 360/1280 with zero serious issues, contrast pairs, motion review (rules 8–10). — **done 2026-10-30** (PR #71: `html[data-site=av]` palette, AV home/header/footer skin); Lighthouse/axe not run.
+- [ ] **MS-08 AV launch** (owner_repo: both): — **in progress**: app-av live on the VPS; waiting for the owner's DNS (A @/www → VPS); gates Q-33/Q-36 answered 2026-10-30 (AV controller + shared-processing disclosure in the AV privacy policy; staff see all leads); Q-34: AV route pages and blog posts noindex.
   - gates: Q-33, Q-36 enforced, per-site consent matrix (ADR 0004), Q-34 duplicate-content decision applied;
   - AV DNS and Cloudflare zone (L-00b settings), Search Console, ADR 0009 field data per domain;
   - retire `Dienvm/avlogistics.vn`.

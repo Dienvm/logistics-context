@@ -10,7 +10,14 @@
   - **Site-owned** tables get `site` (`43l | av | gt`, default `43l`) with site-inclusive uniqueness and composite `(parent_id, site)` foreign keys: `site_settings` (primary key `(site, key)`), `pages`/`page_translations`, `menu_items`/translations, `posts`/`categories`/translations/`post_categories`, page-bound `faqs`, `testimonials`, `redirects`, `leads`, `lead_events`, `contact_events`.
   - **Shared and site-less:** `routes`, every rate-card/rate/surcharge table, `goods_rules`, route-bound `faqs`, `media`, `profiles`.
   - `oauth_tokens` is keyed by `(provider, account)`.
-  - Migrations go expand → compatible app → constraint switch → contract. The schema below is today's single-site shape until MS-01.
+  - Migrations go expand → compatible app → constraint switch → contract.
+  - **As built (MS-01):** migration `0014_site_expand` adds:
+    - the enum `site_code` and `site NOT NULL DEFAULT '43l'` on 18 tables;
+    - `(id, site)` uniques on `pages`, `menu_items`, `posts`, `categories`, `faqs`, `testimonials` and `leads`;
+    - 13 composite foreign keys `(child, site) → parent(id, site)`, `MATCH SIMPLE`, mirroring today's `ON DELETE` (CASCADE on translations, `menu_items.parent_id`, `post_categories` and `faqs.page_id`; NO ACTION on `pages.parent_id`, `menu_items.page_id` and `lead_events.lead_id`);
+    - unique indexes `site_settings_site_key_uq`, `pages_site_key_uq`, `page_tr_site_locale_slug_uq`, `menu_items_site_menu_key_uq`, `post_tr_site_locale_slug_uq`, `cat_tr_site_locale_slug_uq`, `redirects_site_source_uq` and `oauth_tokens_provider_account_uq` (`oauth_tokens.account`, default `'default'`).
+
+    The old keys (`site_settings_pkey`, `pages_key_unique`, the `*_locale_slug_uq` indexes, `menu_items_menu_key_uq`, `redirects_pkey`, `oauth_tokens_pkey`) stay until MS-03. The per-table schema below omits the `site` column for brevity.
 - Verification is per **route**, not per rate: `routes.is_verified = false` on every legacy-seeded route until operations confirm, and it covers that route's transit facts and all its `route_rates` bands. The UI shows a rate table only when `routes.is_verified = true` (otherwise "Liên hệ để nhận giá mới nhất"). `route_rates` has no verified flag.
 
 ## ER overview
