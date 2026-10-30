@@ -121,7 +121,7 @@ Info pages (S-09, `modules/seo` `InfoJsonLd`):
 - Route pages and home are fully static shells (Cache Components) with only the calculator and consent as client islands.
 - LCP image: `next/image` with `priority`, correct `sizes`, AVIF/WebP, ≤ 150 KB at 1280 px wide.
 - Fonts: 2 families, `display: swap`, subsets latin + vietnamese, preload via `next/font`.
-- Third-party: GTM loaded with `@next/third-parties/google` `GoogleTagManager` only after the user grants ads consent (basic mode: no GTM request before that); PostHog initialised lazily only after analytics consent (no `posthog.init` at module load); no Maps iframe (static map image + link); no chat widget scripts.
+- Third-party: GTM loaded with `@next/third-parties/google` `GoogleTagManager` only after the user grants ads consent (basic mode: no GTM request before that); the Cloudflare Web Analytics beacon injected only after analytics consent (ADR 0010; never Cloudflare's automatic injection); no Maps iframe (static map image + link); no chat widget scripts.
 - Budgets (ADR 0006): framework baseline (134.3 KB gz on Next 16.4.2 / React 19.3.1) + ≤ 50 KB gz app JS per route; LCP < 2.5 s, INP < 200 ms, CLS < 0.1 at p75 of field data (ADR 0009; Lighthouse lab numbers are recorded, not binding) (reserve space for sticky bar and images).
 
 ## Tracking plan
@@ -156,7 +156,7 @@ Rules (S-02):
 - **Row inputs** are untrusted: `eid` must be a UUID (else a server UUID), `from` must be a same-site path ≤ 300 chars (else `null`; `locale` follows it), `route` must be an active route key (else `null`). Attribution columns come from `43l_attr` only when `43l_consent` grants ads; consent columns from `parseConsent`. `ip_hash` = HMAC-SHA256 with `IP_HASH_SALT`.
 - **Conversion seam.** `sendContactConversion` (`modules/tracking`) returns unless ads consent; with consent it is a no-op until T-01 / Q-13 (no network request).
 
-The client link (`ContactLink`) mints the `event_id` on `click` (Enter included), pushes `click_<channel>` to `window.dataLayer` with it and puts it in the href as `eid`, so the push and the row share it for pixel de-duplication. Without JS the plain `/go/<channel>/` link still redirects and logs, with a server `event_id`. CTA links carry `rel="nofollow"`. Events are defined once in `modules/tracking/constants.ts` and fanned out to `dataLayer` (GTM) and — after consent — PostHog.
+The client link (`ContactLink`) mints the `event_id` on `click` (Enter included), pushes `click_<channel>` to `window.dataLayer` with it and puts it in the href as `eid`, so the push and the row share it for pixel de-duplication. Without JS the plain `/go/<channel>/` link still redirects and logs, with a server `event_id`. CTA links carry `rel="nofollow"`. Events are defined once in `modules/tracking/constants.ts` and pushed to `dataLayer` (GTM lane, after ads consent). Cloudflare Web Analytics takes no custom events (ADR 0010).
 
 ### dataLayer events
 
@@ -173,9 +173,9 @@ The client link (`ContactLink`) mints the `event_id` on `click` (Enter included)
 
 | Platform | Client | Server-side |
 | --- | --- | --- |
-| PostHog (product lane, ADR 0002) | `posthog-js` after `analytics_storage` consent; requests via `/ingest` rewrite; `person_profiles: 'identified_only'` and never identify public visitors; autocapture off, capture the event names in this table explicitly; session replay off until Q-20 | `posthog-node` optional for server events (`generate_lead`) with the same `event_id` |
+| Cloudflare Web Analytics (traffic lane, ADR 0010; replaces PostHog) | Manual beacon (`static.cloudflareinsights.com/beacon.min.js`, token `NEXT_PUBLIC_CF_BEACON_TOKEN`) injected only after `analytics_storage` consent; cookieless, no identification; page views, referrers, Core Web Vitals; no custom events | — |
 | GTM | Container `GTM-WF967MKT` (reuse; audit contents — currently `UNKNOWN`) or new container | — |
-| GA4 | Optional (Q-13) — only if Google Ads needs it; must not duplicate PostHog funnels | Measurement Protocol optional |
+| GA4 | Optional (Q-13) — only if Google Ads needs it; must not be added just for traffic counts (Cloudflare Web Analytics covers them) | Measurement Protocol optional |
 | Google Ads | via GTM; conversions = lead + Zalo/call clicks | Enhanced Conversions for leads (hashed phone/email); offline conversion import using stored `gclid` when a lead becomes `won` |
 | Meta (only if chosen in Q-13) | Pixel via GTM | Conversions API from Server Action / `/go` handler, `event_id` dedupe, `_fbc`/`_fbp`, hashed phone |
 | TikTok (only if chosen in Q-13) | Pixel via GTM | Events API, `ttclid`, `event_id` dedupe |
@@ -183,17 +183,17 @@ The client link (`ContactLink`) mints the `event_id` on `click` (Enter included)
 ### Consent (Personal Data Protection Law 91/2025/QH15 — in force 01/01/2026 — and Decree 13/2023 as applicable; Google Consent Mode v2)
 
 - Default: `ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage` = `denied` until the user chooses; only strictly necessary cookies (the consent choice itself) are allowed before consent. `43l_attr` holds ad click IDs and is therefore **not** functional. Use Consent Mode **basic** (tags not loaded at all before consent), not advanced (cookieless pings).
-- Banner (VI/EN) with Accept all / Reject / Customize; choice stored (cookie + Zustand), `gtag('consent','update',…)`, and PostHog `opt_in_capturing()` / `opt_out_capturing()` mapped to `analytics_storage`.
+- Banner (VI/EN) with Accept all / Reject / Customize; choice stored (cookie + Zustand), `gtag('consent','update',…)`, and the Cloudflare Web Analytics beacon mapped to `analytics_storage`.
 - **Consent cookie contract (F-06 reads it; S-13 must write exactly this):** `43l_consent`.
   - **Value:** `v1.<ads 0|1>.<analytics 0|1>.<unix seconds>`.
   - **Attributes:** `Path=/`, host-only, `SameSite=Lax`, `Secure` in production, `Max-Age` 180 days, not HttpOnly.
   - **Invalid values:** a malformed value, another version, a timestamp before 2026-01-01 or in the future all count as **not granted**.
 - Server-side conversions only when consent for ads is granted (stored on the lead/event row).
-- Per-vendor permissions: the Customize panel maps `analytics` → PostHog and `ads` → GTM plus each confirmed ad platform (Q-13); no vendor loads under a category the user rejected.
-- Withdrawal (banner reopenable from the footer): on revoking ads consent, delete `43l_attr`, stop loading GTM on the next navigation, and send no further server-side conversions (queued ones are dropped). On revoking analytics consent, call PostHog `opt_out_capturing()` and clear its cookies/storage. Rows already stored keep their recorded consent state.
+- Per-vendor permissions: the Customize panel maps `analytics` → Cloudflare Web Analytics and `ads` → GTM plus each confirmed ad platform (Q-13); no vendor loads under a category the user rejected.
+- Withdrawal (banner reopenable from the footer): on revoking ads consent, delete `43l_attr`, stop loading GTM on the next navigation, and send no further server-side conversions (queued ones are dropped). On revoking analytics consent, stop injecting the Cloudflare beacon (it sets no cookies; reload into the denied state if it already ran). Rows already stored keep their recorded consent state.
 - Lead form has an explicit consent checkbox linking `/chinh-sach-bao-mat/`; store `consent_at` and the policy version.
 
-S-13 as built (43logistics.vn PRs #36, #37; owner decisions 2026-10-24):
+S-13 as built (43logistics.vn PRs #36, #37; owner decisions 2026-10-24). **ADR 0010 (2026-10-30):** every PostHog part below is replaced in S-13b by the consent-gated Cloudflare Web Analytics beacon; `/ingest` and `posthog-js` are removed.
 - **Banner** (`modules/tracking/ui/consent-banner.tsx`): VI/EN, Reject and Accept all as equal buttons, Customize (Phân tích → PostHog, Quảng cáo → GTM + ad platforms), privacy link; shown after hydration while no valid `43l_consent` exists; reopened by any `#cai-dat-cookie` link (footer "Cài đặt cookie"). State is a small `useSyncExternalStore` store (not Zustand: one island, ADR 0006 budget), kept in step across tabs (BroadcastChannel, focus/visibility re-read).
 - **Vendors** (`application/vendors.ts`): GTM loads only after ads consent (`consent default` all denied, then `consent update`), from `NEXT_PUBLIC_GTM_ID`; PostHog is imported only after analytics consent (`api_host: /ingest`, `person_profiles: identified_only`, no autocapture, no replay) and only with both `NEXT_PUBLIC_POSTHOG_KEY` and `_HOST`. A generation counter keeps a stale grant from initialising PostHog after a withdrawal.
 - **Events:** every dataLayer push goes through `application/event-bus.ts`, which also forwards it to PostHog `capture` after analytics consent.
@@ -205,7 +205,7 @@ S-13 as built (43logistics.vn PRs #36, #37; owner decisions 2026-10-24):
 1. Create a Web container for `43logistics.vn`; set `NEXT_PUBLIC_GTM_ID` on the server. The site already sends Consent Mode v2 `default`/`update` and loads GTM only after ads consent, so keep the container's built-in consent checks on ("Require additional consent" for ad tags).
 2. Data-layer variables to create: `event_id`, `route_key`, `placement`, `locale`, `weight_kg`, `chargeable_kg`, `estimate_vnd`, `estimate_amount`, `form`, `field`, `lead_id`, `currency`.
 3. Custom-event triggers: `click_zalo`, `click_call`, `click_whatsapp`, `click_messenger` (contact conversions), `calculate_quote`, `form_start`, `form_error`, `generate_lead` (primary conversion; `event_id` = `lead_id` for de-duplication with the server-side APIs in T-01).
-4. Add tags only for the ad platforms confirmed in Q-13 (e.g. Google Ads conversion on `generate_lead` and `click_zalo`; Meta/TikTok pixels only if chosen). No GA4 unless an ADR adds it (analytics lane is PostHog, ADR 0002).
+4. Add tags only for the ad platforms confirmed in Q-13 (e.g. Google Ads conversion on `generate_lead` and `click_zalo`; Meta/TikTok pixels only if chosen). No GA4 unless an ADR adds it (traffic lane is Cloudflare Web Analytics, ADR 0010).
 5. Publish, then check in GTM Preview with consent accepted (S-13 acceptance).
 
 ## Ads landing page checklist

@@ -85,7 +85,7 @@ Spawn an **Explore subagent** (subagent_type: `Explore`, thoroughness: `medium`)
 > 9. Check if ./43logistics.vn/package.json exists. If yes:
 >    - List the actual top-level folders (`ls`), then one level of: app/, modules/, shared/, db/, messages/, scripts/, plus the pre-F-01 template folders components/, lib/, hooks/, types/ if they still exist (paths only). Mark template paths as current and ADR 0005 paths as target
 >    - Grep `<topic keywords>` across **/*.ts and **/*.tsx (exclude node_modules, .next) — report matching file paths and line numbers only
->    - Report the installed versions of next, react, tailwindcss, drizzle-orm, @clerk/nextjs, posthog-js from package.json
+>    - Report the installed versions of next, react, tailwindcss, drizzle-orm, @clerk/nextjs from package.json
 > 10. AGENTS.md §3 — which 'In the app today' gaps does `<topic>` depend on?
 >
 > Return: (a) relevant doc sections, (b) flagged lesson rows and mistake patterns, (c) real file paths from the app that match the topic, (d) blocking Q-IDs and stack gaps"
