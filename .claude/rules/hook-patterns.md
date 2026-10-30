@@ -28,5 +28,5 @@ File `use-quote-estimate.ts` exports `useQuoteEstimate`. One hook per file.
 - Event subscriptions use `useSyncExternalStore` (e.g. scroll position, media queries), which avoids tearing and SSR mismatches.
 - **SSR-safe:** never touch `window`/`localStorage` during render; read them in effects or `useSyncExternalStore` with a server snapshot.
 - **Reduced motion:** animation hooks check `useReducedMotion()` (`motion`) or `matchMedia("(prefers-reduced-motion: reduce)")`.
-- **Tracking:** hooks never push to `dataLayer` or PostHog directly. Call the single fan-out in `modules/tracking` (rule 12), which checks consent.
+- **Tracking:** hooks never push to `dataLayer` or load analytics directly. Call the single fan-out in `modules/tracking` (rule 12), which checks consent.
 - Return an object (`{ estimate, isValid }`) when there are more than 2 values; a tuple only for `[value, setValue]` pairs.

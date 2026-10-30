@@ -1,6 +1,6 @@
 # ADR 0009 — Field Core Web Vitals are the binding performance gate
 
-- Status: Accepted (2026-10-28)
+- Status: Accepted (2026-10-28) · Amended by ADR 0010 (2026-10-30): the supplementary field source is Cloudflare Web Analytics Core Web Vitals, not PostHog
 - Amends: ADR 0006 (experience targets: how LCP/INP/CLS are judged; the JS budget is unchanged)
 - Owner repo: both
 - Context: The A-02b part 1 check ran Lighthouse mobile on production (`e858ba1`, consent not given, 3-run medians): `/gui-hang-di-han-quoc/` performance 85, LCP 3.82 s; `/gui-hang-di-chau-au/` 85, LCP 3.91 s (accessibility, SEO and best practices 100, CLS 0). CI's report-only rows for the same commit show LCP 3.1–4.6 s and performance 78–93 on every public route, home included. The rule "≥ 90 performance, LCP < 2.5 s" (AGENTS.md rule 8 and §9) therefore failed site-wide while the blocking JS budget passed everywhere (app delta +49.1 KiB). Experiments on a local production build (43logistics.vn PR #57, simulated mobile, medians) located the cause:

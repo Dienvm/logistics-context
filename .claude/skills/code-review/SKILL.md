@@ -120,7 +120,7 @@ Follows the patterns in `AGENTS.md` §8:
 - Every admin action or handler calls `requireRole`.
 - Zod validates all input; no raw user input in SQL strings.
 - No PII, phone numbers or raw IPs in logs; IPs are hashed.
-- Consent gates PostHog, GTM, `43l_attr` and server-side conversions (rule 14).
+- Consent gates the Cloudflare Web Analytics beacon, GTM, `43l_attr` and server-side conversions (rule 14).
 
 ### H — Performance, SEO, a11y
 

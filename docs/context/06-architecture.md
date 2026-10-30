@@ -3,7 +3,7 @@
 ## High-level
 
 ```
-Browser ──► proxy.ts (Node runtime)
+Browser ──► Cloudflare (proxy, CDN for /_next/static + /_next/image, WAF; ADR 0010) ──► Caddy ──► proxy.ts (Node runtime)
               ├─ 410 for dead WordPress paths, ?page_id / ?p= legacy IDs
               ├─ attribution cookie (utm_*, click IDs) on first landing
               ├─ next-intl locale routing (VI root, /en/*)
@@ -18,10 +18,10 @@ Browser ──► proxy.ts (Node runtime)
 Supabase Storage (media, og, private) ◄── server uploads (service role) · public CDN reads
 Clerk ◄── staff sign-in (admin/editor/sales)
 GTM (ads lane, Consent Mode v2) + server-side conversions (Meta CAPI, TikTok Events API, Google Ads)
-PostHog (product-analytics lane, after consent, via /ingest rewrite) — ADR 0002
+Cloudflare Web Analytics (traffic lane, cookieless beacon after analytics consent) — ADR 0010 (replaces PostHog, removed in S-13b)
 ```
 
-Hosting (ADR 0008): a **Hostinger VPS** in Jakarta (Ubuntu 26.04 LTS, 2 vCPU, 8 GB RAM, weekly backups), not Vercel. Docker Compose runs two services: `app`, the Next 16 `output: 'standalone'` server as **one process** on the internal network, and `caddy`, the only public listener, which terminates TLS (automatic Let's Encrypt), answers the `http://` and `www` → `https://43logistics.vn` 301s and reverse-proxies to `app` (`deploy/Caddyfile`). `.github/workflows/deploy.yml` builds the image for a `main` commit once `verify` and `security` passed for that SHA and it is still main's head (`DATABASE_URL` as a BuildKit secret mount, `NEXT_PUBLIC_*` as build args from the GitHub `production` environment), pushes it to GHCR (SHA + `latest` tags) and runs `deploy/deploy-remote.sh` over SSH: health check, image-digest check, probes (`/`, `/gui-hang-di-singapore/`; HTTPS once Caddy holds a certificate), and an automatic restore of the last entry in `known-good.log` on failure. Manual rollback is `workflow_dispatch` with a known-good SHA. Runtime secrets are in `/opt/43logistics/.env` (template `deploy/env.template`), never in the image. Nothing is built on the VPS. There is **no staging or preview environment**. Runbook: `43logistics.vn/deploy/README.md` (bootstrap, secrets, migrations, cutover, rollback). Still open (Q-15): VPS administrator. Supabase region close to Vietnam (Singapore, `ap-southeast-1`).
+Hosting (ADR 0008): a **Hostinger VPS** in Jakarta (Ubuntu 26.04 LTS, 2 vCPU, 8 GB RAM, weekly backups), not Vercel. Docker Compose runs two services: `app`, the Next 16 `output: 'standalone'` server as **one process** on the internal network, and `caddy`, the only public listener, which terminates TLS (automatic Let's Encrypt), answers the `http://` and `www` → `https://43logistics.vn` 301s and reverse-proxies to `app` (`deploy/Caddyfile`). `.github/workflows/deploy.yml` builds the image for a `main` commit once `verify` and `security` passed for that SHA and it is still main's head (`DATABASE_URL` as a BuildKit secret mount, `NEXT_PUBLIC_*` as build args from the GitHub `production` environment), pushes it to GHCR (SHA + `latest` tags) and runs `deploy/deploy-remote.sh` over SSH: health check, image-digest check, probes (`/`, `/gui-hang-di-singapore/`; HTTPS once Caddy holds a certificate), and an automatic restore of the last entry in `known-good.log` on failure. Manual rollback is `workflow_dispatch` with a known-good SHA. Runtime secrets are in `/opt/43logistics/.env` (template `deploy/env.template`), never in the image. Nothing is built on the VPS. There is **no staging or preview environment**. Runbook: `43logistics.vn/deploy/README.md` (bootstrap, secrets, migrations, cutover, rollback). Still open (Q-15): VPS administrator. **Edge (ADR 0010, L-00b):** Cloudflare Free proxies the apex, `www` and `quanly` (nameservers moved to Cloudflare; the domain stays registered at Tenten). SSL Full (strict) with Caddy's Let's Encrypt certificates; host redirects stay in Caddy (Cloudflare "Always Use HTTPS" off, one hop); only static assets and `/_next/image` are edge-cached, never HTML; Rocket Loader, Email Obfuscation and Auto Minify off. The VPS firewall accepts 80/443 only from Cloudflare's ranges (`DOCKER-USER`), replacing the per-source-IP limits; Caddy trusts those ranges and reads the client from `CF-Connecting-IP`, so `ip-hash.ts` still reads the first `x-forwarded-for` hop. Supabase region close to Vietnam (Singapore, `ap-southeast-1`).
 
 ## Folder structure
 
@@ -214,7 +214,7 @@ Never mirror server data into Zustand. `QueryClientProvider` mounts only in `/ad
 | `IP_HASH_SALT` | server | HMAC key for `ip_hash` in leads/events. Unset → a key derived from `DATABASE_URL` (S-08b); set it in production so a DB password rotation doesn't reset rate-limit history |
 | `ZALO_OA_APP_ID`, `ZALO_OA_APP_SECRET`, `ZALO_OA_REFRESH_TOKEN`, `ZALO_OA_RECIPIENT_IDS` | server | Lead alerts via Zalo OA (S-08b). The refresh token seeds a rotation the app stores in `oauth_tokens` (renewed under a row lock; refresh tokens are single-use). Recipients: Zalo user ids of staff who follow the OA (free consultation messages need recent interaction). Unset → no Zalo alert (Q-28) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `LEAD_NOTIFY_EMAILS` | server | Lead alerts by email (S-08b, nodemailer). Defaults to Gmail `smtp.gmail.com:465`; use a Google App password for the company Gmail. Unset user/password/recipients → no email (Q-28) |
-| `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | public | PostHog (product lane). Host = `/ingest` rewrite target region per Q-20 |
+| `NEXT_PUBLIC_CF_BEACON_TOKEN` | public | Cloudflare Web Analytics site token (ADR 0010, S-13b). Unset → no beacon. Replaces `NEXT_PUBLIC_POSTHOG_KEY`/`_HOST`, removed in S-13b |
 
 Template leftovers to remove or rename in F-00/F-01: `STRIPE_*` and `NEXT_PUBLIC_STRIPE_*` (no payments); `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (no public sign-up); `SUPABASE_URL` → `NEXT_PUBLIC_SUPABASE_URL`; `SUPABASE_BUCKET_RECEIPTS` (not in the data model).
 
