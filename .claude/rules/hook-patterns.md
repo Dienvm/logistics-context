@@ -1,8 +1,8 @@
 ---
 paths:
-  - "43logistics.vn/**/use-*.ts"
-  - "43logistics.vn/**/use-*.tsx"
-  - "43logistics.vn/**/hooks/**/*.{ts,tsx}"
+  - "projects/43logistics.vn/**/use-*.ts"
+  - "projects/43logistics.vn/**/use-*.tsx"
+  - "projects/43logistics.vn/**/hooks/**/*.{ts,tsx}"
 ---
 
 # Hook patterns

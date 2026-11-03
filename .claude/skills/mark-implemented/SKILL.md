@@ -124,7 +124,7 @@ Add an entry:
 
 - In `specs/INDEX.md`, find the spec's row and update its status column to `implemented`.
 - **Roadmap:** in `docs/context/10-roadmap.md`, tick the task only if **all** of its *Accept* items are evidenced. That may take this spec plus earlier implemented specs; a single bug-fix spec rarely closes a task. If it's already `[x]`, leave it and don't duplicate the annotation. When ticking, change `- [ ]` to `- [x]` and append ` — spec: specs/<file>`. If the task isn't complete, add ` — partial: specs/<file>` without ticking.
-- **Stack gaps:** if the work closed a stack gap or added a script, verify against the files **at the merge commit**, never the local checkout (which may be an old submodule revision) and never memory. For example: `gh api repos/Dienvm/43logistics.vn/contents/package.json?ref=<sha> --jq .content | base64 -d`, or `git -C 43logistics.vn show <sha>:package.json` after a fetch. Use the same method for `next.config.ts`, `proxy.ts` and so on. Then update:
+- **Stack gaps:** if the work closed a stack gap or added a script, verify against the files **at the merge commit**, never the local checkout (which may be an old submodule revision) and never memory. For example: `gh api repos/Dienvm/43logistics.vn/contents/package.json?ref=<sha> --jq .content | base64 -d`, or `git -C projects/43logistics.vn show <sha>:package.json` after a fetch. Use the same method for `next.config.ts`, `proxy.ts` and so on. Then update:
   - the matching "In the app today" cell and the "Closed by" cell (e.g. `done (F-01)`) in `AGENTS.md` §3;
   - the matching "Status" cell in §7.
 

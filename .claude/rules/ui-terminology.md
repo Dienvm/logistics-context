@@ -1,7 +1,7 @@
 ---
 paths:
-  - "43logistics.vn/messages/**/*.json"
-  - "43logistics.vn/**/*.tsx"
+  - "projects/43logistics.vn/messages/**/*.json"
+  - "projects/43logistics.vn/**/*.tsx"
   - "docs/context/legacy-copy/**/*.md"
 ---
 

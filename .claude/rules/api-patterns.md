@@ -1,10 +1,10 @@
 ---
 paths:
-  - "43logistics.vn/modules/**/infrastructure/**/*.ts"
-  - "43logistics.vn/modules/**/application/**/*.ts"
-  - "43logistics.vn/modules/**/actions.ts"
-  - "43logistics.vn/app/**/route.ts"
-  - "43logistics.vn/db/**/*.ts"
+  - "projects/43logistics.vn/modules/**/infrastructure/**/*.ts"
+  - "projects/43logistics.vn/modules/**/application/**/*.ts"
+  - "projects/43logistics.vn/modules/**/actions.ts"
+  - "projects/43logistics.vn/app/**/route.ts"
+  - "projects/43logistics.vn/db/**/*.ts"
 ---
 
 # Server and API patterns

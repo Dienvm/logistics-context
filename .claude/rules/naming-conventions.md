@@ -1,6 +1,6 @@
 ---
 paths:
-  - "43logistics.vn/**/*.{ts,tsx,json}"
+  - "projects/43logistics.vn/**/*.{ts,tsx,json}"
 ---
 
 # Naming conventions

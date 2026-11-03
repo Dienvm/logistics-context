@@ -27,7 +27,7 @@ argument-hint: "<spec-slug | file-path | staged>"
 
 ## Step 1 — Resolve target
 
-From `$ARGUMENTS`, resolve **the repo, the exact revision and the diff** being reviewed. Use `$R` for the repo flag: `-C 43logistics.vn` for the app, empty for the context workspace. Secret paths are always excluded from content diffs: `X=(-- . ':(exclude).env*' ':(exclude)**/.env*')`.
+From `$ARGUMENTS`, resolve **the repo, the exact revision and the diff** being reviewed. Use `$R` for the repo flag: `-C projects/43logistics.vn` for the app, empty for the context workspace. Secret paths are always excluded from content diffs: `X=(-- . ':(exclude).env*' ':(exclude)**/.env*')`.
 
 | Argument | What to review |
 | --- | --- |
@@ -248,7 +248,7 @@ Ask: "Fix which findings? (all / 🔴 only / specific numbers / none)"
 1. Run `git $R status --short` in each target repo.
 2. Never fix on `main`. Use the spec's `branch:`; otherwise create `fix/<slug>` from the reviewed revision.
 3. If there are uncommitted changes you didn't make, list them and ask before touching those files. Never stash or revert them.
-4. Resolve the check commands once from `43logistics.vn/package.json` (`$LINT`, `$TYPECHECK` = `typecheck` or `type-check`, `$BUILD` = `build`; missing → "not available until F-01"; no `$TEST`/`$E2E`, ADR 0004). Give both paths the same commands and limitations.
+4. Resolve the check commands once from `projects/43logistics.vn/package.json` (`$LINT`, `$TYPECHECK` = `typecheck` or `type-check`, `$BUILD` = `build`; missing → "not available until F-01"; no `$TEST`/`$E2E`, ADR 0004). Give both paths the same commands and limitations.
 
 **Check whether Codex is available for fix delegation:**
 
@@ -260,7 +260,7 @@ command -v codex >/dev/null && echo codex=yes || echo codex=no
 
   ```bash
   codex exec -s workspace-write -C "$PWD" \
-    "Read /tmp/43l-review-findings.md and AGENTS.md. In 43logistics.vn/ on branch <branch>, fix [all / 🔴 High / findings #N,M]. Edit minimally, then run pnpm -C 43logistics.vn <$LINT> <$TYPECHECK> <$BUILD — only those that exist; no tests, ADR 0004>, and report a fix table (finding #, file:line, change, check result). Never print .env* contents." </dev/null
+    "Read /tmp/43l-review-findings.md and AGENTS.md. In projects/43logistics.vn/ on branch <branch>, fix [all / 🔴 High / findings #N,M]. Edit minimally, then run pnpm -C projects/43logistics.vn <$LINT> <$TYPECHECK> <$BUILD — only those that exist; no tests, ADR 0004>, and report a fix table (finding #, file:line, change, check result). Never print .env* contents." </dev/null
   ```
 
   If it exits non-zero or its report shows failing checks, fall back to Claude applying the fixes directly.

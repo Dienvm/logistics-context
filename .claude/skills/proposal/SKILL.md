@@ -159,7 +159,7 @@ Codex reviews every proposal; a stub with no real Problem or Approach gets a sho
 ```bash
 codex exec -s read-only --skip-git-repo-check -C "$PWD" \
   -o /tmp/43l-codex-proposal-<slug>-r1.md \
-  "Review docs/proposals/<slug>.md for: (1) contradictions with AGENTS.md and docs/adr/*; (2) stale or incorrect claims about 43logistics.vn/ code (package.json, folder layout) or docs/context; (3) missing ownership or consequences — performance budget, consent/PDP law, SEO/redirects, i18n, cost; (4) supersession — does this make any existing current doc obsolete?; (5) invented business facts. Do NOT read .env or wordpress-site/. Do NOT rewrite the doc. Return a numbered critique: severity, location, issue, suggestion." </dev/null
+  "Review docs/proposals/<slug>.md for: (1) contradictions with AGENTS.md and docs/adr/*; (2) stale or incorrect claims about projects/43logistics.vn/ code (package.json, folder layout) or docs/context; (3) missing ownership or consequences — performance budget, consent/PDP law, SEO/redirects, i18n, cost; (4) supersession — does this make any existing current doc obsolete?; (5) invented business facts. Do NOT read .env or wordpress-site/. Do NOT rewrite the doc. Return a numbered critique: severity, location, issue, suggestion." </dev/null
 ```
 
 **Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or continue without it. Apply the same check after round 2.

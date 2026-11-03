@@ -21,15 +21,15 @@ argument-hint: "<spec-filename-or-slug> [--review]"
   - lifecycle metadata: the spec's front matter and its `specs/INDEX.md` row;
   - the `AGENTS.md` §3/§7 rows the task closes;
   - context updates that an AC requires, or that `AGENTS.md` §9 requires when a fact or decision changes (list them in the scope statement).
-- Apply fixes in the wrong workspace. Runtime code goes only in `43logistics.vn/`.
+- Apply fixes in the wrong workspace. Runtime code goes only in `projects/43logistics.vn/`.
 
 **Project mapping (sample → this repo):**
 
 | Sample concept | In this repo |
 | --- | --- |
 | BLUEPRINT.md | `AGENTS.md` + `docs/adr/*` + `docs/context/06-architecture.md` |
-| foresent-rules / foresent-robot | `context` (this workspace) / `app` (`43logistics.vn/`) |
-| `yarn test` / `yarn lint` | `pnpm -C 43logistics.vn lint` + `typecheck` + `build` (no test suites, ADR 0004) |
+| foresent-rules / foresent-robot | `context` (this workspace) / `app` (`projects/43logistics.vn/`) |
+| `yarn test` / `yarn lint` | `pnpm -C projects/43logistics.vn lint` + `typecheck` + `build` (no test suites, ADR 0004) |
 | Fixture YAML | Manual verification plan + seed data |
 | Codex bridge | `codex exec` |
 
@@ -66,15 +66,15 @@ Check that each selected repo is available locally:
 
 ```bash
 # app (owner_repo app | both)
-ls ./43logistics.vn/package.json 2>/dev/null && echo "available" || echo "absent"
-git -C 43logistics.vn status --short
-git -C 43logistics.vn branch --show-current
+ls ./projects/43logistics.vn/package.json 2>/dev/null && echo "available" || echo "absent"
+git -C projects/43logistics.vn status --short
+git -C projects/43logistics.vn branch --show-current
 # context (always: the spec and INDEX live here)
 git rev-parse --is-inside-work-tree && git status --short
 git remote get-url origin 2>/dev/null && echo context_remote=yes || echo context_remote=no
 ```
 
-**Detect the check commands** from `43logistics.vn/package.json` `scripts`. Every later step uses these variables, never hard-coded script names:
+**Detect the check commands** from `projects/43logistics.vn/package.json` `scripts`. Every later step uses these variables, never hard-coded script names:
 
 - `$LINT` = `lint`
 - `$TYPECHECK` = `typecheck`, or else `type-check`
@@ -207,12 +207,12 @@ Wait for the result, and use it to inform the implementation plan.
 
 **Branch:**
 
-- **Resuming** (`status: in_implementation` and the spec has `branch:`): run `git -C 43logistics.vn switch <branch>` and continue there.
+- **Resuming** (`status: in_implementation` and the spec has `branch:`): run `git -C projects/43logistics.vn switch <branch>` and continue there.
 - **New:**
 
   ```bash
-  git -C 43logistics.vn switch main && git -C 43logistics.vn pull --ff-only
-  git -C 43logistics.vn switch -c feat/<roadmap-id>-<slug>     # fix/<slug> for bugs
+  git -C projects/43logistics.vn switch main && git -C projects/43logistics.vn pull --ff-only
+  git -C projects/43logistics.vn switch -c feat/<roadmap-id>-<slug>     # fix/<slug> for bugs
   ```
 
   Then record `branch: <name>` in the spec's front matter.
@@ -221,7 +221,7 @@ Wait for the result, and use it to inform the implementation plan.
 
 **For context-repo changes (owner_repo `context` or `both`):**
 
-- Make the doc/data edits the ACs require. Keep facts in their single home (`01-business.md`, `43logistics.vn/data/seed/*`).
+- Make the doc/data edits the ACs require. Keep facts in their single home (`01-business.md`, `projects/43logistics.vn/data/seed/*`).
 - Verify with greps: no dangling references, and row counts match.
 
 **For the app (Next.js):**
@@ -229,8 +229,8 @@ Wait for the result, and use it to inform the implementation plan.
 - **No automated tests (ADR 0004).** Don't write Vitest/Playwright tests or create `tests/`.
 - Keep pure logic (price engine, slug/metadata/JSON-LD builders, Zod schemas, redirect loader) in pure typed functions with no framework imports, so tests can be added later.
 - Implement the code for each AC.
-- Run the checks: `pnpm -C 43logistics.vn $LINT 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1 && pnpm -C 43logistics.vn $BUILD 2>&1`; plus `pnpm -C 43logistics.vn $I18N` (from F-03) and `pnpm -C 43logistics.vn $REDIRECTS` against the candidate build on every PR once the script exists (F-07). Record status, destination and one-hop results.
-- Do the spec's Manual Verification Plan: run `pnpm -C 43logistics.vn dev` (or `start`), follow each step, and record the observed result per AC (URL, viewport, what you saw). Use the `run` skill or a browser tool when available; otherwise say which steps the user must do by hand.
+- Run the checks: `pnpm -C projects/43logistics.vn $LINT 2>&1 && pnpm -C projects/43logistics.vn $TYPECHECK 2>&1 && pnpm -C projects/43logistics.vn $BUILD 2>&1`; plus `pnpm -C projects/43logistics.vn $I18N` (from F-03) and `pnpm -C projects/43logistics.vn $REDIRECTS` against the candidate build on every PR once the script exists (F-07). Record status, destination and one-hop results.
+- Do the spec's Manual Verification Plan: run `pnpm -C projects/43logistics.vn dev` (or `start`), follow each step, and record the observed result per AC (URL, viewport, what you saw). Use the `run` skill or a browser tool when available; otherwise say which steps the user must do by hand.
 - Owner facts that are still open: ship the placeholder the spec describes and add the Q-ID to the "Outstanding owner questions" list for the PR and final report.
 
 Update the spec's front matter to `status: in_implementation` after the first passing lint/typecheck/build run. Update its `specs/INDEX.md` row too.
@@ -292,7 +292,7 @@ Scan every file written or modified and apply these checks. Fix issues inline be
 - [ ] Contact links go through `/go/[channel]`, and events fire once via `modules/tracking` (rule 12).
 - [ ] Consent is respected; IPs are hashed; no `.env*` is staged (rules 14–15).
 - [ ] Strings exist in both `messages/vi.json` and `messages/en.json`.
-- [ ] `pnpm -C 43logistics.vn $LINT 2>&1` passes with 0 errors.
+- [ ] `pnpm -C projects/43logistics.vn $LINT 2>&1` passes with 0 errors.
 
 ---
 
@@ -300,7 +300,7 @@ Scan every file written or modified and apply these checks. Fix issues inline be
 
 Re-run the checks now, to make sure the lint/quality fixes didn't break anything:
 
-- app: `pnpm -C 43logistics.vn $LINT 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1 && pnpm -C 43logistics.vn $BUILD 2>&1`, then repeat the manual steps for any AC whose code the fixes touched
+- app: `pnpm -C projects/43logistics.vn $LINT 2>&1 && pnpm -C projects/43logistics.vn $TYPECHECK 2>&1 && pnpm -C projects/43logistics.vn $BUILD 2>&1`, then repeat the manual steps for any AC whose code the fixes touched
 - context: re-run the verification greps
 
 If a check now fails after a quality fix, the fix broke something. Revert or correct it.
@@ -351,7 +351,7 @@ Generate an implementation brief:
 <From spec>
 
 ### Commands to run
-cd 43logistics.vn && pnpm lint && pnpm typecheck && pnpm build   # no test suites (ADR 0004)
+cd projects/43logistics.vn && pnpm lint && pnpm typecheck && pnpm build   # no test suites (ADR 0004)
 
 ### Completion criteria
 All acceptance criteria passing. Then run `/mark-implemented <spec-slug> <merged-pr-link>`.
@@ -441,13 +441,13 @@ Before creating a PR, compare the **whole** working change against the spec: com
 
 ```bash
 X=(-- . ':(exclude).env*' ':(exclude)**/.env*')
-git -C 43logistics.vn status --short
-git -C 43logistics.vn diff main...HEAD "${X[@]}"      # committed on branch
-git -C 43logistics.vn diff HEAD "${X[@]}"             # staged + unstaged
-git -C 43logistics.vn ls-files --others --exclude-standard   # new files (read them individually, never .env*)
+git -C projects/43logistics.vn status --short
+git -C projects/43logistics.vn diff main...HEAD "${X[@]}"      # committed on branch
+git -C projects/43logistics.vn diff HEAD "${X[@]}"             # staged + unstaged
+git -C projects/43logistics.vn ls-files --others --exclude-standard   # new files (read them individually, never .env*)
 ```
 
-For context edits, run the same commands without `-C 43logistics.vn`.
+For context edits, run the same commands without `-C projects/43logistics.vn`.
 
 Classify each mismatch:
 
@@ -484,11 +484,11 @@ Skip the app part when `owner_repo` is `context`.
 **All PR content must be written in English: the title, changes summary and verification results.**
 
 ```bash
-git -C 43logistics.vn add <explicit paths>                    # never `add .` / `-A`
-git -C 43logistics.vn commit -m "feat(<scope>): <spec title>"   # Conventional Commits; fix(...) for bugs
-git -C 43logistics.vn push -u origin HEAD
+git -C projects/43logistics.vn add <explicit paths>                    # never `add .` / `-A`
+git -C projects/43logistics.vn commit -m "feat(<scope>): <spec title>"   # Conventional Commits; fix(...) for bugs
+git -C projects/43logistics.vn push -u origin HEAD
 gh pr create -R Dienvm/43logistics.vn --base main \
-  --head "$(git -C 43logistics.vn branch --show-current)" \
+  --head "$(git -C projects/43logistics.vn branch --show-current)" \
   --title "feat(<scope>): <spec title>" \
   --body "$(cat <<'EOF'
 ## Implementation: <spec title>
@@ -563,7 +563,7 @@ The condition (script + credentials) follows ADR 0003 §6. If the script is miss
 ```bash
 codex exec -s read-only --skip-git-repo-check -C "$PWD" \
   -o /tmp/43l-codex-implement-<slug>-r1.md \
-  "Review the implementation of specs/<file> on app branch <branch> (run: git -C 43logistics.vn diff main...<branch> -- . ':(exclude).env*' ':(exclude)**/.env*' — never print secret-file diffs). [HANDOFF/REVIEW-ONLY: review /tmp/43l-impl-brief-<slug>.md or /tmp/43l-impl-review-<slug>.md instead.] Check: (1) every acceptance criterion is truly met and tested; (2) AGENTS.md §4 golden rules — hard-coded facts/prices, metadata/JSON-LD/H1, server-only DB, requireRole, client JS budget, consent, secrets; (3) correctness bugs and missing edge cases; (4) APIs used that are not installed (AGENTS.md §3); (5) recorded verification that would look the same without the feature (evidence that doesn't distinguish correct from incorrect behaviour). Do NOT read .env or wordpress-site/. Do NOT edit files. Return numbered findings: severity (high/medium/low), file:line, issue, fix." </dev/null
+  "Review the implementation of specs/<file> on app branch <branch> (run: git -C projects/43logistics.vn diff main...<branch> -- . ':(exclude).env*' ':(exclude)**/.env*' — never print secret-file diffs). [HANDOFF/REVIEW-ONLY: review /tmp/43l-impl-brief-<slug>.md or /tmp/43l-impl-review-<slug>.md instead.] Check: (1) every acceptance criterion is truly met and tested; (2) AGENTS.md §4 golden rules — hard-coded facts/prices, metadata/JSON-LD/H1, server-only DB, requireRole, client JS budget, consent, secrets; (3) correctness bugs and missing edge cases; (4) APIs used that are not installed (AGENTS.md §3); (5) recorded verification that would look the same without the feature (evidence that doesn't distinguish correct from incorrect behaviour). Do NOT read .env or wordpress-site/. Do NOT edit files. Return numbered findings: severity (high/medium/low), file:line, issue, fix." </dev/null
 ```
 
 **Run check:** if codex exits non-zero, or the `-o` file is missing or older than this run, report "Codex review failed — <stderr tail>" and ask whether to retry or finish without it. Apply the same check after round 2.

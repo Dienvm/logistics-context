@@ -102,7 +102,7 @@ Goal: ChatGPT, Google AI Overviews / AI Mode / Gemini, Perplexity, Copilot and C
 
 ## Redirects & legacy URLs
 
-- Source of truth: `43logistics.vn/data/redirect-map.csv` (`old_url,new_url_vi,new_url_en,status_code,notes`).
+- Source of truth: `projects/43logistics.vn/data/redirect-map.csv` (`old_url,new_url_vi,new_url_en,status_code,notes`).
 - **As built (F-07):** `next.config.ts` `redirects()` is generated from the CSV at build by `modules/seo` (`loadRedirectMap` → `buildNextRedirects`).
   - **Rules:** 43 exact rows give 80 rules, each `statusCode: 301` (not `permanent: true`, which emits 308). Non-file sources appear with and without the trailing slash, so slash-less legacy URLs are still one hop; config redirects run before `proxy.ts`.
   - **Validation:** the CSV is checked with Zod at build: header, status codes, same-origin destinations, no duplicates, no overlap with `proxy.ts` rules, and a named handler for each of the 6 wildcard rows. A malformed CSV fails the build with the line and field.
@@ -110,7 +110,7 @@ Goal: ChatGPT, Google AI Overviews / AI Mode / Gemini, Perplexity, Copilot and C
 - **`?attachment_id=`** on `/`, `/vi` or `/index.php` → 301 `/` in `proxy.ts`, with precedence `page_id` > `p` > `attachment_id`; the legacy params are removed and others kept. Attachment **slugs** (`/{attachment-slug}/`) have no handler (owner, 2026-10-28; A-04): they render the localized 404 with `noindex` like any unknown slug (status: the L-01 soft-404 item).
 - **Exception (owner, F-07):** legacy ID params on non-root legacy URLs (e.g. `/home1/?page_id=705`) are bypassed. They're ordinary params there, and the second hop is accepted.
 - 410 rows (`/tieu-de/`, `/portfolio/*`, `/wp-admin/*`, `/wp-login.php`, `/xmlrpc.php`, `/wp-json/*`, `/wp-content/uploads/*`): handled in `proxy.ts` (F-06), which returns an empty 410 with `cache-control: public, max-age=3600`.
-- Old query URLs `/?page_id={id}`, `/?p={id}` (also on `/vi` and `/index.php`): mapped through `43logistics.vn/data/legacy-wp-ids.json` (21 IDs; the sources per ID are in `specs/feature-f06-proxy-composition.md`) in one 301.
+- Old query URLs `/?page_id={id}`, `/?p={id}` (also on `/vi` and `/index.php`): mapped through `projects/43logistics.vn/data/legacy-wp-ids.json` (21 IDs; the sources per ID are in `specs/feature-f06-proxy-composition.md`) in one 301.
   - `page_id` wins over `p`, and other parameters are kept.
   - An ID mapped to `gone` (832) → 410; an unknown ID → 301 to `/` (owner decision).
 - Trailing slash and the locale prefix (`/vi` → `/`, `/EN` → `/en/`) are normalised by `proxy.ts` in the same single hop (`skipTrailingSlashRedirect: true`).

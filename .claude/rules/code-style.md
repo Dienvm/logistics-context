@@ -1,6 +1,6 @@
 ---
 paths:
-  - "43logistics.vn/**/*.{ts,tsx,js,mjs,css}"
+  - "projects/43logistics.vn/**/*.{ts,tsx,js,mjs,css}"
 ---
 
 # Code style: small, clean, boring

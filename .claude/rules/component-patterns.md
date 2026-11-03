@@ -1,6 +1,6 @@
 ---
 paths:
-  - "43logistics.vn/**/*.tsx"
+  - "projects/43logistics.vn/**/*.tsx"
 ---
 
 # Component patterns

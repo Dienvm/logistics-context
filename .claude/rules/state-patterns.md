@@ -1,11 +1,11 @@
 ---
 paths:
-  - "43logistics.vn/**/*store*.ts"
-  - "43logistics.vn/**/stores/**/*.ts"
-  - "43logistics.vn/**/*query*.ts"
-  - "43logistics.vn/**/*queries*.ts"
-  - "43logistics.vn/app/admin/**/*.tsx"
-  - "43logistics.vn/**/*-provider.tsx"
+  - "projects/43logistics.vn/**/*store*.ts"
+  - "projects/43logistics.vn/**/stores/**/*.ts"
+  - "projects/43logistics.vn/**/*query*.ts"
+  - "projects/43logistics.vn/**/*queries*.ts"
+  - "projects/43logistics.vn/app/admin/**/*.tsx"
+  - "projects/43logistics.vn/**/*-provider.tsx"
 ---
 
 # State patterns (Zustand + TanStack Query; no Redux)

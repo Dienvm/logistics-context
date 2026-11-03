@@ -1,6 +1,6 @@
 ---
 paths:
-  - "43logistics.vn/**/*.{ts,tsx}"
+  - "projects/43logistics.vn/**/*.{ts,tsx}"
 ---
 
 # Type definitions

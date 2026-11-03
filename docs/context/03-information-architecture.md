@@ -9,7 +9,7 @@
 - Inbound routes: `/gui-hang-tu-{country}-ve-viet-nam/` ↔ `/en/{country}-to-vietnam-shipping/`.
 - Blog: `/kinh-nghiem/{slug}/` ↔ `/en/guides/{slug}/`.
 - Ads landing pages: `/lp/{campaign}/` ↔ `/en/lp/{campaign}/` — `noindex, follow`.
-- Old → new mapping: `43logistics.vn/data/redirect-map.csv` (63 rows: 46 × 301, 9 × 200, 8 × 410).
+- Old → new mapping: `projects/43logistics.vn/data/redirect-map.csv` (63 rows: 46 × 301, 9 × 200, 8 × 410).
 
 ## Sitemap
 
@@ -195,7 +195,7 @@ Big channel buttons (Zalo, Gọi, WhatsApp, Messenger; each only when the `conta
 
 Real story, team & warehouse photos, carriers/partners, legal info, numbers only if real.
 
-S-09 template: H1, the page's `richText` markdown blocks, and a legal block (legal name, tax code) rendered only when the `company` setting is verified (Q-01). Photos, carriers and numbers wait for verified data (Q-08, Q-23). Published 2026-10-23 with drafted copy (`43logistics.vn/data/seed/info-pages/about.{vi,en}.md`: who we are, services, process, commitments, contact) and the closing CTA band with offices; the real story and photos follow in A-03/A-04/C-03.
+S-09 template: H1, the page's `richText` markdown blocks, and a legal block (legal name, tax code) rendered only when the `company` setting is verified (Q-01). Photos, carriers and numbers wait for verified data (Q-08, Q-23). Published 2026-10-23 with drafted copy (`projects/43logistics.vn/data/seed/info-pages/about.{vi,en}.md`: who we are, services, process, commitments, contact) and the closing CTA band with offices; the real story and photos follow in A-03/A-04/C-03.
 
 ### Blog
 

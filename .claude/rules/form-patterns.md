@@ -1,9 +1,9 @@
 ---
 paths:
-  - "43logistics.vn/**/*form*.tsx"
-  - "43logistics.vn/**/*-schema.ts"
-  - "43logistics.vn/**/schemas.ts"
-  - "43logistics.vn/modules/**/actions.ts"
+  - "projects/43logistics.vn/**/*form*.tsx"
+  - "projects/43logistics.vn/**/*-schema.ts"
+  - "projects/43logistics.vn/**/schemas.ts"
+  - "projects/43logistics.vn/modules/**/actions.ts"
 ---
 
 # Form patterns

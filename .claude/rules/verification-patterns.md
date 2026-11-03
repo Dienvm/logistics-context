@@ -1,6 +1,6 @@
 ---
 paths:
-  - "43logistics.vn/**/*.{ts,tsx}"
+  - "projects/43logistics.vn/**/*.{ts,tsx}"
   - "specs/**/*.md"
 ---
 
@@ -16,7 +16,7 @@ The initial build phase has **no Vitest, Playwright or `tests/` folder**. Don't 
 
 ## The verification floor for every app change
 
-1. `pnpm -C 43logistics.vn lint`, then `type-check` (`typecheck` after F-01), then `build`. All must pass.
+1. `pnpm -C projects/43logistics.vn lint`, then `type-check` (`typecheck` after F-01), then `build`. All must pass.
 2. `pnpm i18n:check` (from F-03) and `pnpm check:redirects` (from F-07, on every PR).
 3. The spec's **Manual Verification Plan**, with the observed result per AC (URL, viewport, what you saw).
 4. UI changes:

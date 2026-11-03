@@ -34,7 +34,7 @@ Read sections, not whole files: locate headings with `grep -n` and read that ran
 | BLUEPRINT.md | `AGENTS.md` §3–4 + `docs/adr/*` + `docs/context/06-architecture.md` |
 | UPDATE-PLAN.md | `docs/context/10-roadmap.md` |
 | docs/INDEX.md | `docs/context/00-index.md` |
-| foresent-rules / foresent-robot | `context` (this workspace) / `app` (`43logistics.vn/`) |
+| foresent-rules / foresent-robot | `context` (this workspace) / `app` (`projects/43logistics.vn/`) |
 | Codex bridge | `codex exec` (see the final step) |
 | Claude tools when Codex runs this skill | `AskUserQuestion` → ask the same batches as plain text; `Explore` subagent → `rg`/`ls` with the same limits |
 
@@ -122,7 +122,7 @@ Use `AskUserQuestion` for structured multiple-choice questions, and fall back to
 
 - "What is explicitly out of scope?" Infer 1–2 likely exclusions, plus "Nothing excluded" and Other.
 - "Does this change the data model (`07-data-model.md`) or migrations?" `Yes (schema + migration)` / `No` / `Not sure`.
-- "Does this affect URLs, redirects, metadata or tracking events (`05`, `43logistics.vn/data/redirect-map.csv`)?" `Yes` / `No` / `Not sure`.
+- "Does this affect URLs, redirects, metadata or tracking events (`05`, `projects/43logistics.vn/data/redirect-map.csv`)?" `Yes` / `No` / `Not sure`.
 - "Does this add client JS to public pages (≤ 50 KB gz app JS over the framework baseline, ADR 0006)?" `Yes — island needed` / `No — server only` / `Not sure`.
 - "Priority?" `nice-to-have` / `must-have` / `critical`.
 
@@ -254,7 +254,7 @@ updated: <today YYYY-MM-DD>
 - Scenario: <Given/When/Then>, with the URL(s) and viewport(s) to check
 - Seed needs: <describe or "default seed is fine">
 - Steps: <numbered manual steps a reviewer follows; include the axe DevTools scan for UI changes>
-- Validation commands: `pnpm -C 43logistics.vn lint` + `typecheck` (before F-01: `type-check`) + `build`; `i18n:check` (from F-03) and `check:redirects` (from F-07, every PR); the consent matrix when consent, tracking, proxy or leads are touched. No automated tests (ADR 0004)
+- Validation commands: `pnpm -C projects/43logistics.vn lint` + `typecheck` (before F-01: `type-check`) + `build`; `i18n:check` (from F-03) and `check:redirects` (from F-07, every PR); the consent matrix when consent, tracking, proxy or leads are touched. No automated tests (ADR 0004)
 
 ### Implementation Hints
 <!-- Optional: patterns from existing code, related specs, lessons learned -->

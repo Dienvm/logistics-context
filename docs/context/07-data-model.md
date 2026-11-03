@@ -44,7 +44,7 @@ menu_items ─< menu_item_translations     site_settings (key → jsonb)     red
 
 ## Drizzle schema — split per module into `modules/<name>/infrastructure/schema.ts`, re-exported by `db/schema.ts` (ADR 0005)
 
-> **Implemented in F-04** (drizzle-orm 0.45, drizzle-kit 0.31; one baseline migration in `43logistics.vn/db/migrations/`). The app code is authoritative. The sketch below is the original draft, with these F-04 changes:
+> **Implemented in F-04** (drizzle-orm 0.45, drizzle-kit 0.31; one baseline migration in `projects/43logistics.vn/db/migrations/`). The app code is authoritative. The sketch below is the original draft, with these F-04 changes:
 > - **`pages.route_id → routes.id`** replaces `routes.page_id`. `content` owns the page↔route link, so module schema imports stay acyclic.
 > - **`menu_items.key`** (`not null`, `unique(menu, key)`): a stable key such as `header.outbound`.
 > - **`site_settings.is_verified`** (`boolean not null default false`): only verified keys are published (rule 1).
@@ -461,7 +461,7 @@ export const db = drizzle(client, { schema, casing: 'snake_case' })
 
 ## Pricing rules — how a rate card becomes a quote (S-03, A-02b)
 
-The price engine is `43logistics.vn/modules/pricing/domain/{weight,quote}.ts`, exposed client-safe through `modules/pricing/client.ts`. One quote is for **one rate card**, in its currency. Rows are mapped by `infrastructure/rate-card-mappers.ts` (`numeric` strings → integer grams; a malformed value throws with its column name). Owner decisions 2026-10-22 and 2026-10-26, open points in Q-25 and Q-30:
+The price engine is `projects/43logistics.vn/modules/pricing/domain/{weight,quote}.ts`, exposed client-safe through `modules/pricing/client.ts`. One quote is for **one rate card**, in its currency. Rows are mapped by `infrastructure/rate-card-mappers.ts` (`numeric` strings → integer grams; a malformed value throws with its column name). Owner decisions 2026-10-22 and 2026-10-26, open points in Q-25 and Q-30:
 
 - **Weight pipeline (integer grams, no intermediate whole-kg rounding):** actual rounded **up** to the gram; volumetric = L×W×H / `rate_cards.volumetric_divisor` (5000, Korea → VN 4500), only when all three dimensions are given; chargeable = max(actual, volumetric); rounded **up** to `weight_rounding_kg` when set (set only where the source states it or a flat per-step table implies it); below `min_weight_kg` → "Liên hệ" (`below_minimum`); raised to `min_chargeable_kg` when set; then the band is picked. The estimate adds `local_delivery_fee_minor` once when the chargeable weight is below `local_delivery_free_from_kg` (SG/MY/AU air < 11 kg, KR/TW air < 3 kg, TW → VN < 5 kg, from `data/retail-price-list.md`).
 - **Eligibility:** "Liên hệ" when the route has `is_verified = false` (unless preview) or `prices_public = false`. Only bands of the card and requested column whose `valid_from`/`valid_to` window contains today (Asia/Ho_Chi_Minh, inclusive) count.
@@ -531,7 +531,7 @@ Upload pipeline (A-04, route handler `POST /api/admin/media`): ≤ 15 MB → for
 
 ## Seed
 
-`pnpm db:seed` (`scripts/seed.ts`, F-04) reads the following from `43logistics.vn/data/seed/`, or from `$SEED_DATA_DIR` when set:
+`pnpm db:seed` (`scripts/seed.ts`, F-04) reads the following from `projects/43logistics.vn/data/seed/`, or from `$SEED_DATA_DIR` when set:
 - `routes.legacy.json`: routes, legacy rates and translations, with `isVerified` that must be `false` (the 8 A-02b routes carry no rates: their prices are rate cards);
 - `site-settings.legacy.json`;
 - `pages.json`: 22 IA pages from `03`. Route pages take their slugs and names from the routes file;
@@ -559,6 +559,6 @@ Re-runs are idempotent and respect ownership:
 - **Surcharge lists and items:** CRUD, item reorder and `is_active` (how the owner hides a row); a list links to any cards of its route.
 - Every write locks the route row, stamps `routes.admin_edited_*` (and `rate_cards.admin_edited_*` for card edits) in the same transaction, then calls `updateTag(route:{key})` + `updateTag(menu)`. The import's skip/`--force` rules apply unchanged; its snapshot treats a missing EN row as the VI text, as the public pages do.
 
-**Retail price list (A-02b):** `pnpm db:import-rate-cards` loads `43logistics.vn/data/seed/rate-cards.json` (the owner-confirmed list, `owner-confirmations.json` → `rateCards`). Without a flag it is a dry run printing a per-band diff; `--replace` writes a JSON backup of what it deletes to `43logistics.vn/.backups/` (gitignored), then replaces each listed route's cards, bands, columns, surcharge lists and policies, sets `prices_public` where the file says so, and applies the file's targeted copy fixes (block by index, replaced only while it still equals the seeded block, else reported as a conflict; FAQ by sort) in one transaction, holding row locks on the listed routes. The backup holds the full stored rows (ids, validity, notes, flags, audit fields). Routes edited in the admin (route or any card `admin_edited_at`) are skipped unless `--force`; routes absent from the file are never touched; an unchanged route is not rewritten. `pnpm db:confirm` verifies the `rateCards` routes only once they have imported cards.
+**Retail price list (A-02b):** `pnpm db:import-rate-cards` loads `projects/43logistics.vn/data/seed/rate-cards.json` (the owner-confirmed list, `owner-confirmations.json` → `rateCards`). Without a flag it is a dry run printing a per-band diff; `--replace` writes a JSON backup of what it deletes to `projects/43logistics.vn/.backups/` (gitignored), then replaces each listed route's cards, bands, columns, surcharge lists and policies, sets `prices_public` where the file says so, and applies the file's targeted copy fixes (block by index, replaced only while it still equals the seeded block, else reported as a conflict; FAQ by sort) in one transaction, holding row locks on the listed routes. The backup holds the full stored rows (ids, validity, notes, flags, audit fields). Routes edited in the admin (route or any card `admin_edited_at`) are skipped unless `--force`; routes absent from the file are never touched; an unchanged route is not rewritten. `pnpm db:confirm` verifies the `rateCards` routes only once they have imported cards.
 
 Legacy route-level `notes` (e.g. "Giá chưa bao gồm VAT") have no column. They are page copy for the route-page tasks and aren't seeded.

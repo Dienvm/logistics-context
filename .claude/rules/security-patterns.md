@@ -1,8 +1,8 @@
 ---
 paths:
-  - "43logistics.vn/**/*.{ts,tsx,mjs,json,yml,yaml}"
-  - "43logistics.vn/.env.example"
-  - "43logistics.vn/.husky/*"
+  - "projects/43logistics.vn/**/*.{ts,tsx,mjs,json,yml,yaml}"
+  - "projects/43logistics.vn/.env.example"
+  - "projects/43logistics.vn/.husky/*"
 ---
 
 # Security patterns

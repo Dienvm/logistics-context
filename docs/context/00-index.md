@@ -41,9 +41,9 @@ This folder is the project memory for the 43logistics.vn rebuild. It was produce
 
 Prefer the skills (AGENTS.md §6): `/feature-bug F-00` → `/implement` → `/code-review` → `/mark-implemented`. Free-form starters for tools without skills:
 
-1. **Foundation:** "Read AGENTS.md, ADR 0002 and docs/context/06-architecture.md. Implement roadmap task F-00, then F-01 in 43logistics.vn/ (upgrade the template in place, root layout). Don't add any page content yet."
-2. **Database:** "Implement F-04: create db/schema from the draft schema in docs/context/07-data-model.md, fix it against the installed drizzle-orm version, generate migrations, and write scripts/seed.ts that loads 43logistics.vn/data/seed/*.json idempotently."
-3. **Proxy & redirects:** "Implement F-06 and F-07. Use 43logistics.vn/data/redirect-map.csv as the only source; cover every 410 and legacy-ID rule; write scripts/check-redirects.ts (no unit tests, ADR 0004)."
+1. **Foundation:** "Read AGENTS.md, ADR 0002 and docs/context/06-architecture.md. Implement roadmap task F-00, then F-01 in projects/43logistics.vn/ (upgrade the template in place, root layout). Don't add any page content yet."
+2. **Database:** "Implement F-04: create db/schema from the draft schema in docs/context/07-data-model.md, fix it against the installed drizzle-orm version, generate migrations, and write scripts/seed.ts that loads projects/43logistics.vn/data/seed/*.json idempotently."
+3. **Proxy & redirects:** "Implement F-06 and F-07. Use projects/43logistics.vn/data/redirect-map.csv as the only source; cover every 410 and legacy-ID rule; write scripts/check-redirects.ts (no unit tests, ADR 0004)."
 4. **Route page:** "Implement S-03 (price engine as pure functions, checked against the worked examples) then S-04 (route page template) following docs/context/03 section 'Outbound route page', 04 components and 05 JSON-LD rules. Prices only from route_rates; show 'liên hệ' when routes.is_verified is false."
 5. **Lead flow:** "Implement S-02 and S-08. Follow 05 'Tracking plan' and 06 'Server Actions pattern'. Email must be optional; consent required."
 6. **Content rewrite:** "Using docs/context/legacy-copy/gui-hang-di-han-quoc.md as raw material and 01-business.md for facts, draft new VI copy for the Korea route page as blocks JSON. Mark every unconfirmed fact with its Q-ID from 11-open-questions.md. Do not invent numbers."

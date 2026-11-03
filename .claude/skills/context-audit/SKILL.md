@@ -104,7 +104,7 @@ Proposals or specs with `status: draft` whose `updated` date is more than 90 day
 
 ### 3g — Stack claims vs installed code
 
-Compare the "In the app today" column of `AGENTS.md` §3 with `43logistics.vn/package.json`, the config files (`next.config.*`, `proxy.ts`/`middleware.ts`, `biome.json`, `tailwind.config.*`, `drizzle.config.ts`) and the folder layout. Also check the `AGENTS.md` §7 commands: an "exists" row must be in `scripts`, and a planned row must name a roadmap ID.
+Compare the "In the app today" column of `AGENTS.md` §3 with `projects/43logistics.vn/package.json`, the config files (`next.config.*`, `proxy.ts`/`middleware.ts`, `biome.json`, `tailwind.config.*`, `drizzle.config.ts`) and the folder layout. Also check the `AGENTS.md` §7 commands: an "exists" row must be in `scripts`, and a planned row must name a roadmap ID.
 
 ### 3h — One fact, one place
 
@@ -118,7 +118,7 @@ Flag values that differ between files, prices written in prose instead of `route
 
 Resolve each file's canonical location from the roadmap state first:
 
-- `redirect-map.csv`, `design-tokens.json` and `seed/*.json` live in the context `data/` before F-01 is `[x]`, and in `43logistics.vn/data/` after.
+- `redirect-map.csv`, `design-tokens.json` and `seed/*.json` live in the context `data/` before F-01 is `[x]`, and in `projects/43logistics.vn/data/` after.
 - `media-inventory.csv` lives in the context `data/` until C-04 is `[x]`.
 
 Then check the counts at that location: `redirect-map.csv` has 63 data rows, and `media-inventory.csv` has 330 rows, 175 of them with `action = migrate`.
@@ -137,9 +137,9 @@ Two live copies of the same file is 🔴.
 
 These checks look at paths only. **Never print values.**
 
-- `git -C 43logistics.vn ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$'` must be empty.
+- `git -C projects/43logistics.vn ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$'` must be empty.
 - `wordpress-site/` must be in the root `.gitignore`.
-- No database **dump** may exist outside `wordpress-site/`. Drizzle migrations in `43logistics.vn/db/migrations/*.sql` are legitimate. Flag other `*.sql`, `*.sql.gz` or `*.dump` files by path, together with any file containing `INSERT INTO` for `wp_`/`wpiw_` tables (check with `grep -l`, never print the content).
+- No database **dump** may exist outside `wordpress-site/`. Drizzle migrations in `projects/43logistics.vn/db/migrations/*.sql` are legitimate. Flag other `*.sql`, `*.sql.gz` or `*.dump` files by path, together with any file containing `INSERT INTO` for `wp_`/`wpiw_` tables (check with `grep -l`, never print the content).
 
 ---
 

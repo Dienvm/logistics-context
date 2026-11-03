@@ -16,7 +16,7 @@ You are fixing code that was implemented but doesn't satisfy its spec.
 
 **Never:**
 
-- apply runtime-code fixes in the context repo (runtime code lives only in `43logistics.vn/`). Specs with `owner_repo: context` fix docs/data in the context workspace;
+- apply runtime-code fixes in the context repo (runtime code lives only in `projects/43logistics.vn/`). Specs with `owner_repo: context` fix docs/data in the context workspace;
 - work from stale findings without warning;
 - skip logging mistakes;
 - print `.env*` contents. Every content diff uses `X=(-- . ':(exclude).env*' ':(exclude)**/.env*')`.
@@ -26,8 +26,8 @@ You are fixing code that was implemented but doesn't satisfy its spec.
 | Sample concept | In this repo |
 | --- | --- |
 | BLUEPRINT.md | `AGENTS.md` + `docs/adr/*` |
-| `../foresent-robot`, `../foresent-rules` | `43logistics.vn/` (app) · context workspace (docs/data only) |
-| `yarn test` / `yarn lint` / validator | `$LINT` / `$TYPECHECK` / `$BUILD`, resolved from `43logistics.vn/package.json` (no test suites, ADR 0004) |
+| `../foresent-robot`, `../foresent-rules` | `projects/43logistics.vn/` (app) · context workspace (docs/data only) |
+| `yarn test` / `yarn lint` / validator | `$LINT` / `$TYPECHECK` / `$BUILD`, resolved from `projects/43logistics.vn/package.json` (no test suites, ADR 0004) |
 | Fixture YAML case | Manual verification step / seed data |
 
 ---
@@ -46,7 +46,7 @@ Read it fully. Extract:
 
 Route every path by `owner_repo`:
 
-- `app`: `43logistics.vn/`; repo flag `$R = -C 43logistics.vn`.
+- `app`: `projects/43logistics.vn/`; repo flag `$R = -C projects/43logistics.vn`.
 - `context`: the workspace root; `$R` is empty; checks are greps and row counts, not pnpm.
 - `both`: both, with each Affected Areas row routed by its Repo column.
 
@@ -58,9 +58,9 @@ Before touching any files:
 
 ```bash
 # Check repo availability and state
-ls ./43logistics.vn/package.json 2>/dev/null && echo "available" || echo "absent"
-git -C 43logistics.vn status --short
-git -C 43logistics.vn branch --show-current
+ls ./projects/43logistics.vn/package.json 2>/dev/null && echo "available" || echo "absent"
+git -C projects/43logistics.vn status --short
+git -C projects/43logistics.vn branch --show-current
 
 # Check findings age if using /tmp/43l-review-findings.md
 ls -la /tmp/43l-review-findings.md 2>/dev/null
@@ -149,8 +149,8 @@ For each fix:
 After all fixes, run:
 
 ```bash
-pnpm -C 43logistics.vn $LINT 2>&1 && pnpm -C 43logistics.vn $TYPECHECK 2>&1 && pnpm -C 43logistics.vn $BUILD 2>&1
-pnpm -C 43logistics.vn $REDIRECTS 2>&1     # every fix PR once the script exists (F-07)
+pnpm -C projects/43logistics.vn $LINT 2>&1 && pnpm -C projects/43logistics.vn $TYPECHECK 2>&1 && pnpm -C projects/43logistics.vn $BUILD 2>&1
+pnpm -C projects/43logistics.vn $REDIRECTS 2>&1     # every fix PR once the script exists (F-07)
 ```
 
 Report the check results and the before/after manual verification per row. Skip unavailable scripts and say so. For context-owned rows, re-run the greps and row counts that prove the fix.
@@ -173,7 +173,7 @@ Target repo: 43logistics.vn (not available locally)
 |---|------|-----------|----------|
 
 ### Commands to run after fixing
-cd 43logistics.vn
+cd projects/43logistics.vn
 # use the scripts that exist in package.json: lint; typecheck or type-check; build (no test suites, ADR 0004)
 pnpm lint && pnpm <typecheck|type-check> && pnpm build
 # then repeat the manual reproduction steps for each fixed row
