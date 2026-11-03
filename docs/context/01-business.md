@@ -111,7 +111,25 @@ A separate legal entity in the group. Facts are confirmed per site (rule 1). Unt
 | Domain / DNS | `avlogistics.vn` | DNS details pending (owner: "gửi sau") |
 | Brand colours | Forest green #04563C, yellow #F5D30A (from the logo) | Confirmed (logo) |
 
-GT Logistic (`gtlogistic.vn`): nothing confirmed yet (Q-37).
+## Sister site: GT Logistics (gtlogistics.vn, ADR 0012, MS-09)
+
+A separate legal entity in the group. Its site is the separate repo `projects/gtlogistics.vn/` (`github.com/Dienvm/gtlogistics.vn`, private; owner 2026-10-31: one folder and repo per company) on 43's shared database and admin (`site = 'gt'`). Owner originals are in `projects/gtlogistics.vn/owner-assets/` (untracked).
+
+| Field | Value | Status |
+| --- | --- | --- |
+| Brand name | "GT Logistics" | Confirmed (logo, owner 2026-10-31) |
+| Legal name | Công ty TNHH Dịch vụ Thương mại Xuất nhập khẩu GT Logistics | Confirmed (owner 2026-10-31) |
+| Tax code | 0402341673 | Confirmed (owner 2026-10-31) |
+| Legal representative | Nguyễn Đức Thắng | Confirmed (owner 2026-10-31); not published |
+| Registered office | 20 Tú Quỳ, Phường Hòa Khánh, TP Đà Nẵng (the same address as AV) | Confirmed (owner 2026-10-31) |
+| Company phone / Zalo | 0906 579 119 (Zalo is the same number) | Confirmed (owner `info.txt` and 2026-10-31) |
+| Hotline / WhatsApp | 0347 018 779 per the owner's company record, which also lists it as Zalo | `NEEDS CONFIRMATION` (conflicts with "Zalo = 0906 579 119"; not published) |
+| Email | gtlogistics.danang@gmail.com | Confirmed (owner `info.txt`) |
+| Facebook page | "GT Logistics - Vận Chuyển Hàng Quốc Tế" | URL `NEEDS CONFIRMATION` |
+| Domain | `gtlogistics.vn` | Confirmed (owner 2026-10-31) |
+| Routes and retail rate cards | The same as 43 Logistics (shared tables) | Confirmed (owner 2026-10-31) |
+| Hours, warehouses | — | `NEEDS CONFIRMATION` |
+| Brand colours | Navy #1E3250 (logo); amber #F59E0B accent from the parcel tape in the owner's photos | Navy confirmed (logo); amber is a design choice |
 
 ## Brand voice
 

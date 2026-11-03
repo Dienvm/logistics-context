@@ -34,7 +34,7 @@
 | Q-34 | Duplicate content across 43logistics.vn, avlogistics.vn, gtlogistic.vn: rewrite AV/GT route pages to be unique, or `noindex`/canonical them to 43 until rewritten? Is cross-brand linking (`sameAs`, a footer "thuộc hệ thống…") wanted? | Multi-site MS-07/MS-08, SEO, GEO | Answered 2026-10-30: AV route pages and blog posts noindex until rewritten; home/about/contact/policies indexed |
 | Q-35 | Per-site lead notifications: which email recipients and Zalo OA accounts receive AV and GT leads (S-08b, Q-28)? | Multi-site MS-06/MS-08 activation | Open |
 | Q-36 | Staff scope across sites: do `sales`/`editor` accounts cover all three sites, or is each person limited to their company's site? Is one operations approval of goods rules valid for all three entities? | Multi-site MS-04, AV launch gate | Open |
-| Q-37 | GT Logistic: confirm the domain `gtlogistic.vn`, company facts (legal name, tax code, address, phone/Zalo, email) and brand assets (logo, photos), and whether GT uses the same routes and retail rate cards as 43. | Multi-site MS-09 | Open |
+| Q-37 | GT Logistics: which number is the hotline/WhatsApp (the company record says 0347 018 779 is "Hotline / Zalo / WhatsApp", the owner says Zalo is 0906 579 119)? The Facebook page URL, hours, and the GT lead recipients (Q-35)? | Multi-site MS-09 | Mostly answered 2026-10-31: domain gtlogistics.vn, legal name, tax code 0402341673, office 20 Tú Quỳ, phone/Zalo 0906 579 119, email, logo, photos, same routes and rate cards as 43 |
 
 ## Answered
 

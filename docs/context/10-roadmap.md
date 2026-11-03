@@ -124,7 +124,7 @@ One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and 
   - gates: Q-33, Q-36 enforced, per-site consent matrix (ADR 0004), Q-34 duplicate-content decision applied;
   - AV DNS and Cloudflare zone (L-00b settings), Search Console, ADR 0009 field data per domain;
   - retire `Dienvm/avlogistics.vn`.
-- [ ] **MS-09 GT:** after Q-37, seed, token set, assets and DNS, like MS-07/MS-08.
+- [ ] **MS-09 GT:** after Q-37, seed, token set, assets and DNS, like MS-07/MS-08. — **in progress 2026-10-31**: on owner instruction GT is its own repo `projects/gtlogistics.vn/` (`Dienvm/gtlogistics.vn`, private, forked from app with the `gt` site key as default; reverses ADR 0012 Decision 3 "no per-brand forks" for GT, ADR amendment pending): navy/amber skin, assets, `data/seed/sites/gt`, `db:clone-site gt`, compose `app-gt` + Caddy block. Waiting: production clone, VPS build, DNS, Q-37 hotline.
 
 ## Phase 6 — Later
 
