@@ -7,3 +7,6 @@
 [submodule "ketoan"]
 	path = projects/ketoan
 	url = https://github.com/Dienvm/ketoan.git
+[submodule "gtlogistics.vn"]
+	path = projects/gtlogistics.vn
+	url = https://github.com/Dienvm/gtlogistics.vn.git
