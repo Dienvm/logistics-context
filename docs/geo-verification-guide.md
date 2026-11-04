@@ -235,9 +235,9 @@ AI và công cụ tìm kiếm hạ điểm các site làm những việc trên, 
 
 | Việc | AV | GT |
 | --- | --- | --- |
-| Site chạy HTTPS | Có | **Chưa** (DNS đã trỏ về VPS nhưng HTTPS bị ngắt kết nối: `app-gt` chưa chạy hoặc Caddy chưa cấp chứng chỉ) |
-| `robots.txt`, `sitemap.xml`, `llms.txt` | Có (64 URL ở cả sitemap và llms.txt) | Chờ site chạy |
-| JSON-LD `Organization` riêng (`https://avlogistics.vn/#organization`) | Có | Chờ site chạy |
+| Site chạy HTTPS | Có | Có: `app-gt` chạy, chứng chỉ đã cấp, trả 200 từ VPS, châu Âu và TP.HCM (check-host.net). Riêng mạng FPT ở văn phòng bị **ngắt kết nối** với tên `gtlogistics.vn` (cả HTTP lẫn HTTPS) trong khi AV/43 vào được: lỗi ở đường mạng, không phải ở server |
+| `robots.txt`, `sitemap.xml`, `llms.txt` | Có (64 URL ở cả sitemap và llms.txt) | Kiểm tra lại từ mạng khác (4G) |
+| JSON-LD `Organization` riêng (`https://avlogistics.vn/#organization`) | Có | Kiểm tra lại từ mạng khác (4G) |
 | `BingSiteAuth.xml` | 404: chưa có mã Bing | Chưa |
 | `indexnow-key.txt` | 404: chưa có key IndexNow | Chưa |
 | Google Search Console | Chưa xác nhận | Chưa |
@@ -245,7 +245,7 @@ AI và công cụ tìm kiếm hạ điểm các site làm những việc trên, 
 
 ### H2. Thiết lập một lần cho mỗi site
 
-Làm lần lượt cho AV, rồi cho GT khi site đã chạy HTTPS.
+Làm lần lượt cho AV, rồi cho GT. Google và Bing truy cập từ nước ngoài nên không bị ảnh hưởng bởi lỗi mạng FPT ở trên.
 
 1. **Google Search Console:** thêm thuộc tính **Miền** (`avlogistics.vn` / `gtlogistics.vn`), xác minh bằng bản ghi TXT tại nhà đăng ký tên miền → nộp `https://<site>/sitemap.xml`.
 2. **Bing Webmaster Tools:** thêm site (có thể **Nhập từ Google Search Console**) → nếu chọn xác minh bằng file, lấy mã trong file `BingSiteAuth.xml` mà Bing cho tải → gửi mã cho kỹ thuật.
