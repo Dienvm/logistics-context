@@ -224,3 +224,51 @@ AI và công cụ tìm kiếm hạ điểm các site làm những việc trên, 
 
 - [ ] Chạy bộ 20 câu hỏi × 4 công cụ, ghi vào `data/geo-prompt-panel.csv`
 - [ ] Tính tỉ lệ được nhắc, được trích link, độ chính xác, vị trí; so với tháng trước
+
+---
+
+## H. Website chị em: AV Logistics và GT Logistics
+
+> Thêm 2026-11-04. AV (`avlogistics.vn`) và GT (`gtlogistics.vn`) dùng chung cơ sở dữ liệu và admin với 43 (ADR 0012). Phần kỹ thuật GEO (robots, sitemap, `llms.txt`, JSON-LD, đoạn tóm tắt, IndexNow) đã có sẵn trong code của cả hai. Mỗi site là một **công ty riêng**, nên mỗi site cần **công cụ riêng, mã riêng và bộ câu hỏi riêng**.
+
+### H1. Trạng thái (kiểm tra 2026-11-04)
+
+| Việc | AV | GT |
+| --- | --- | --- |
+| Site chạy HTTPS | Có | **Chưa** (DNS đã trỏ về VPS nhưng HTTPS bị ngắt kết nối: `app-gt` chưa chạy hoặc Caddy chưa cấp chứng chỉ) |
+| `robots.txt`, `sitemap.xml`, `llms.txt` | Có (64 URL ở cả sitemap và llms.txt) | Chờ site chạy |
+| JSON-LD `Organization` riêng (`https://avlogistics.vn/#organization`) | Có | Chờ site chạy |
+| `BingSiteAuth.xml` | 404: chưa có mã Bing | Chưa |
+| `indexnow-key.txt` | 404: chưa có key IndexNow | Chưa |
+| Google Search Console | Chưa xác nhận | Chưa |
+| Bộ câu hỏi thử | `data/geo-prompt-panel-av.csv` | `data/geo-prompt-panel-gt.csv` |
+
+### H2. Thiết lập một lần cho mỗi site
+
+Làm lần lượt cho AV, rồi cho GT khi site đã chạy HTTPS.
+
+1. **Google Search Console:** thêm thuộc tính **Miền** (`avlogistics.vn` / `gtlogistics.vn`), xác minh bằng bản ghi TXT tại nhà đăng ký tên miền → nộp `https://<site>/sitemap.xml`.
+2. **Bing Webmaster Tools:** thêm site (có thể **Nhập từ Google Search Console**) → nếu chọn xác minh bằng file, lấy mã trong file `BingSiteAuth.xml` mà Bing cho tải → gửi mã cho kỹ thuật.
+3. **Kỹ thuật, trên VPS** (`/opt/43logistics`):
+   - trong `.env.av` (hoặc `.env.gt`): `BING_SITE_VERIFICATION=<mã Bing của site đó>` và `INDEXNOW_KEY=<key mới, riêng cho site đó>` (tạo bằng `openssl rand -hex 16`). **Không dùng lại key hoặc mã của 43.**
+   - `.env` của 43 có `REVALIDATE_SECRET` và `SITE_REVALIDATE_URLS=http://app-av:3000,http://app-gt:3000`; `.env.av` / `.env.gt` có cùng `REVALIDATE_SECRET`.
+   - khởi động lại `app-av` / `app-gt`, rồi kiểm tra `https://<site>/BingSiteAuth.xml` và `https://<site>/indexnow-key.txt` trả 200.
+4. **Bing → Xác minh**, rồi nộp sitemap.
+5. **Cloudflare** (khi site đi qua Cloudflare): như phần B, không chặn bot AI.
+
+Thẻ meta `msvalidate.01` trên các trang dựng sẵn cần biến lúc build; file `BingSiteAuth.xml` đã đủ để xác minh, nên không bắt buộc.
+
+### H3. IndexNow cho site chị em
+
+Admin chỉ chạy trên 43logistics.vn. Khi sửa **tuyến, bảng giá hoặc quy định hàng hoá** (dữ liệu dùng chung), 43 gửi thay đổi sang `app-av` và `app-gt`; mỗi site tự báo IndexNow cho **trang của chính nó**, bằng key của nó. Trang, bài viết và FAQ riêng của AV/GT chưa sửa được trong admin (MS-04), nên chưa có ping cho chúng.
+
+### H4. Bộ câu hỏi hằng tháng
+
+- Dùng `data/geo-prompt-panel-av.csv` và `data/geo-prompt-panel-gt.csv`, cùng cách làm phần C.
+- P01–P08 nêu tên AV / GT: hỏi riêng cho từng site.
+- P09–P20 **giống hệt** bộ của 43: hỏi **một lần**, rồi ghi kết quả của cả ba công ty từ cùng câu trả lời (43 vào file của 43, AV vào file AV, GT vào file GT). Ghi `notes`: "cùng câu trả lời với panel 43".
+- Ba công ty cùng xuất hiện trong một câu trả lời là bình thường; không coi nhau là đối thủ trong cột `competitors`.
+
+### H5. Thông tin công ty (admin, theo từng site)
+
+Như phần A4, nhưng cho từng site: chỉ xác nhận tên khác, năm thành lập, mạng xã hội của **chính công ty đó**. Admin chưa có nút chọn site (MS-04), nên hiện tại chủ gửi thông tin cho kỹ thuật nạp bằng `pnpm db:clone-site av|gt`; không sửa trong `/admin/settings/` (ô đó là của 43). Đang thiếu: giờ làm việc và Facebook / Zalo OA của AV; Facebook URL, giờ làm việc, kho và hotline của GT (Q-37).
