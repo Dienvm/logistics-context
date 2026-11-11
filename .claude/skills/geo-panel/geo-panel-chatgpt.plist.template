@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- launchd job for the ChatGPT engine of the monthly GEO panel (SKILL.md in this folder).
+     Install: replace __HOME__ with your home folder, save as
+     ~/Library/LaunchAgents/vn.43logistics.geo-panel-chatgpt.plist, then
+     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/vn.43logistics.geo-panel-chatgpt.plist
+     It always runs the run-chatgpt.sh committed on origin/main, whatever branch is checked out. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>vn.43logistics.geo-panel-chatgpt</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>export PATH="__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"; cd "__HOME__/Documents/project/logistics-context" &amp;&amp; git fetch -q origin &amp;&amp; f="$(mktemp)" &amp;&amp; git show origin/main:.claude/skills/geo-panel/run-chatgpt.sh &gt; "$f" &amp;&amp; /bin/bash "$f"; rc=$?; rm -f "$f"; exit $rc</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Day</key>
+    <integer>1</integer>
+    <key>Hour</key>
+    <integer>9</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/43l-geo-panel-chatgpt.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/43l-geo-panel-chatgpt.log</string>
+</dict>
+</plist>

@@ -207,11 +207,14 @@ export const routeRates = pgTable('route_rates', {
   weightMinKg: numeric(9,3) /* inclusive; "Trên 100 kg" is stored as 100.001 + its label */,
   weightMaxKg: numeric(9,3) /* inclusive; null = open-ended */,
   pricePerKgMinor: bigint, flatPriceMinor: bigint /* minor units of the card currency */,
-  contactForPrice, promoLabel, validFrom, validTo, notes, updatedBy, ...timestamps,
+  contactForPrice,
+  deliveryFeeMinor: bigint /* the band's own delivery fee per shipment: 0 = none, null = the card's local_delivery_* rule (0016) */,
+  promoLabel, validFrom, validTo, notes, updatedBy, ...timestamps,
 }, (t) => [
   index('route_rates_card_idx').on(t.rateCardId, t.columnId, t.weightMinKg),
   foreignKey((column_id, rate_card_id) → rate_card_columns (id, card_id)).onDelete('cascade'), // a column belongs to the band's card
   check('route_rates_price_ck', contact_for_price or price_per_kg_minor or flat_price_minor is not null),
+  check('route_rates_delivery_fee_ck', coalesce(delivery_fee_minor, 0) >= 0),
 ])
 // route_rate_translations (rate_id, locale) → weight_label, price_label: the sale's wording
 // surcharge_lists (route_id, key unique per route, kind, sort) + surcharge_list_translations (title, footnote)
@@ -463,7 +466,7 @@ export const db = drizzle(client, { schema, casing: 'snake_case' })
 
 The price engine is `projects/43logistics.vn/modules/pricing/domain/{weight,quote}.ts`, exposed client-safe through `modules/pricing/client.ts`. One quote is for **one rate card**, in its currency. Rows are mapped by `infrastructure/rate-card-mappers.ts` (`numeric` strings → integer grams; a malformed value throws with its column name). Owner decisions 2026-10-22 and 2026-10-26, open points in Q-25 and Q-30:
 
-- **Weight pipeline (integer grams, no intermediate whole-kg rounding):** actual rounded **up** to the gram; volumetric = L×W×H / `rate_cards.volumetric_divisor` (5000, Korea → VN 4500), only when all three dimensions are given; chargeable = max(actual, volumetric); rounded **up** to `weight_rounding_kg` when set (set only where the source states it or a flat per-step table implies it); below `min_weight_kg` → "Liên hệ" (`below_minimum`); raised to `min_chargeable_kg` when set; then the band is picked. The estimate adds `local_delivery_fee_minor` once when the chargeable weight is below `local_delivery_free_from_kg` (SG/MY/AU air < 11 kg, KR/TW air < 3 kg, TW → VN < 5 kg, from `data/retail-price-list.md`).
+- **Weight pipeline (integer grams, no intermediate whole-kg rounding):** actual rounded **up** to the gram; volumetric = L×W×H / `rate_cards.volumetric_divisor` (5000, Korea → VN 4500), only when all three dimensions are given; chargeable = max(actual, volumetric); rounded **up** to `weight_rounding_kg` when set (set only where the source states it or a flat per-step table implies it); below `min_weight_kg` → "Liên hệ" (`below_minimum`); raised to `min_chargeable_kg` when set; then the band is picked. The estimate adds `local_delivery_fee_minor` once when the chargeable weight is below `local_delivery_free_from_kg` (SG/MY/AU air < 11 kg, KR/TW air < 3 kg, TW → VN < 5 kg, from `data/retail-price-list.md`). A band with its own `route_rates.delivery_fee_minor` (owner 2026-11-11, migration `0016`) overrides that rule for shipments it prices: `0` = no fee (e.g. a minimum-charge band), any other amount = that fee; the admin sets it in the band dialog, and the price table shows the resulting fee per band.
 - **Eligibility:** "Liên hệ" when the route has `is_verified = false` (unless preview) or `prices_public = false`. Only bands of the card and requested column whose `valid_from`/`valid_to` window contains today (Asia/Ho_Chi_Minh, inclusive) count.
 - **Columns:** a `contact` column always quotes "Liên hệ" (`contact_column`) and shows its band's `price_label`; a `quotable` column uses its per-kg or flat bands. No quantity input.
 - **Bands:** the sale's literal edges, `[weight_min_kg, weight_max_kg]` inclusive, `null` max open-ended; "Trên X kg" is X.001 with the label. Several covering → the **highest minimum** wins; a tie on it → "Liên hệ" (`ambiguous_band`). No covering band (a gap between the sale's bands) → `no_band`, listed under Q-30.

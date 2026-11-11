@@ -85,14 +85,28 @@ Sau khi thiết lập, kiểm tra **Bing → IndexNow**: sau một lần lưu n�
 
 ### C1. Chuẩn bị
 
-- File `data/geo-prompt-panel.csv`: 20 câu hỏi cố định (`P01`–`P20`) × 4 công cụ = 80 dòng mỗi lần chạy.
-- 4 công cụ:
+- File `data/geo-prompt-panel.csv`: 52 câu hỏi cố định × 5 công cụ = 260 dòng mỗi lần chạy. `P01`–`P20` hỏi về 43 Logistics; `P21`–`P30` (thêm 2026-11-10) hỏi về AV Logistics, GT Logistics và các câu tiếng Anh của khách ở nước ngoài; `P31`–`P40` (thêm 2026-11-11) là câu hỏi theo từ khoá cụ thể (loại hàng + nước đến + nơi gửi, ví dụ "Gửi đồ khô đi Hàn Quốc từ Đà Nẵng") và theo khu vực; `P41`–`P52` (thêm 2026-11-11) là câu hỏi địa phương quanh các kho Huế, Đồng Hới (Quảng Bình) và Cửa Việt (Quảng Trị), nơi gần như chưa có đối thủ. Mỗi địa phương có một site phụ trách: Huế → 43, Quảng Bình → GT, Quảng Trị → AV. Với `P31`–`P52`, ghi vào `notes` site nào trong 3 site được nêu (43, AV, GT) và có đúng site phụ trách không.
+- 5 công cụ:
   - `chatgpt`: ChatGPT, **bật tìm kiếm web**;
   - `gemini`: Gemini hoặc Google AI Mode;
   - `perplexity`: Perplexity;
-  - `copilot`: Microsoft Copilot.
+  - `copilot`: Microsoft Copilot;
+  - `claude`: Claude (claude.ai), **bật tìm kiếm web** (thêm 2026-11-11).
 - Dùng **cửa sổ ẩn danh** hoặc đăng xuất, mỗi câu hỏi **một cuộc trò chuyện mới**. AI nhớ lịch sử và cá nhân hoá câu trả lời; hỏi trong tài khoản đã quen với 43 Logistics sẽ cho kết quả đẹp giả.
 - Nếu được, hỏi từ máy ở Việt Nam, không bật VPN.
+
+### C1b. Phần chạy tự động (từ 2026-11-11)
+
+Hai công cụ được chạy tự động vào **9:00 sáng ngày 1 hằng tháng**, theo skill `.claude/skills/geo-panel/SKILL.md` (quy tắc trả lời, chấm điểm và site phụ trách từng câu nằm ở đó):
+
+| Công cụ | Chạy ở đâu | Ghi chú |
+| --- | --- | --- |
+| `claude` | Routine Claude Code trên cloud (tài khoản Claude của chủ) | Không cần mở máy |
+| `chatgpt` | Máy Mac của chủ, lịch launchd `vn.43logistics.geo-panel-chatgpt`, chạy `run-chatgpt.sh` bằng Codex CLI (tài khoản ChatGPT Pro, không trả thêm phí API) | Máy phải bật và đăng nhập; nếu máy ngủ lúc 9:00, lịch chạy khi máy thức dậy; nếu máy tắt, lần đó bị bỏ qua (chạy tay: `.claude/skills/geo-panel/run-chatgpt.sh`). Log: `~/Library/Logs/43l-geo-panel-chatgpt.log` |
+
+Mỗi lần chạy tạo hai file `data/geo-panel-runs/<YYYY-MM>-<công cụ>.csv` (điểm) và `-answers.md` (nguyên văn câu trả lời), rồi mở **một PR** vào repo này. Việc của người phụ trách: mở PR, đọc lướt điểm và câu trả lời, sửa ô nào chấm sai, rồi merge. Kết quả qua công cụ tự động là thước đo xu hướng (cùng cách tìm kiếm nhưng không cá nhân hoá), không phải bản sao màn hình khách thấy.
+
+Gemini, Perplexity và Copilot vẫn hỏi tay theo C2, ghi vào file cùng định dạng `data/geo-panel-runs/<YYYY-MM>-<công cụ>.csv`.
 
 ### C2. Cách hỏi và ghi kết quả
 
@@ -110,7 +124,7 @@ Sau khi thiết lập, kiểm tra **Bing → IndexNow**: sau một lần lưu n�
 | `competitors` | Các công ty khác được nêu, cách nhau bằng `;` |
 | `notes` | Ghi chú ngắn: AI nói sai gì, lấy từ nguồn nào. **Không** ghi thông tin cá nhân |
 
-3. Mỗi tháng **thêm 80 dòng mới** có `run_date` của tháng đó. Không xoá, không sửa dòng tháng trước.
+3. Mỗi tháng, mỗi công cụ ghi **một file mới** `data/geo-panel-runs/<YYYY-MM>-<công cụ>.csv` (cùng cột với file mẫu, mỗi câu một dòng, có `run_date`). File mẫu `data/geo-prompt-panel.csv` chỉ chứa danh sách câu hỏi, không ghi kết quả vào đó. Không xoá, không sửa file của tháng trước.
 4. Không đổi câu hỏi cũ. Muốn hỏi câu mới thì thêm mã mới (`P21`, …) để vẫn so sánh được với các tháng trước.
 5. Lần chạy đầu tiên là **mốc (baseline)**. Nên chạy sau khi Bing và Google đã index site (thường 1–3 tuần sau khi nộp sitemap).
 
@@ -144,7 +158,7 @@ Xem riêng theo nhóm `intent`:
 | **Copilot** | Bing | Như trên, cộng thêm **Bing Places** cho từng văn phòng |
 | **Gemini / AI Overviews / AI Mode** | Chỉ mục Google, Google Business Profile | Search Console; **Google Business Profile** cho từng văn phòng đã xác nhận; dữ liệu cấu trúc không lỗi |
 | **Perplexity** | Bot riêng `PerplexityBot` và nhiều nguồn web, ưu tiên nội dung mới và nguồn được trích nhiều | Nội dung có ngày cập nhật rõ; được nhắc trên các trang uy tín, diễn đàn, báo |
-| **Claude** (khi tìm web) | Tìm kiếm web, bot `Claude-SearchBot` / `Claude-User` | robots không chặn; nội dung rõ ràng, có dữ kiện cụ thể |
+| **Claude** (khi tìm web) | Chỉ mục của **Brave Search** (theo báo chí công nghệ từ 2025; Anthropic chưa công bố chính thức) và bot `Claude-SearchBot` / `Claude-User`. Kiểm tra 2026-11-11: chỉ mục này mới có vài trang cũ của 43logistics.vn, chưa có trang nào của avlogistics.vn và gtlogistics.vn | robots không chặn (đã đúng); có hồ sơ doanh nghiệp trên các trang mà Brave đã index (danh bạ như Trang Vàng, Facebook, Zalo OA); bài hướng dẫn trả lời đúng câu hỏi cụ thể; theo dõi bot bằng `deploy/crawler-report.sh`. IndexNow và Bing **không** giúp Claude |
 
 ### D2. Trên website (đã có, cần duy trì)
 
@@ -196,7 +210,8 @@ AI và công cụ tìm kiếm hạ điểm các site làm những việc trên, 
 | --- | --- | --- |
 | Sau mỗi lần deploy | Phần A (A1–A3), khoảng 10 phút | Kỹ thuật |
 | Hằng tuần | Bing Webmaster Tools và Search Console: lỗi index, IndexNow; Cloudflare Referrers | Kỹ thuật hoặc marketing |
-| Hằng tháng (tuần đầu) | Phần C: chạy 80 câu hỏi, điền CSV, tính 4 chỉ số, so với tháng trước | Marketing hoặc sale |
+| Hằng tuần | `deploy/crawler-report.sh 7` (repo app, chạy trên Mac): bot nào đã ghé 3 site, trang nào được đọc nhiều. Chú ý `Claude-SearchBot`, `ClaudeBot`, `Bravebot`, `OAI-SearchBot` | Kỹ thuật |
+| Hằng tháng (tuần đầu) | Phần C: chạy 260 câu hỏi, điền CSV, tính 4 chỉ số, so với tháng trước | Marketing hoặc sale |
 | Hằng quý | Xem xu hướng 3 tháng; quyết định ưu tiên nội dung (FAQ, bài viết) và việc ngoài website (phần D3) | Chủ doanh nghiệp |
 | Khi đổi bảng giá hoặc quy định hàng hoá | Lưu trong admin (IndexNow tự gửi); kiểm tra lại đoạn tóm tắt trên trang tuyến | Người sửa bảng giá |
 
@@ -222,5 +237,5 @@ AI và công cụ tìm kiếm hạ điểm các site làm những việc trên, 
 
 **Đo lường (hằng tháng)**
 
-- [ ] Chạy bộ 20 câu hỏi × 4 công cụ, ghi vào `data/geo-prompt-panel.csv`
+- [ ] Chạy bộ 52 câu hỏi × 5 công cụ, ghi vào `data/geo-prompt-panel.csv`
 - [ ] Tính tỉ lệ được nhắc, được trích link, độ chính xác, vị trí; so với tháng trước
