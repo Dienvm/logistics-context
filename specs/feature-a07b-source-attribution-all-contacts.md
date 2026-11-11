@@ -1,7 +1,7 @@
 ---
 title: Attribute every contact and visit to its entry source
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: A-07b
 priority: must-have
