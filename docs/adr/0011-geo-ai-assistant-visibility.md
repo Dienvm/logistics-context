@@ -1,6 +1,6 @@
 # ADR 0011 — GEO: optimise 43logistics.vn for AI assistants as part of the SEO lane
 
-- Status: Accepted (2026-10-30)
+- Status: Accepted (2026-10-30) · Amended by ADR 0013 (2026-11-12): Decision 6's under-count for visitors who rejected ads consent is no longer accepted; a cookieless session path attributes them
 - Amends: ADR 0010 Decision 2 (edge security settings: Cloudflare's AI-bot blocking and managed robots.txt stay off; verified crawlers must pass if Bot Fight Mode is turned on later)
 - Owner repo: both
 - Roadmap: G-01, G-02, G-03, G-04 (new), G-05 (new), L-00b, A-07, C-02, C-03, C-05, L-02

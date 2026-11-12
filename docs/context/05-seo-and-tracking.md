@@ -149,6 +149,22 @@ Cookie format (F-06; `modules/tracking`):
 
 `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `gclid`, `gbraid`, `wbraid`, `fbclid` (→ build `_fbc`), `ttclid`, `landing_path`, `referrer`, `first_seen_at`. Attached to every `leads` and `contact_events` row.
 
+### Session attribution and visit counts (ADR 0013, A-07b — planned, off until `NEXT_PUBLIC_SESSION_ATTRIBUTION`)
+
+- **Session path (no consent needed, no storage):**
+  - **Capture.** A client module reads `document.referrer` and `location` once per page load and holds them in memory: `ref` (external host only), `us`/`um`/`uc` (`utm_source`/`utm_medium`/`utm_campaign`, ≤ 150 bytes), `lp` (landing pathname), `cn` (click-ID network name, never the value) and `cap` (capture ran).
+  - **Transport.** The values travel only as `/go` query params (every `ContactLink` href sync path) and as quote-form hidden inputs.
+  - **Server.** The server derives `in_app` from the user agent.
+  - **Precedence.** On a row, the cookie path (`43l_attr`, ads consent) wins; otherwise the session values fill `referrer`, `utm_source`/`utm_medium`/`utm_campaign` and `landing_path`. Click-ID columns are filled only from the cookie. `attribution_basis` = `cookie | session | none`.
+- **Two keys:**
+  - the source key below (cookie precedence, last campaign) serves the A-06 filter and the A-07 `source` view;
+  - `entry_source_key` is built from the session values + `in_app` only. It keys `site_visits` and the contact rate.
+  - Both gain `app:{name}` (in-app browser) and `direct` (capture ran, no external referrer) before `unknown`.
+- **Visit counts (`site_visits`):**
+  - **What counts.** `proxy.ts` counts document GETs with an absent or external `Referer`. Excluded: prefetch, RSC, bots, `HEAD`, `/admin`, `/api`, `/go`, files, redirects and 410s.
+  - **Storage.** One aggregate row per site × day (+07) × `source_key` × `landing_path`, with no identifier.
+  - **Bounds.** The write runs after the response (`event.waitUntil`), with a 2 s statement timeout, ≤ 20 writes in flight and ≤ 2,000 rows per site per day (else `overflow`).
+
 **Reporting source (A-06 inbox, A-07 report):** each `leads` / `contact_events` row gets one source from its stored attribution, in this order: a click ID (`gclid`/`gbraid`/`wbraid` → Google Ads, `fbclid` → Facebook Ads, `ttclid` → TikTok Ads), else `utm_source` (trimmed, lowercased), else the referrer host (`referrer` holds a bare host; an older full URL is reduced to its host), else **unknown** ("Không rõ nguồn": no campaign link, or no ads consent). Keys: `click:{network}`, `utm:{value}`, `ref:{host}`, `unknown`. One pure function and its SQL twin (`modules/tracking`, `deriveTrafficSource()` / `trafficSourceKeySql()`) serve the inbox list, filter and CSV and the weekly report, so they always agree.
 
 ### Contact click tracker
@@ -166,7 +182,7 @@ Rules (S-02):
 - **Methods.** `GET` redirects and logs; `HEAD` answers with the same status and `Location` but logs nothing; other methods get `405` (`Allow: GET, HEAD`). Every `/go` response has `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow`.
 - **Bots** (UA allowlist in `modules/tracking/domain/bot.ts`: `…bot/`, crawlers, link previewers, Lighthouse) get the redirect but no row.
 - **Placements** (allowlist, else `null`): `header` (incl. the top-bar hotline), `hero` (home and route heroes, S-05/S-04), `rate_table` and `calculator` (route pages, S-04), `cta_band` (offer and closing bands, S-05b), `sticky_bar`, `footer`, `lead_form` (S-08), `contact_page` (Contact channel buttons) and `not_found` (404 CTAs, S-09). New placements are added to `CONTACT_PLACEMENTS` in `modules/contact/constants.ts`.
-- **Row inputs** are untrusted: `eid` must be a UUID (else a server UUID), `from` must be a same-site path ≤ 300 chars (else `null`; `locale` follows it), `route` must be an active route key (else `null`). Attribution columns come from `43l_attr` only when `43l_consent` grants ads; consent columns from `parseConsent`. `ip_hash` = HMAC-SHA256 with `IP_HASH_SALT`.
+- **Row inputs** are untrusted: `eid` must be a UUID (else a server UUID), `from` must be a same-site path ≤ 300 chars (else `null`; `locale` follows it), `route` must be an active route key (else `null`). Attribution columns come from `43l_attr` only when `43l_consent` grants ads; otherwise, once ADR 0013 is active, from the validated session params (`ref`, `us`, `um`, `uc`, `lp`, `cn`, `cap`; never a click-ID value). Consent columns come from `parseConsent`. `ip_hash` = HMAC-SHA256 with `IP_HASH_SALT`.
 - **Conversion seam.** `sendContactConversion` (`modules/tracking`) returns unless ads consent; with consent it is a no-op until T-01 / Q-13 (no network request).
 
 The client link (`ContactLink`) mints the `event_id` on `click` (Enter included), pushes `click_<channel>` to `window.dataLayer` with it and puts it in the href as `eid`, so the push and the row share it for pixel de-duplication. Without JS the plain `/go/<channel>/` link still redirects and logs, with a server `event_id`. CTA links carry `rel="nofollow"`. Events are defined once in `modules/tracking/constants.ts` and pushed to `dataLayer` (GTM lane, after ads consent). Cloudflare Web Analytics takes no custom events (ADR 0010).
@@ -195,7 +211,7 @@ The client link (`ContactLink`) mints the `event_id` on `click` (Enter included)
 
 ### Consent (Personal Data Protection Law 91/2025/QH15 — in force 01/01/2026 — and Decree 13/2023 as applicable; Google Consent Mode v2)
 
-- Default: `ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage` = `denied` until the user chooses; only strictly necessary cookies (the consent choice itself) are allowed before consent. `43l_attr` holds ad click IDs and is therefore **not** functional. Use Consent Mode **basic** (tags not loaded at all before consent), not advanced (cookieless pings).
+- Default: `ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage` = `denied` until the user chooses; only strictly necessary cookies (the consent choice itself) are allowed before consent. `43l_attr` holds ad click IDs and is therefore **not** functional. The ADR 0013 session path is not storage. It sends no request of its own and carries no click-ID value, so it runs without consent (Q-39 confirms the basis before it is switched on). Use Consent Mode **basic** (tags not loaded at all before consent), not advanced (cookieless pings).
 - Banner (VI/EN) with Accept all / Reject / Customize; choice stored (cookie + Zustand), `gtag('consent','update',…)`, and the Cloudflare Web Analytics beacon mapped to `analytics_storage`.
 - **Consent cookie contract (F-06 reads it; S-13 must write exactly this):** `43l_consent`.
   - **Value:** `v1.<ads 0|1>.<analytics 0|1>.<unix seconds>`.

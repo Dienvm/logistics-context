@@ -110,6 +110,7 @@ AI tooling: Cursor, Claude Code and Codex read this file; an agent that opens on
 14. **Personal data (Personal Data Protection Law 91/2025/QH15, in force 01/01/2026, and Decree 13/2023 as applicable)**:
     - Forms have a consent checkbox and a privacy policy link.
     - No analytics or ad tags, cookies or requests before consent (Consent Mode basic). `43l_attr` holds ad click IDs, so it needs consent too.
+    - Exception, ADR 0013 (A-07b): without consent, only the session entry source may travel. It is the referrer host, `utm_source`/`utm_medium`/`utm_campaign`, the landing path and the click-ID network name, never a click-ID value. It is held in page memory, never in a cookie or storage, and sent only inside the visitor's own `/go` click or form submit. `proxy.ts` may count aggregate entry page views (`site_visits`) with no identifier. Both stay off until `NEXT_PUBLIC_SESSION_ATTRIBUTION` is set per site, after Q-39 and the published privacy policy.
     - No raw IP stored (hash only).
     - Customer screenshots are used only with consent and with personal data blurred.
 15. **Secrets never enter git or prompts.** `.env*` stays untracked (only `.env.example` is committed). Don't print `.env` values, the WordPress dump or lead data into chat, docs or commits.
@@ -298,6 +299,6 @@ Keep this table true. When a task adds or renames a script, update its row in th
 - Do not link to competitor domains (the old site linked to `3a.net.vn`).
 - Do not claim "24/7", "hàng nghìn khách hàng", insurance terms or delivery guarantees unless `01-business.md` confirms them.
 - Do not list goods as "accepted" (medicine, cosmetics without labels, food) without per-country rules in the database approved by operations.
-- Do not add analytics/tag systems beyond the two lanes in ADR 0002 as amended by ADR 0010 (GTM for ads, Cloudflare Web Analytics for traffic) without a new ADR and an update to `05-seo-and-tracking.md`.
+- Do not add analytics/tag systems beyond the two lanes in ADR 0002 as amended by ADR 0010 (GTM for ads, Cloudflare Web Analytics for traffic; first-party session attribution and visit counts per ADR 0013) without a new ADR and an update to `05-seo-and-tracking.md`.
 - Do not add runtime code, package manifests or app CI to the context workspace. Do not add context docs to the app repo.
 - Do not follow `refer-docs/`: it describes a different project (Foresent robot) and is kept only as the template these rules came from.
