@@ -1,0 +1,53 @@
+run_date,engine,prompt_id,locale,intent,route_key,prompt,mentioned,position,cited,cited_url,facts_correct,competitors,notes
+2026-11-11,chatgpt,P01,vi,brand,,"43 Logistics là công ty gì, ở đâu?",yes,1,yes,https://43logistics.vn/,yes,,sites=43
+2026-11-11,chatgpt,P02,vi,brand,,43logistics.vn gửi hàng đi những nước nào?,yes,1,yes,https://43logistics.vn/dich-vu/ ; https://43logistics.vn/gui-hang-di-chau-au/,n/a,,sites=43
+2026-11-11,chatgpt,P03,vi,brand,,43 Logistics gửi hàng quốc tế có uy tín không?,yes,1,yes,https://43logistics.vn/ ; https://43logistics.vn/chinh-sach-den-bu/,yes,,sites=43
+2026-11-11,chatgpt,P04,en,brand,,What does 43 Logistics in Da Nang do?,yes,1,yes,https://43logistics.vn/en/,yes,,sites=43
+2026-11-11,chatgpt,P05,vi,facts,sg,Gửi hàng đi Singapore qua 43 Logistics giá bao nhiêu một kg và mất mấy ngày?,yes,1,yes,https://43logistics.vn/gui-hang-di-singapore/,partial,,"sites=43 Rates and transit match; delivery costs an additional 300,000 VND for shipments up to 10.5 kg."
+2026-11-11,chatgpt,P06,vi,facts,kr,Gửi hàng đi Hàn Quốc qua 43 Logistics có gửi được mỹ phẩm không?,yes,1,yes,https://43logistics.vn/kinh-nghiem/gui-my-pham-di-nuoc-ngoai/,n/a,,sites=43
+2026-11-11,chatgpt,P07,vi,facts,tw,Hàng cấm gửi đi Đài Loan gồm những gì?,no,,no,,n/a,Chunghwa Post,sites=none
+2026-11-11,chatgpt,P08,en,facts,sg-vn,How long does shipping from Singapore to Vietnam take with 43 Logistics?,yes,1,yes,https://43logistics.vn/gui-hang-tu-singapore-ve-viet-nam/,yes,,sites=43
+2026-11-11,chatgpt,P09,vi,route,sg,Gửi hàng đi Singapore từ Đà Nẵng ở đâu rẻ và uy tín?,yes,3,yes,https://gtlogistics.vn/ ; https://gtlogistics.vn/gui-hang-di-singapore/,yes,EMS;Now Express,sites=GT
+2026-11-11,chatgpt,P10,vi,route,kr,Dịch vụ gửi hàng đi Hàn Quốc ở TP.HCM nào tốt?,no,,no,,n/a,DHL Express;EMS;FedEx,sites=none
+2026-11-11,chatgpt,P11,vi,route,jp,Gửi hàng đi Nhật Bản giá rẻ ở đâu?,yes,2,yes,https://43logistics.vn/gui-hang-di-nhat-ban/,yes,Quý Nam,sites=43
+2026-11-11,chatgpt,P12,vi,route,jp,Cách gửi đồ ăn khô đi Nhật Bản cho người thân,no,,no,,n/a,,sites=none
+2026-11-11,chatgpt,P13,vi,route,tw,"Gửi hàng đi Đài Loan mất bao lâu, công ty nào làm?",no,,no,,n/a,DHL Express;SF Express;FedEx,sites=none
+2026-11-11,chatgpt,P14,vi,route,my,Gửi hàng đi Malaysia ở Đà Nẵng,yes,1,yes,https://43logistics.vn/gui-hang-di-malaysia/,yes,DHL Express,sites=43
+2026-11-11,chatgpt,P15,vi,route,th,Gửi hàng đi Thái Lan giá bao nhiêu một kg?,yes,1,yes,https://gtlogistics.vn/gui-hang-di-thai-lan/,yes,Quý Nam,sites=GT
+2026-11-11,chatgpt,P16,vi,route,us,"Gửi hàng từ Việt Nam đi Mỹ, công ty nào uy tín?",no,,no,,n/a,DHL Express;FedEx;UPS,sites=none
+2026-11-11,chatgpt,P17,vi,route,sg-vn,Gửi hàng từ Singapore về Việt Nam ở đâu?,no,,no,,n/a,SingPost;DHL Express;FedEx,sites=none
+2026-11-11,chatgpt,P18,vi,local,,Công ty gửi hàng quốc tế ở Đà Nẵng,no,,no,,n/a,DHL Express;FedEx;Viettel Post;EMS Việt Nam,sites=none
+2026-11-11,chatgpt,P19,en,route,sg,cheap parcel shipping from Vietnam to Singapore,yes,2,yes,https://gtlogistics.vn/en/shipping-to-singapore/,yes,Việt An Express,sites=GT
+2026-11-11,chatgpt,P20,en,route,kr,best way to send a package from Vietnam to South Korea,no,,no,,n/a,Vietnam Post;EMS;DHL Express;FedEx;FedEx International Priority,sites=none
+2026-11-11,chatgpt,P21,vi,brand,,"AV Logistics Đà Nẵng là công ty gì, gửi hàng đi những nước nào?",yes,1,no,,partial,,sites=AV AV site could not be opened; stated address and phone remain unverified.
+2026-11-11,chatgpt,P22,vi,facts,sg,Gửi hàng đi Singapore qua AV Logistics giá bao nhiêu một kg?,yes,1,yes,https://43logistics.vn/gui-hang-di-singapore/,yes,,"sites=43,AV"
+2026-11-11,chatgpt,P23,vi,brand,,"GT Logistics Đà Nẵng là công ty gì, gửi hàng đi những nước nào?",yes,1,yes,https://gtlogistics.vn/ ; https://gtlogistics.vn/lien-he/,yes,,sites=GT Contact details verified on live homepage; contact-page fetch failed.
+2026-11-11,chatgpt,P24,vi,facts,us,Gửi hàng đi Mỹ qua GT Logistics giá bao nhiêu và mất mấy ngày?,yes,1,yes,https://gtlogistics.vn/gui-hang-di-my/ ; https://gtlogistics.vn/quy-dinh-gui-nhan-hang/,yes,,sites=GT
+2026-11-11,chatgpt,P25,en,brand,,"What is GT Logistics (gtlogistics.vn) in Da Nang, Vietnam?",yes,1,yes,https://gtlogistics.vn/ ; https://gtlogistics.vn/lien-he/,yes,,sites=GT Contact details verified on live homepage; contact-page fetch failed.
+2026-11-11,chatgpt,P26,en,brand,,"What is AV Logistics (avlogistics.vn) in Da Nang, Vietnam?",yes,1,yes,avlogistics.vn,partial,,"sites=AV Bare owner domain appears in answer as inaccessible, not as a supporting source. Live AV site could not be opened; address remains unverified."
+2026-11-11,chatgpt,P27,en,route,eu,"How can I send a 10 kg parcel from Vietnam to Ireland, and what does it cost per kg?",no,,no,,n/a,Gia Phú Express;DHL Express;Vietnam Post;An Post,sites=none
+2026-11-11,chatgpt,P28,en,route,us,"door-to-door parcel shipping from Vietnam to the USA, price per kg",no,,no,,n/a,An Tin Phat;UCargo,sites=none
+2026-11-11,chatgpt,P29,en,route,au,"Which companies ship parcels from Da Nang, Vietnam to Australia?",no,,no,,n/a,DHL Express;FedEx;Vietnam Post;EMS;Helen Express;Now Express,sites=none
+2026-11-11,chatgpt,P30,en,local,,international parcel forwarder in Da Nang that I can contact on WhatsApp,yes,2,yes,https://gtlogistics.vn/en/,yes,VIO Shipping,sites=GT
+2026-11-11,chatgpt,P31,vi,route,kr,Gửi đồ khô đi Hàn Quốc từ Đà Nẵng,no,,no,,n/a,Korea Post;EMS Việt Nam,sites=none owner=43 match=no
+2026-11-11,chatgpt,P32,vi,route,kr,Gửi đồ đông lạnh đi Hàn Quốc từ Đà Nẵng ở đâu?,no,,no,,n/a,Thế Phong Logistics;DHD Logistics,sites=none owner=GT match=no
+2026-11-11,chatgpt,P33,vi,route,tw,"Gửi bánh lọc, bánh gai đi Đài Loan từ Huế được không?",no,,no,,n/a,,sites=none owner=AV match=no
+2026-11-11,chatgpt,P34,vi,route,tw,Gửi đồ khô đi Đài Loan từ Quảng Bình,no,,no,,n/a,VNPost;EMS,sites=none owner=AV match=no
+2026-11-11,chatgpt,P35,vi,facts,sg,Gửi yến sào đi Singapore có bị phụ thu không?,no,,no,,n/a,,sites=none owner=43 match=no
+2026-11-11,chatgpt,P36,vi,route,sg,Gửi hàng đi Singapore từ Đà Nẵng giá bao nhiêu 1kg?,yes,1,yes,https://gtlogistics.vn/gui-hang-di-singapore/,yes,,sites=GT owner=43 match=no
+2026-11-11,chatgpt,P37,vi,route,au,Gửi hàng đi Úc từ Đà Nẵng,no,,no,,n/a,DHL Express;EMS,sites=none
+2026-11-11,chatgpt,P38,vi,route,kr-vn,Gửi hàng từ Hàn Quốc về Đà Nẵng,no,,no,,n/a,Korea Post;EMS;DHL Express,sites=none
+2026-11-11,chatgpt,P39,vi,local,,"Gửi hàng đi nước ngoài ở Hòa Khánh, Liên Chiểu",no,,no,,n/a,EMS Liên Chiểu;Bưu điện Đà Nẵng 2;GHN,sites=none
+2026-11-11,chatgpt,P40,vi,local,,"Gửi hàng đi nước ngoài ở Cẩm Lệ, Đà Nẵng",no,,no,,n/a,FedEx;Viettel Post;Helen Express,sites=none owner=43 match=no
+2026-11-11,chatgpt,P41,vi,local,,Gửi hàng đi nước ngoài ở Huế,no,,no,,n/a,Bưu điện Huế;VNPost;EMS;DHL Express,sites=none owner=43 match=no
+2026-11-11,chatgpt,P42,vi,route,us,Gửi hàng đi Mỹ từ Huế,no,,no,,n/a,EMS;DHL Express,sites=none owner=43 match=no
+2026-11-11,chatgpt,P43,vi,route,kr,Gửi hàng đi Hàn Quốc từ Huế,no,,no,,n/a,EMS;Vietnam Post,sites=none owner=43 match=no
+2026-11-11,chatgpt,P44,vi,facts,tw,"Gửi mè xửng, ruốc Huế đi Đài Loan được không?",no,,no,,n/a,,sites=none owner=43 match=no
+2026-11-11,chatgpt,P45,vi,local,,"Gửi hàng đi nước ngoài ở Đồng Hới, Quảng Bình",no,,no,,n/a,Bưu điện Đồng Hới;Vietnam Post;EMS;Viettel Post,sites=none owner=GT match=no
+2026-11-11,chatgpt,P46,vi,route,kr,Gửi hàng đi Hàn Quốc từ Quảng Bình,no,,no,,n/a,EMS,sites=none owner=GT match=no
+2026-11-11,chatgpt,P47,vi,route,tw,Gửi đồ cho người thân đi xuất khẩu lao động Đài Loan từ Quảng Bình,no,,no,,n/a,,sites=none owner=GT match=no
+2026-11-11,chatgpt,P48,vi,local,,Gửi hàng đi nước ngoài ở Quảng Trị,no,,no,,n/a,EMS;Viettel Post,sites=none owner=AV match=no
+2026-11-11,chatgpt,P49,vi,route,tw,"Gửi hàng đi Đài Loan từ Đông Hà, Quảng Trị",no,,no,,n/a,Bưu điện Việt Nam;DHL Express,sites=none owner=AV match=no
+2026-11-11,chatgpt,P50,vi,facts,kr,"Gửi cá khô, mực khô đi Hàn Quốc từ Cửa Việt",no,,no,,n/a,EMS;Vietnam Post,sites=none owner=AV match=no
+2026-11-11,chatgpt,P51,en,route,us,"parcel shipping from Hue, Vietnam to the USA",no,,no,,n/a,DHL Express;Vietnam Post;EMS,sites=none owner=43 match=no
+2026-11-11,chatgpt,P52,en,local,,"international shipping warehouse in Quang Tri or Quang Binh, Vietnam",no,,no,,n/a,Quảng Bình Logistics;CMC Logistics;Quảng Bình Import–Export JSC,sites=none owner=AV|GT match=no
