@@ -4,7 +4,6 @@
 - Amends:
   - ADR 0011 Decision 6: the AI group's under-count for visitors who rejected ads consent is no longer accepted; a session path fills it.
   - ADR 0004 Decision 2: the consent matrix gains the session-attribution and visit-count checks.
-  - ADR 0005: `proxy.ts` may import one named server-only file, `modules/tracking/visits.ts`.
   - The F-06 / `05-seo-and-tracking.md` rule that every attribution value needs ads consent.
 - Owner repo: both
 - Roadmap: A-07b (spec `specs/feature-a07b-source-attribution-all-contacts.md`), G-05 (narrowed to the prompt panel)
@@ -47,13 +46,13 @@
    - An entry page view is a document GET with an absent or external `Referer`. Prefetch, RSC, bot, `HEAD`, `/admin`, `/api`, `/go`, file, redirect and 410 requests are not counted.
    - No IP, user agent, cookie, click-ID value or per-visitor row is stored.
    - The write is bounded:
-     - it runs after the response through `event.waitUntil`;
+     - it runs after the response through `event.waitUntil` (loopback post, at most 20 in flight per process, 3 s timeout);
      - `statement_timeout` is 2 s, `lock_timeout` 500 ms, with a 3 s application timeout;
      - at most 20 writes are in flight per process; excess visits are dropped, never queued;
      - cardinality is capped at 2,000 rows per site per day, with an `overflow` bucket, and paths are normalised;
      - it is a no-op outside production.
    - A failure never changes the response.
-   - **Boundary exception (amends ADR 0005):** `proxy.ts` may import exactly one server-only file, `modules/tracking/visits.ts`. `check:boundaries` names that file. Nothing else server-only enters the proxy.
+   - **No boundary exception (as built, 2026-11-12, A-07b implementation):** a server-only import would throw in `proxy.ts` (`db/client` imports `server-only`; dependency-cruiser rule `proxy-client-safe-only`). So the proxy classifies the visit with client-safe pure code and, in `event.waitUntil`, posts it over **loopback** (`http://127.0.0.1:$PORT/api/internal/visit/`, a token derived from `IP_HASH_SALT`) to an internal route handler, which does the bounded write. Nothing leaves the server and the visitor sends no extra request. ADR 0005 is unchanged.
 
 6. **Processing types and their basis (PDP Law 91/2025/QH15; Decree 13/2023 as applicable).** "Cookieless" does not by itself make the data non-personal, so each processing type is handled separately. The legal basis below is the **owner's working position**; Q-39 tracks the legal adviser's confirmation, and activation waits for it (Decision 8).
 

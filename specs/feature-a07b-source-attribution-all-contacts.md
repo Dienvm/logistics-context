@@ -1,9 +1,11 @@
 ---
 title: Attribute every contact and visit to its entry source
 type: feature
-status: approved
+status: in_implementation
 owner_repo: both
 roadmap: A-07b
+branch: feat/a07b-source-attribution
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/90
 priority: must-have
 blocked_by_questions: [Q-17, Q-39]
 updated: 2026-11-11
