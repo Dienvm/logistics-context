@@ -3,21 +3,26 @@
 # Codex CLI answers each prompt with live web search using the owner's ChatGPT login (no API
 # key, no extra cost), then scores the answers; the results go to a PR on logistics-context.
 #
-#   .claude/skills/geo-panel/run-chatgpt.sh [--only P31,P41] [--no-pr]
+#   .claude/skills/geo-panel/run-chatgpt.sh [--only P31,P41] [--no-pr] [--force]
 #
-# launchd runs the copy on origin/main (geo-panel-chatgpt.plist.template). Needs codex, gh
-# (logged in as Dienvm), git and python3. Long: about 30–40 minutes for 52 prompts.
+# launchd runs the copy on origin/main every day at 09:00 and at login
+# (geo-panel-chatgpt.plist.template). A month that already has its result (branch
+# docs/geo-panel-<YYYY-MM>-chatgpt on origin, or the run file on main) is skipped, so the first
+# day the Mac is on after the 1st catches up; --force runs anyway. One run at a time (lock).
+# Needs codex, gh (logged in as Dienvm), git and python3. About 30–40 minutes for 52 prompts.
 set -euo pipefail
 
 export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 ROOT="${GEO_ROOT:-$HOME/Documents/project/logistics-context}"
 ONLY=""
 OPEN_PR=1
+FORCE=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --only) ONLY="$2"; shift 2 ;;
     --no-pr) OPEN_PR=0; shift ;;
-    *) echo "usage: run-chatgpt.sh [--only P01,P02] [--no-pr]" >&2; exit 2 ;;
+    --force) FORCE=1; shift ;;
+    *) echo "usage: run-chatgpt.sh [--only P01,P02] [--no-pr] [--force]" >&2; exit 2 ;;
   esac
 done
 
@@ -29,19 +34,45 @@ done
 
 MONTH="$(TZ=Asia/Ho_Chi_Minh date +%Y-%m)"
 DAY="$(TZ=Asia/Ho_Chi_Minh date +%Y-%m-%d)"
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/43l-geo-XXXXXX")"
-mkdir -p "$WORK/empty" "$WORK/answers" "$WORK/logs"
 BRANCH="docs/geo-panel-$MONTH-chatgpt"
 
+# One run at a time: launchd may start the job at login and at 09:00 on the same day. A lock
+# older than 3 hours is a crashed run and is taken over.
+LOCK="$HOME/.local/share/43l-geo/run.lock"
+mkdir -p "$(dirname "$LOCK")"
+if ! mkdir "$LOCK" 2>/dev/null; then
+  if [ -n "$(find "$LOCK" -maxdepth 0 -mmin +180 2>/dev/null)" ]; then
+    rmdir "$LOCK" 2>/dev/null; mkdir "$LOCK"
+  else
+    say "another run is in progress; exiting"; exit 0
+  fi
+fi
+
 git -C "$ROOT" fetch -q origin
+already_done() {
+  git -C "$ROOT" ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1 ||
+    git -C "$ROOT" cat-file -e "origin/main:data/geo-panel-runs/$MONTH-chatgpt.csv" 2>/dev/null
+}
+if [ "$FORCE" = 0 ] && [ "$OPEN_PR" = 1 ] && [ -z "$ONLY" ] && already_done; then
+  say "$MONTH already has a chatgpt run; nothing to do"
+  rmdir "$LOCK"; exit 0
+fi
 if git -C "$ROOT" ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
   BRANCH="$BRANCH-$(date +%d%H%M)"
 fi
-git -C "$ROOT" worktree add -q -b "$BRANCH" "$WORK/repo" "${GEO_REF:-origin/main}"
+
+say "starting the $MONTH run"
+notify "Bắt đầu chạy bộ câu hỏi GEO tháng $MONTH (khoảng 30–40 phút)"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/43l-geo-XXXXXX")"
+mkdir -p "$WORK/empty" "$WORK/answers" "$WORK/logs"
+git -C "$ROOT" worktree add -q -B "$BRANCH" "$WORK/repo" "${GEO_REF:-origin/main}"
 REPO="$WORK/repo"
 SKILL="$REPO/.claude/skills/geo-panel"
-cleanup() { git -C "$ROOT" worktree remove --force "$REPO" 2>/dev/null || true; }
-[ "$OPEN_PR" = 1 ] && trap cleanup EXIT
+cleanup() {
+  [ "$OPEN_PR" = 1 ] && git -C "$ROOT" worktree remove --force "$REPO" 2>/dev/null
+  rmdir "$LOCK" 2>/dev/null || true
+}
+trap cleanup EXIT
 
 # Distinct prompts of the template: prompt_id <TAB> prompt.
 python3 - "$REPO/data/geo-prompt-panel.csv" "$ONLY" >"$WORK/prompts.tsv" <<'PY'

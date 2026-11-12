@@ -18,10 +18,12 @@
     <string>-c</string>
     <string>export PATH="__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"; export GEO_ROOT="__HOME__/.local/share/43l-geo/logistics-context"; cd "$GEO_ROOT" &amp;&amp; git fetch -q origin &amp;&amp; f="$(mktemp)" &amp;&amp; git show origin/main:.claude/skills/geo-panel/run-chatgpt.sh &gt; "$f" &amp;&amp; /bin/bash "$f"; rc=$?; rm -f "$f"; exit $rc</string>
   </array>
+  <!-- Every day at 09:00 and at login: the script skips a month that already has its run, so the
+       first day the Mac is on after the 1st catches up. -->
+  <key>RunAtLoad</key>
+  <true/>
   <key>StartCalendarInterval</key>
   <dict>
-    <key>Day</key>
-    <integer>1</integer>
     <key>Hour</key>
     <integer>9</integer>
     <key>Minute</key>
