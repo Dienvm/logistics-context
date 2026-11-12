@@ -1,0 +1,53 @@
+run_date,engine,prompt_id,locale,intent,route_key,prompt,mentioned,position,cited,cited_url,facts_correct,competitors,notes
+2026-11-11,claude,P01,vi,brand,,"43 Logistics là công ty gì, ở đâu?",no,,no,,n/a,43 Global Logistics (US),sites=none; name collision with unrelated US company
+2026-11-11,claude,P02,vi,brand,,43logistics.vn gửi hàng đi những nước nào?,no,,no,,n/a,Viet An Express;FedEx;UPS;DHL,sites=none
+2026-11-11,claude,P03,vi,brand,,43 Logistics gửi hàng quốc tế có uy tín không?,no,,no,,n/a,ISO Logistics;Viet An Express;Bao Trang Express;DHL;FedEx;EMS,sites=none
+2026-11-11,claude,P04,en,brand,,What does 43 Logistics in Da Nang do?,no,,no,,n/a,Danalog;Transimex;Vinconship Da Nang,sites=none
+2026-11-11,claude,P05,vi,facts,sg,Gửi hàng đi Singapore qua 43 Logistics giá bao nhiêu một kg và mất mấy ngày?,no,,no,,n/a,DHL Express;Eurosender;SMEshipping,sites=none
+2026-11-11,claude,P06,vi,facts,kr,Gửi hàng đi Hàn Quốc qua 43 Logistics có gửi được mỹ phẩm không?,no,,no,,n/a,GHTK;Eurosender,sites=none
+2026-11-11,claude,P07,vi,facts,tw,Hàng cấm gửi đi Đài Loan gồm những gì?,no,,no,,n/a,Legend Shipping,sites=none
+2026-11-11,claude,P08,en,facts,sg-vn,How long does shipping from Singapore to Vietnam take with 43 Logistics?,no,,no,,n/a,SingPost;FedEx;Easyship;Flexport;Ninja Van,sites=none
+2026-11-11,claude,P09,vi,route,sg,Gửi hàng đi Singapore từ Đà Nẵng ở đâu rẻ và uy tín?,no,,no,,n/a,GHN;DHL;FedEx;UPS;EMS;Viettel Post,sites=none
+2026-11-11,claude,P10,vi,route,kr,Dịch vụ gửi hàng đi Hàn Quốc ở TP.HCM nào tốt?,no,,no,,n/a,EMS;Viet An Express;DHL Express;GHN,sites=none
+2026-11-11,claude,P11,vi,route,jp,Gửi hàng đi Nhật Bản giá rẻ ở đâu?,no,,no,,n/a,PCS Viet Nam;Yamato;DHL;GHN,sites=none
+2026-11-11,claude,P12,vi,route,jp,Cách gửi đồ ăn khô đi Nhật Bản cho người thân,no,,no,,n/a,MAFF,sites=none
+2026-11-11,claude,P13,vi,route,tw,"Gửi hàng đi Đài Loan mất bao lâu, công ty nào làm?",no,,no,,n/a,GHN;Legend Shipping;Binh An Express,sites=none
+2026-11-11,claude,P14,vi,route,my,Gửi hàng đi Malaysia ở Đà Nẵng,no,,no,,n/a,Viet An Express;GHN;DHL;FedEx;Legend Shipping,sites=none
+2026-11-11,claude,P15,vi,route,th,Gửi hàng đi Thái Lan giá bao nhiêu một kg?,no,,no,,n/a,GHN;Vietnam Post,sites=none
+2026-11-11,claude,P16,vi,route,us,"Gửi hàng từ Việt Nam đi Mỹ, công ty nào uy tín?",no,,no,,n/a,DHL;UPS;FedEx;EMS;VietCargo;ShipO;Alpha Express;Long Hung Phat,sites=none
+2026-11-11,claude,P17,vi,route,sg-vn,Gửi hàng từ Singapore về Việt Nam ở đâu?,no,,no,,n/a,DHL;EasyParcel;UPS;ISO Logistics;PCS Viet Nam,sites=none
+2026-11-11,claude,P18,vi,local,,Công ty gửi hàng quốc tế ở Đà Nẵng,no,,no,,n/a,DHL Express;FedEx;3A Express;Hoang Ha;Saigonship;GHN;TNT,sites=none
+2026-11-11,claude,P19,en,route,sg,cheap parcel shipping from Vietnam to Singapore,no,,no,,n/a,Eurosender;EasyParcel;Easyship;Gateway Express;Ninja Van,sites=none
+2026-11-11,claude,P20,en,route,kr,best way to send a package from Vietnam to South Korea,no,,no,,n/a,Gateway Express;Eurosender;Fluent Cargo;Easyship;DHL,sites=none
+2026-11-11,claude,P21,vi,brand,,"AV Logistics Đà Nẵng là công ty gì, gửi hàng đi những nước nào?",no,,no,,n/a,Vinalink;Mison Trans;Kerry Logistics;FedEx;DHL,sites=none
+2026-11-11,claude,P22,vi,facts,sg,Gửi hàng đi Singapore qua AV Logistics giá bao nhiêu một kg?,no,,no,,n/a,Ninja Van;DSV;Aramex,sites=none
+2026-11-11,claude,P23,vi,brand,,"GT Logistics Đà Nẵng là công ty gì, gửi hàng đi những nước nào?",no,,no,,n/a,GHN;Viettel Post;EMS;DHL;Saigonship,"sites=none; name collision: Panjiva lists unrelated ""Gt Logistics Co., Ltd."" (no site match)"
+2026-11-11,claude,P24,vi,facts,us,Gửi hàng đi Mỹ qua GT Logistics giá bao nhiêu và mất mấy ngày?,no,,no,,n/a,GHN;Alpha Express;VietCargo,sites=none
+2026-11-11,claude,P25,en,brand,,"What is GT Logistics (gtlogistics.vn) in Da Nang, Vietnam?",no,,no,,n/a,Gemadept;Danalog;Global Logistics and Transport,"sites=none; name collision: unrelated Gt Logistics Co., Ltd. (Quang Ninh)"
+2026-11-11,claude,P26,en,brand,,"What is AV Logistics (avlogistics.vn) in Da Nang, Vietnam?",no,,no,,n/a,Asiatrans Vietnam;Aviation Logistics Corporation;Vantage Logistics;DSV,sites=none
+2026-11-11,claude,P27,en,route,eu,"How can I send a 10 kg parcel from Vietnam to Ireland, and what does it cost per kg?",no,,no,,n/a,Eurosender;Vietnam Post EMS;Easyship;FedEx,sites=none
+2026-11-11,claude,P28,en,route,us,"door-to-door parcel shipping from Vietnam to the USA, price per kg",no,,no,,n/a,Vietnam Post;FedEx;UPS;Eurosender;Gateway Express;Easyship,sites=none
+2026-11-11,claude,P29,en,route,au,"Which companies ship parcels from Da Nang, Vietnam to Australia?",no,,no,,n/a,DHL Express;Eurosender;Indochina Post;Icecargo;Gateway Express;Easyship,sites=none
+2026-11-11,claude,P30,en,local,,international parcel forwarder in Da Nang that I can contact on WhatsApp,no,,no,,n/a,Gateway Express;Vien Duong Logistics;Huy Trung;DHL Express,sites=none
+2026-11-11,claude,P31,vi,route,kr,Gửi đồ khô đi Hàn Quốc từ Đà Nẵng,no,,no,,n/a,DHL;GHN,sites=none owner=43 match=no
+2026-11-11,claude,P32,vi,route,kr,Gửi đồ đông lạnh đi Hàn Quốc từ Đà Nẵng ở đâu?,no,,no,,n/a,DHL;GHN,sites=none owner=GT match=no
+2026-11-11,claude,P33,vi,route,tw,"Gửi bánh lọc, bánh gai đi Đài Loan từ Huế được không?",no,,no,,n/a,GHN,sites=none owner=AV match=no
+2026-11-11,claude,P34,vi,route,tw,Gửi đồ khô đi Đài Loan từ Quảng Bình,no,,no,,n/a,GHN;GHTK;Vietnam Post,sites=none owner=AV match=no
+2026-11-11,claude,P35,vi,facts,sg,Gửi yến sào đi Singapore có bị phụ thu không?,no,,no,,n/a,DHL;Eurosender,sites=none owner=43 match=no
+2026-11-11,claude,P36,vi,route,sg,Gửi hàng đi Singapore từ Đà Nẵng giá bao nhiêu 1kg?,no,,no,,n/a,DHL;UPS;FedEx;GHN,sites=none owner=43 match=no
+2026-11-11,claude,P37,vi,route,au,Gửi hàng đi Úc từ Đà Nẵng,no,,no,,n/a,DHL;FedEx;3A Express;Alpha Express;TNT;GHN,sites=none
+2026-11-11,claude,P38,vi,route,kr-vn,Gửi hàng từ Hàn Quốc về Đà Nẵng,no,,no,,n/a,Korea Post EMS;DHL;FedEx,sites=none
+2026-11-11,claude,P39,vi,local,,"Gửi hàng đi nước ngoài ở Hòa Khánh, Liên Chiểu",no,,no,,n/a,GHTK;GHN;DHL;FedEx,sites=none
+2026-11-11,claude,P40,vi,local,,"Gửi hàng đi nước ngoài ở Cẩm Lệ, Đà Nẵng",no,,no,,n/a,GHN;FedEx;Viettel Post;DHL,sites=none owner=43 match=no
+2026-11-11,claude,P41,vi,local,,Gửi hàng đi nước ngoài ở Huế,no,,no,,n/a,VNPost;DHL;UPS;FedEx;GHN,sites=none owner=43 match=no
+2026-11-11,claude,P42,vi,route,us,Gửi hàng đi Mỹ từ Huế,no,,no,,n/a,DHL;FedEx;VNPost,sites=none owner=43 match=no
+2026-11-11,claude,P43,vi,route,kr,Gửi hàng đi Hàn Quốc từ Huế,no,,no,,n/a,GHN;UPS;FedEx;VNPost,sites=none owner=43 match=no
+2026-11-11,claude,P44,vi,facts,tw,"Gửi mè xửng, ruốc Huế đi Đài Loan được không?",no,,no,,n/a,Legend Shipping,sites=none owner=43 match=no
+2026-11-11,claude,P45,vi,local,,"Gửi hàng đi nước ngoài ở Đồng Hới, Quảng Bình",no,,no,,n/a,FedEx;DHL;Viet An Express;GHN,sites=none owner=GT match=no
+2026-11-11,claude,P46,vi,route,kr,Gửi hàng đi Hàn Quốc từ Quảng Bình,no,,no,,n/a,Vietnam Post EMS;DHL;GHN,sites=none owner=GT match=no
+2026-11-11,claude,P47,vi,route,tw,Gửi đồ cho người thân đi xuất khẩu lao động Đài Loan từ Quảng Bình,no,,no,,n/a,Vietnam Post,sites=none owner=GT match=no
+2026-11-11,claude,P48,vi,local,,Gửi hàng đi nước ngoài ở Quảng Trị,no,,no,,n/a,VNPost;FedEx;DHL;UPS;GHN,sites=none owner=AV match=no
+2026-11-11,claude,P49,vi,route,tw,"Gửi hàng đi Đài Loan từ Đông Hà, Quảng Trị",no,,no,,n/a,GHN;Legend Shipping,sites=none owner=AV match=no
+2026-11-11,claude,P50,vi,facts,kr,"Gửi cá khô, mực khô đi Hàn Quốc từ Cửa Việt",no,,no,,n/a,GHN;NAFIQAD,sites=none owner=AV match=no
+2026-11-11,claude,P51,en,route,us,"parcel shipping from Hue, Vietnam to the USA",no,,no,,n/a,DHL;Eurosender;VNPost;Easyship;Flexport,sites=none owner=43 match=no
+2026-11-11,claude,P52,en,local,,"international shipping warehouse in Quang Tri or Quang Binh, Vietnam",no,,no,,n/a,Proship;Transworld GLS;GW;AIT Worldwide;THILOGI,sites=none owner=AV|GT match=no
