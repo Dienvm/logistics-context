@@ -4,7 +4,10 @@
      Install: replace __HOME__ with your home folder, save as
      ~/Library/LaunchAgents/vn.43logistics.geo-panel-chatgpt.plist, then
      launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/vn.43logistics.geo-panel-chatgpt.plist
-     It always runs the run-chatgpt.sh committed on origin/main, whatever branch is checked out. -->
+     It always runs the run-chatgpt.sh committed on origin/main.
+     launchd jobs may not read ~/Documents (macOS privacy, TCC: "Operation not permitted"), so the
+     job works in its own clone outside it; create it once with
+     git clone https://github.com/Dienvm/logistics-context.git ~/.local/share/43l-geo/logistics-context -->
 <plist version="1.0">
 <dict>
   <key>Label</key>
@@ -13,12 +16,14 @@
   <array>
     <string>/bin/bash</string>
     <string>-c</string>
-    <string>export PATH="__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"; cd "__HOME__/Documents/project/logistics-context" &amp;&amp; git fetch -q origin &amp;&amp; f="$(mktemp)" &amp;&amp; git show origin/main:.claude/skills/geo-panel/run-chatgpt.sh &gt; "$f" &amp;&amp; /bin/bash "$f"; rc=$?; rm -f "$f"; exit $rc</string>
+    <string>export PATH="__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"; export GEO_ROOT="__HOME__/.local/share/43l-geo/logistics-context"; cd "$GEO_ROOT" &amp;&amp; git fetch -q origin &amp;&amp; f="$(mktemp)" &amp;&amp; git show origin/main:.claude/skills/geo-panel/run-chatgpt.sh &gt; "$f" &amp;&amp; /bin/bash "$f"; rc=$?; rm -f "$f"; exit $rc</string>
   </array>
+  <!-- Every day at 09:00 and at login: the script skips a month that already has its run, so the
+       first day the Mac is on after the 1st catches up. -->
+  <key>RunAtLoad</key>
+  <true/>
   <key>StartCalendarInterval</key>
   <dict>
-    <key>Day</key>
-    <integer>1</integer>
     <key>Hour</key>
     <integer>9</integer>
     <key>Minute</key>

@@ -102,7 +102,7 @@ Hai công cụ được chạy tự động vào **9:00 sáng ngày 1 hằng th�
 | Công cụ | Chạy ở đâu | Ghi chú |
 | --- | --- | --- |
 | `claude` | Routine Claude Code trên cloud (tài khoản Claude của chủ) | Không cần mở máy |
-| `chatgpt` | Máy Mac của chủ, lịch launchd `vn.43logistics.geo-panel-chatgpt`, chạy `run-chatgpt.sh` bằng Codex CLI (tài khoản ChatGPT Pro, không trả thêm phí API) | Máy phải bật và đăng nhập; nếu máy ngủ lúc 9:00, lịch chạy khi máy thức dậy; nếu máy tắt, lần đó bị bỏ qua (chạy tay: `.claude/skills/geo-panel/run-chatgpt.sh`). Log: `~/Library/Logs/43l-geo-panel-chatgpt.log` |
+| `chatgpt` | Máy Mac của chủ, lịch launchd `vn.43logistics.geo-panel-chatgpt`, chạy `run-chatgpt.sh` bằng Codex CLI (tài khoản ChatGPT Pro, không trả thêm phí API) | Lịch thử mỗi ngày lúc 9:00 và mỗi lần đăng nhập; tháng nào đã có kết quả thì bỏ qua. Vì vậy nếu máy tắt ngày 1, **ngày đầu tiên máy được bật sau đó sẽ tự chạy bù**. Chạy tay: `.claude/skills/geo-panel/run-chatgpt.sh` (thêm `--force` để chạy lại tháng đã có). Log: `~/Library/Logs/43l-geo-panel-chatgpt.log`. Lịch dùng bản clone riêng `~/.local/share/43l-geo/logistics-context` vì macOS không cho tiến trình nền đọc `~/Documents` |
 
 Mỗi lần chạy tạo hai file `data/geo-panel-runs/<YYYY-MM>-<công cụ>.csv` (điểm) và `-answers.md` (nguyên văn câu trả lời), rồi mở **một PR** vào repo này. Việc của người phụ trách: mở PR, đọc lướt điểm và câu trả lời, sửa ô nào chấm sai, rồi merge. Kết quả qua công cụ tự động là thước đo xu hướng (cùng cách tìm kiếm nhưng không cá nhân hoá), không phải bản sao màn hình khách thấy.
 
