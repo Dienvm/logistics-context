@@ -438,6 +438,15 @@ export const contactEvents = pgTable('contact_events', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index('contact_events_created_idx').on(t.createdAt), index('contact_events_channel_idx').on(t.channel)]).enableRLS()
 
+// Planned, A-07b / ADR 0013 (migration 0017):
+// - contact_events + leads: attributionBasis enum('cookie','session','none') default 'none'; inApp enum('zalo','facebook','messenger','instagram','tiktok','line') nullable;
+//   entrySourceKey text not null default 'unknown' (session values + inApp only, never 43l_attr).
+// - leads: origin enum('web_form','staff') default 'web_form'; contactChannel enum('zalo','call','whatsapp','messenger','walk_in','other') nullable;
+//   selfReportedSource / salesSource enum reported_source('google','ai','facebook','zalo','tiktok','youtube','referral','returning','other') nullable;
+//   phone, consentAt, consentPolicyVersion become nullable with CHECK (origin = 'staff' OR (phone, consent_at, consent_policy_version all NOT NULL)).
+// - lead_events: kind gains 'source'; fromSource / toSource text.
+// - site_visits (site, day date +07, source_key text, landing_path text, locale, count int); PK (site, day, source_key, landing_path); RLS on, no policies; no identifier.
+
 export const redirects = pgTable('redirects', {
   sourcePath: text('source_path').primaryKey(),
   destination: text('destination'),                         // null for 410

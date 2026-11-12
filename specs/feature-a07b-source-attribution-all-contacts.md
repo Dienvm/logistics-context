@@ -318,6 +318,14 @@ Roadmap: **A-07b Source attribution for every contact** (new row, owner 2026-11-
   - staff may record a customer's enquiry made by phone or Zalo.
 
   The `policy` block's `effectiveDate` changes with the copy. Leads take their `consent_policy_version` from the **published** privacy page (`getLeadPolicyVersion()` → `getPrivacyPolicyVersion()`, `modules/content`), so the seed file alone changes nothing on the live site. **Activation step:** the owner reviews the copy, and the 43 privacy page is published through the A-03 editor with the new `effectiveDate`. Verification: after publishing on `db:local`, a new web lead stores the new version. The capture (§1) and visit counting (§4) ship in the same deploy, but the PR states that the policy must be published before or with the deploy. AV/GT follow at their port.
+- [ ] **AC-22 Activation flag (ADR 0013 Decision 8).** Given `NEXT_PUBLIC_SESSION_ATTRIBUTION` unset, a fresh visit from another origin that clicks Zalo and submits the form behaves as follows:
+  - no `/go` URL or form post carries `ref`, `us`, `um`, `uc`, `lp`, `cn` or `cap`;
+  - a hand-crafted `GET /go/zalo/?ref=chatgpt.com&cap=1` stores no session values (basis `none` without ads consent);
+  - no `site_visits` row changes;
+  - the form shows no "Bạn biết 43 Logistics qua đâu?" question;
+  - `/admin/leads/` shows no "Thêm khách" button, `/admin/leads/new/` answers 404, and the source tag control is hidden.
+
+  The new report views still render the data that exists. Given the flag set to `1`, every other AC holds.
 - [ ] **AC-21 JS budget.** `pnpm perf:report` shows every route in `data/perf-budget.json` within baseline + 50 KB gz. The app JS delta added by this change is recorded in the PR (expected ≤ 1 KB gz on public routes).
 
 ### Scope
@@ -364,6 +372,7 @@ Roadmap: **A-07b Source attribution for every contact** (new row, owner 2026-11-
 | app | analytics | `modules/analytics/{constants.ts,application/{load-report,report-params}.ts,domain/report.ts,ui/admin/*}` |
 | app | db | `db/enums.ts`, `db/migrations/0017_*.sql` (+ snapshot), `db/schema.ts` re-export |
 | app | copy | `messages/{vi,en}.json`, `data/seed/info-pages/policy-privacy.{vi,en}.md` |
+| app | config | `shared/config/env.public.ts` (`NEXT_PUBLIC_SESSION_ATTRIBUTION`), `.env.example`, `deploy/env.template` (unset by default; ADR 0013 Decision 8) |
 | context | docs | `docs/context/05-seo-and-tracking.md`, `07-data-model.md`, `10-roadmap.md` (A-07b row, G-05 narrowed), `11-open-questions.md` (Q-17 note, new Q-39), new ADR 0013 |
 
 ### Golden-rule checks
@@ -380,7 +389,7 @@ Roadmap: **A-07b Source attribution for every contact** (new row, owner 2026-11-
 
 ### Dependencies & Risks
 
-- **Depends on: ADR 0013 "Cookieless first-party source attribution"** (to be written with `/adr` before `/implement`). It must cover these points:
+- **Depends on: ADR 0013 "Cookieless first-party source attribution"** (accepted 2026-11-12, `docs/adr/0013-cookieless-first-party-source-attribution.md`). It covers these points, and its Decision 8 adds the activation flag (AC-22):
   - amend ADR 0011 Decision 6 ("under-count accepted") and the F-06/05 rule that every attribution value needs ads consent; click IDs keep the gate;
   - distinguish four processing types and give each its legal basis under PDP Law 91/2025 (and Decree 13/2023 as applicable), its notice in the privacy policy, its minimisation and its safeguards:
     1. **aggregate visit counts** (`site_visits`: no identifier, bounded cardinality, small counts possible);
