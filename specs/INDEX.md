@@ -8,7 +8,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
-| 2026-11-13 | feature | [feature-g06-per-site-route-seo.md](feature-g06-per-site-route-seo.md) | Differentiate route and home SEO per sister site | G-06 | both | draft |
+| 2026-11-13 | feature | [feature-g06-per-site-route-seo.md](feature-g06-per-site-route-seo.md) | Differentiate route and home SEO per sister site | G-06 | both | approved |
 | 2026-11-11 | feature | [feature-a07b-source-attribution-all-contacts.md](feature-a07b-source-attribution-all-contacts.md) | Attribute every contact and visit to its entry source | A-07b | both | in_implementation |
 | 2026-10-30 | feature | [feature-ms01-site-expand-migration.md](feature-ms01-site-expand-migration.md) | Add the site dimension beside the existing constraints | MS-01 | both | in_implementation |
 | 2026-10-30 | feature | [feature-l00b-cloudflare-edge.md](feature-l00b-cloudflare-edge.md) | Put Cloudflare in front of the VPS and lock the origin | L-00b | both | in_implementation |

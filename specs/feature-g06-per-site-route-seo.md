@@ -1,7 +1,7 @@
 ---
 title: Differentiate route and home SEO per sister site
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: G-06
 priority: must-have
@@ -39,37 +39,40 @@ Roadmap row G-06 (Phase 5b). Measured on 2026-11-13:
 
 Route pages:
 
-- [ ] **AC-01** Given an AV or GT route page listed in that site's copy file, when it renders in `vi` or `en`, then its `<h1>` is the site's own text from `page_translations.h1`, and it differs from the `<h1>` of the same route on each other site.
-- [ ] **AC-02** Given the same page, then its `<title>` comes from `page_translations.seo_title`, is ≤ 60 characters including the brand suffix, and differs from the same route's title on each other site by more than the brand name.
-- [ ] **AC-03** Given the same page, then its meta description is 120–155 characters, names the site's brand and at least one region, and differs from the other sites' descriptions.
+- [ ] **AC-01** Given an AV or GT route page listed in that site's copy file, when it renders in `vi` or `en`, then its `<h1>` is the site's own text from `page_translations.h1` and names the destination and at least one of that site's regions (owner decision 2). After brand names are removed, it differs from the `<h1>` of the same route on each of the other two sites (43 vs AV, 43 vs GT, AV vs GT).
+- [ ] **AC-02** Given the same page, then its `<title>` comes from `page_translations.seo_title`, is ≤ 60 characters including the brand suffix, names at least one of the site's regions, and after brand names are removed differs from the same route's title on each of the other two sites.
+- [ ] **AC-03** Given the same page, then its meta description is 120–155 characters, names the site's brand and at least one region, and differs from the other sites' descriptions. The intro block's first sentence names at least one of the site's regions.
 - [ ] **AC-04** No new `<h1>`, title, description or intro contains a price, a currency amount or a transit time (rule 2). The page still shows the from-price and transit from the rate tables in the summary paragraph and tiles.
-- [ ] **AC-05** Every region or place named in the new copy is the city, province or display name of an office that is verified in that site's `offices` setting (rule 1). A goods type ("đồ khô", "đồ đông lạnh") is named only when that route has an approved goods rule that allows it (§10); otherwise the copy names regions only.
-- [ ] **AC-06** For each of the 16 routes, the main-content text of the AV page and the GT page each share less than 90% of their words with the 43 page before the first rate card heading (the hero, summary and intro). The spec does not require the shared rate tables to differ.
+- [ ] **AC-05** Every region or place named in the new copy is the city, province or display name of an office that is verified in that site's `offices` setting (rule 1). The copy presents these places as receiving points the group shares ("nhận hàng tại…"), not as AV's or GT's own branches (their own office is Đà Nẵng only). A goods type ("đồ khô", "đồ đông lạnh") is named only when that route has an approved goods rule that allows it (§10); otherwise the copy names regions only.
+- [ ] **AC-06** For each of the 16 routes and both locales, the head-of-page text is less than 70% similar for each pair 43–AV, 43–GT and AV–GT. Calculation: take the text of `<main>` from its start to the first rate-card `<h2>`, strip tags, lowercase, split on whitespace, and compute Python `difflib.SequenceMatcher(None, a_words, b_words, autojunk=False).ratio()`. The spec does not require the shared rate tables below that point to differ.
 - [ ] **AC-07** 43's route pages keep their current `<h1>` and `<title>` patterns. This spec changes no 43 route copy.
 
 Copy loading:
 
-- [ ] **AC-08** `pnpm db:site-copy <site>` without a flag prints, per route and locale, the old and new `h1`, `seoTitle`, `seoDescription` and intro, and writes nothing.
-- [ ] **AC-09** `pnpm db:site-copy <site> --apply` writes those fields, keeps its backup in `.backups/`, and skips a translation whose page has `admin_edited_at` set, listing each skipped row. `--apply --force` writes those rows too. A second `--apply` reports no change.
-- [ ] **AC-10** The command accepts `43l`, `av` and `gt` for the home entry (AC-11), and still refuses to write route copy for `43l`.
+- [ ] **AC-08** A new mode `pnpm db:site-copy <site> --seo` reads a new per-site file `copy-seo.json` (route entries and one home entry). Without `--apply` it prints, per page and locale, the old and new `h1`, `seoTitle`, `seoDescription` and intro text, and writes nothing.
+- [ ] **AC-09** `--seo --apply` writes exactly these columns of `page_translations` for the listed pages of that site: `h1`, `seo_title`, `seo_description`, and the `text` of the existing `intro` block inside `blocks` (plus `updated_at` / `updated_by`). It leaves every other block (`notes` and the rest), `noindex`, `slug`, `title`, publication state, every post row, every `site_settings` row and every other site's rows unchanged; the PR records a before/after row diff showing this. It keeps a backup in `.backups/`.
+- [ ] **AC-09b** `--seo --apply` skips a translation whose page has `admin_edited_at` set and lists each skipped row; `--seo --apply --force` writes those rows too. A second `--seo --apply` reports no change. The existing mode without `--seo` behaves as before.
+- [ ] **AC-09c** Every skipped row gets a recorded disposition in the PR before the feature is accepted: its current copy already meets AC-01–AC-03 / AC-11, or staff update it in the admin, or the owner approves `--force` for it. A page with an unresolved skip does not pass.
+- [ ] **AC-10** `--seo` accepts `43l`, `av` and `gt`. For `43l` it accepts only the home entry and exits non-zero, writing nothing, when the file holds a route entry.
 
 Home pages:
 
 - [ ] **AC-11** Given each site's home page in `vi` and `en`, then `<title>` (absolute, ≤ 60 characters) contains the brand and "Đà Nẵng" / "Da Nang", and the meta description (120–155 characters) names Đà Nẵng and at least three destinations.
-- [ ] **AC-12** Every destination named in a home description is an active route with a published page on that site on the day the copy is applied. The dry run fails when a named route key in the copy file's `routes` list for the home entry is inactive or unpublished.
+- [ ] **AC-12** Every destination named in a home description is an active route with a published page on that site on the day the copy is applied. The home entry lists the route keys it names; the dry run exits non-zero when one of them is inactive or has no published page on that site.
 - [ ] **AC-13** The three home titles differ from each other by more than the brand name. The home `<h1>` does not change.
 
 Organization:
 
 - [ ] **AC-14** Given a site whose `offices` setting is verified and whose head-office key resolves to an office, then `Organization.address` is a `PostalAddress` with the same `streetAddress`, `addressLocality` and `addressCountry` as that office's `LocalBusiness` node. No `postalCode` is emitted.
 - [ ] **AC-15** Given `offices` unverified, or no office with the head-office key, then `Organization` has no `address` property.
-- [ ] **AC-16** The 43 and AV seeds store the alias under `alternateNames`. After the AV value is saved, AV pages emit `alternateName: ["AVLogistics.vn"]`. 43 emits no `alternateName` while `company` is unverified.
+- [ ] **AC-16** The 43 and AV seeds store the alias under `alternateNames`, the seed settings parser (`scripts/seed/settings-schema.ts`, both repos) accepts that array, and `pnpm db:seed` and `pnpm db:local` still succeed. 43 emits no `alternateName` while `company` is unverified.
+- [ ] **AC-16b** The AV database value is set by one targeted save of the AV company setting in the admin (target site AV, alias "AVLogistics.vn"), which keeps the other company fields and the verified flag and revalidates the settings tag. No re-clone (`db:clone-site`) is used. Afterwards AV pages emit `alternateName: ["AVLogistics.vn"]`.
 - [ ] **AC-17** GT renders AC-01–AC-05, AC-11–AC-15 from `projects/gtlogistics.vn/` with its own copy file.
 
 Quality:
 
 - [ ] **AC-18** No client JavaScript is added (ADR 0006 delta recorded as 0). JSON-LD validates on the home page and one route page per site. Lighthouse SEO 100 and accessibility ≥ 95 on those pages.
-- [ ] **AC-19** `docs/context/05-seo-and-tracking.md` and `03-information-architecture.md` describe the per-site title and `<h1>` rule and the `Organization.address` gate; the stale "AV route pages noindex" note on roadmap row MS-08 is corrected; `.claude/rules/seo-patterns.md` no longer says "43logistics.vn only" for these rules.
+- [ ] **AC-19** `docs/context/05-seo-and-tracking.md` and `03-information-architecture.md` describe the per-site title and `<h1>` rule and the `Organization.address` gate; the stale "AV route pages noindex" note on roadmap row MS-08 and the "not done" wording on MS-05 are corrected; `.claude/rules/seo-patterns.md` no longer says "43logistics.vn only" for these rules.
 
 ### Scope
 
@@ -77,7 +80,7 @@ Quality:
 
 - Per-site `h1`, `seoTitle`, `seoDescription` and intro for the 16 AV and 16 GT route pages, `vi` and `en`.
 - Home `seoTitle` and `seoDescription` for 43, AV and GT, `vi` and `en`.
-- `db:site-copy`: new fields, the admin-edit guard, the home entry, `43l` for the home entry only.
+- `db:site-copy --seo`: the new mode, its `copy-seo.json` files, the admin-edit guard, `43l` for the home entry only. The existing mode is untouched.
 - `Organization.address` and the alias seed key, in both app repos.
 - The matching context doc updates.
 
@@ -94,16 +97,15 @@ Quality:
 
 | Repo | Layer | File / Path (likely) |
 |------|-------|----------------------|
-| app | seed copy | `data/seed/sites/av/copy-routes.json` (add `h1`, `seoTitle`; rewrite `seoDescription`, intro) |
-| app | seed copy | `data/seed/sites/av/` and a new `data/seed/sites/43l/` home entry (file name set in implementation) |
-| app | script | `scripts/site-copy/apply.ts` (+ its loader/types), `package.json` script row unchanged |
-| app | seed settings | `data/seed/site-settings.legacy.json`, `data/seed/sites/av/site-settings.json` (`alternateNames`) |
+| app | seed copy | new `data/seed/sites/av/copy-seo.json` (16 routes + home) and new `data/seed/sites/43l/copy-seo.json` (home only) |
+| app | script | `scripts/site-copy/apply.ts` (+ its loader/types): the `--seo` mode; `package.json` script row unchanged |
+| app | seed settings | `data/seed/site-settings.legacy.json`, `data/seed/sites/av/site-settings.json` (`alternateNames`), `scripts/seed/settings-schema.ts` (accept the array) |
 | app | seo domain | `modules/seo/domain/organization-json-ld.ts`, `modules/seo/domain/local-business.ts` (shared address builder) |
 | app | seo ui | `modules/seo/ui/site-json-ld.tsx`, `modules/seo/ui/verified-business.ts` |
 | app | config | `shared/config/site.ts` (head-office key per site, beside `OWN_OFFICE_KEYS`) |
 | app (read only) | route page | `modules/seo/application/route-metadata.ts`, `modules/content/application/load-route-page.ts`, `app/[locale]/(site)/[slug]/route-view.tsx` — already prefer the DB `h1` / `seoTitle`; change only if AC-01/AC-02 fail |
 | app (read only) | home | `modules/seo/application/home-metadata.ts` — already prefers the DB values |
-| gt app | all of the above | the same paths in `projects/gtlogistics.vn/`, with `data/seed/sites/gt/copy-routes.json` |
+| gt app | all of the above | the same paths in `projects/gtlogistics.vn/`, with a new `data/seed/sites/gt/copy-seo.json` (16 routes + home) and its own `scripts/seed/settings-schema.ts` |
 | context | docs | `docs/context/05-seo-and-tracking.md`, `03-information-architecture.md`, `10-roadmap.md` (G-06 row, MS-08 note), `.claude/rules/seo-patterns.md`, `AGENTS.md` §7 (`db:site-copy` row) |
 
 ### Golden-rule checks
@@ -124,29 +126,31 @@ Quality:
   - Q-01: 43's `company` setting is unverified, so 43 emits no `alternateName` (AC-16).
   - Q-31: aliases beyond the domain-style one are not added.
 - Risk: local dev and the scripts write to the production database. `db:site-copy --apply` runs only after the owner reviews the dry-run output; the backup file is kept.
-- Risk: script writes do not clear the site caches. After `--apply`, post the signed page tags to `/api/revalidate` in each container.
+- Depends on: the signed `POST /api/revalidate` handler, which exists in the app (`app/api/revalidate/route.ts`) and is already used after script writes; the roadmap MS-05 note "not done" refers to the automatic admin fan-out, and this spec corrects that wording (AC-19).
+- Risk: script writes do not clear the site caches. After `--seo --apply`, send the signed request from inside each site's container on the VPS (the handler is never proxied by Caddy) with the tags `page:home` and the page tag of every written route page (`pageTag(key)`); the admin alias save revalidates the settings tag itself. `revalidateTag(tag, 'max')` may serve the stale page once, so verify on the second request.
 - Risk: a title that changes can move rankings for a few weeks. 43's price-led titles are untouched to limit this.
 - Risk: the admin-edit guard changes `db:site-copy` behaviour for rows staff already edited; the dry run lists them.
 - Risk: two repos. Each change lands as parallel PRs (43logistics.vn and gtlogistics.vn); list every threaded file in both (lesson 2026-10-23).
 
 ### Manual Verification Plan
 
-- Seed needs: the default data; no new seed beyond the copy files.
+- Seed needs: branch checks (steps 1b, 7) run against `pnpm db:local` in each repo with `PREVIEW_UNVERIFIED` unset; because the local seed leaves settings unverified, mark `offices` verified there with `pnpm db:confirm` data or a local SQL update, and state which in the PR. Content checks (steps 3–6, 8) run against production after the apply.
 - Steps:
-  1. `pnpm db:site-copy av` and `pnpm db:site-copy gt` (dry run): every route shows new `h1`, `seoTitle`, `seoDescription`, intro; counts match 16 routes × 2 locales; admin-edited rows are listed as skipped.
-  2. Owner reviews the dry-run text. Then `--apply`, then a second `--apply` reports no change.
-  3. Revalidate, then for `/gui-hang-di-dai-loan/`, `/gui-hang-di-han-quoc/`, `/gui-hang-di-singapore/` and `/en/shipping-to-singapore/` on each site: `curl` the page and compare `<h1>`, `<title>`, meta description across the three sites (AC-01–AC-03); check title length ≤ 60 and description 120–155.
+  1. Dry runs: `pnpm -C projects/43logistics.vn db:site-copy 43l --seo`, `… db:site-copy av --seo`, `pnpm -C projects/gtlogistics.vn db:site-copy gt --seo`. Expected: 43l lists the home page × 2 locales only; av and gt list 16 routes × 2 locales + home × 2; admin-edited rows are listed as skipped; a row count before and after shows nothing written.
+  1b. On `db:local`: a `43l` file with a route entry exits non-zero (AC-10); a home entry naming an inactive route key exits non-zero (AC-12); with one page marked admin-edited, `--seo --apply` skips it and `--seo --apply --force` writes it (AC-09b); a before/after dump of `page_translations`, `post_translations` and `site_settings` shows only the AC-09 columns changed (AC-09).
+  2. Owner reviews the dry-run text. Then `--seo --apply` per site, then a second `--seo --apply` reports no change. Record each skipped row's disposition (AC-09c). Revalidate as described under Risks.
+  3. For `/gui-hang-di-dai-loan/`, `/gui-hang-di-han-quoc/`, `/gui-hang-di-singapore/` and `/en/shipping-to-singapore/` on each site: `curl` the page and compare `<h1>`, `<title>`, meta description across the three sites (AC-01–AC-03); check title length ≤ 60 and description 120–155. On the same pages confirm rule 4 still holds: exactly one `<h1>`, a self canonical, `hreflang` vi/en/x-default, breadcrumbs, and a visible Zalo CTA.
   4. Grep the copy files for digits followed by `đ`, `SGD`, `USD`, `ngày`, `days` (AC-04), and compare each named place with the site's verified offices (AC-05).
-  5. Word-overlap check (AC-06): extract `<main>` text up to the first rate card heading for the 16 routes on each site pair and record the ratio in the PR.
+  5. Similarity check (AC-06): run the AC-06 calculation for the 16 routes × 2 locales × 3 site pairs and record the table in the PR; every ratio is below 0.70.
   6. Home pages, both locales, three sites: title and description content and length (AC-11, AC-13); the dry run fails with an inactive route key (AC-12, checked once by editing the file locally).
-  7. JSON-LD: `Organization.address` equals the head-office `LocalBusiness` address on each site (AC-14); with `PREVIEW_UNVERIFIED` off and `offices` unverified locally (`db:local`), the property is absent (AC-15); AV shows `alternateName`, 43 does not (AC-16). Validate with a schema validator.
+  7. JSON-LD: `Organization.address` equals the head-office `LocalBusiness` address on each site (AC-14); on `db:local` with `offices` unverified, and again with `offices` verified but the head-office key pointing at no office, the property is absent (AC-15); AV shows `alternateName`, 43 does not (AC-16). Validate with a schema validator.
   8. Lighthouse mobile, consent rejected, on one home and one route page per site: SEO 100, accessibility ≥ 95, JS delta unchanged. axe at 360 and 1280 px.
 - Validation commands (both app repos): `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm i18n:check`, `pnpm check:redirects`, `pnpm check:boundaries`. PRs carry the `lighthouse` label. No automated tests (ADR 0004).
 
 ### Implementation Hints
 
 - Route `<title>` and `<h1>` already prefer the DB value: `route-metadata.ts` uses `page.copy.seoTitle` before the message templates, and `load-route-page.ts` uses the pattern `<h1>` only when the DB `h1` is empty or equals the route name. A site `h1` therefore also stops `route-view.tsx` from appending "– từ {price}", which is the intended region-led form.
-- `scripts/site-copy/apply.ts` today writes `seoDescription`, `blocks`, `noindex: false` and `updatedBy: null`, never `h1` or `seoTitle`, and has no `adminEditedAt` check. Follow `db:import-rate-cards` for the skip / `--force` behaviour.
+- `scripts/site-copy/apply.ts` today replaces the whole `blocks` array, sets `noindex: false`, rewrites post translations, never writes `h1` or `seoTitle`, and has no `adminEditedAt` check. Keep that mode as it is and add `--seo` beside it with the narrow write set of AC-09. Follow `db:import-rate-cards` for the skip / `--force` behaviour.
 - Reuse the `PostalAddress` builder behind `toJsonLdOffice` (`verified-business.ts`) for `Organization.address`; do not build a second one.
 - Region ownership from the panel (`data/geo-panel-runs/2026-11-chatgpt.csv`, `owner=`): AV `P33`, `P34`, `P48`–`P50`; GT `P32`, `P45`–`P47`; 43 `P31`, `P35`, `P36`, `P40`–`P44`, `P51`.
 - Quảng Bình's office is stored with province "Quảng Trị" and shown as "Quảng Bình" (`01-business.md`); use the display name.
