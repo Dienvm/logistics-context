@@ -1,9 +1,11 @@
 ---
 title: Attribute every contact and visit to its entry source
 type: feature
-status: approved
+status: in_implementation
 owner_repo: both
 roadmap: A-07b
+branch: feat/a07b-source-attribution
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/90
 priority: must-have
 blocked_by_questions: [Q-17, Q-39]
 updated: 2026-11-11
@@ -43,7 +45,7 @@ Roadmap: **A-07b Source attribution for every contact** (new row, owner 2026-11-
 
 - New client-safe module file `modules/tracking/application/entry-source.ts`, exported from `modules/tracking/client.ts`. On first evaluation in the browser it reads `document.referrer` and `location` **once** and keeps the result in a module-level constant:
   - `ref`: the referrer **hostname** when it is http(s) and not one of the site's own hosts (from `NEXT_PUBLIC_SITE_URL`'s host, the `www.` form included); otherwise absent.
-  - `us`, `um`, `uc`: `utm_source`, `utm_medium`, `utm_campaign` from the landing URL (trimmed, ≤ 150 bytes each via the existing `fitToBudget`). `utm_term`/`utm_content` are not sent.
+  - `us`, `um`, `uc`: `utm_source`, `utm_medium`, `utm_campaign` from the landing URL. *(Amended 2026-11-12, implementation review:)* each is lowercased, stripped of diacritics, limited to `[a-z0-9._-]` (other runs become `_`) and to 100 characters; a value containing `@` or a run of ≥ 7 digits is dropped, because a tag may carry an email or phone (ADR 0013 Decision 2). `utm_term`/`utm_content` are not sent.
   - `lp`: the landing pathname (≤ 150 bytes).
   - `cn`: `google`, `facebook` or `tiktok` when the landing URL carried a click-ID parameter (`gclid`/`gbraid`/`wbraid`, `fbclid`, `ttclid`). Only the **network name** is sent, never the click-ID value. This keeps a paid entry recognisable as paid without consent.
   - `cap`: `1`, which marks that capture ran. A row with `cap` and no `ref`/`us` is "direct"; a row without `cap` is "unknown" (old client, JS failed, link opened from outside).
@@ -225,7 +227,7 @@ Roadmap: **A-07b Source attribution for every contact** (new row, owner 2026-11-
 - [ ] **AC-03 Cookie precedence.** Given ads consent granted and a landing with `?gclid=x&utm_source=google`, when the visitor clicks WhatsApp, then the row has `attribution_basis = 'cookie'`, `gclid = 'x'` and source `click:google`, as today. Given ads consent **rejected** and the same landing, then the `/go` request carries `cn=google` and no click-ID value, the row has `gclid` null, `utm_source = 'google'`, basis `session`, source key `utm:google` and `entry_source_key = 'click:google'`, and that entry's `site_visits` row is keyed `click:google`. So the `group` view counts both under "Google Ads".
 - [ ] **AC-03b Returning cookie visitor.** Given ads consent granted and a `43l_attr` from an earlier `?gclid=x` visit, when the visitor later arrives by typed URL and clicks Zalo, then the row has basis `cookie`, source key `click:google` and `entry_source_key = 'direct'`, and its visit was counted under `direct`. The `group` view counts the contact under "Gõ trực tiếp / dấu trang", and the `source` view counts it under "Google Ads".
 - [ ] **AC-04 Own host and direct.** Given a landing with no referrer (typed URL), when the visitor submits the quote form, then the lead has `attribution_basis = 'session'`, `referrer` null and source `direct` ("Gõ trực tiếp / dấu trang"). Given a `/go/zalo/` request with no entry params (old cached page, link opened from outside), then the basis is `none` and the source is `unknown`. Given a referrer of `https://43logistics.vn/...` or `https://www.43logistics.vn/...`, then `ref` is not sent.
-- [ ] **AC-05 Invalid params.** Given a `GET /go/call/?ref=%3Cscript%3E&us=` followed by 400 × `a`, `&cn=bing&lp=https://x.io/`, then the redirect is still a 302, `cn` and `lp` are dropped, the row is inserted, `referrer` is null and `utm_source` is cut to ≤ 150 bytes. No error reaches the visitor.
+- [ ] **AC-05 Invalid params.** Given a `GET /go/call/?ref=%3Cscript%3E&us=` followed by 400 × `a`, `&cn=bing&lp=https://x.io/&cap=1`, then the redirect is still a 302, `cn` and `lp` are dropped, the row is inserted, `referrer` is null and `utm_source` is cut to 100 characters; `us=ana@x.vn` or `us=0901234567` stores no `utm_source`. No error reaches the visitor. (Without `cap=1` the session path isn't used and the row is `unknown`, AC-04.)
 - [ ] **AC-06 In-app browser.** Given a user agent containing `Zalo` (Zalo in-app) and no referrer, then the row's `in_app = 'zalo'` and the source is `app:zalo`, group Zalo. `FBAN`/`FBAV` → `facebook`, `Instagram` → `instagram`, `musical_ly`/`TikTok` → `tiktok`, `Line/` → `line`. A desktop Chrome user agent → null.
 - [ ] **AC-07 Classifier parity.** For each row in the spec's table below, the TS `deriveTrafficSource` + `sourceGroup` and the SQL twins give the same key and group, in both `leads` and `contact_events`. The reviewer runs one SQL `SELECT` over a `VALUES` list of these literal rows on `db:local`, prints the TS result for the same rows with `pnpm tsx`, and compares them by hand (ADR 0004).
 
@@ -431,7 +433,7 @@ Roadmap: **A-07b Source attribution for every contact** (new row, owner 2026-11-
      - Same accepted profile, type `$BASE/` in the address bar, click Zalo → `entry_source_key = 'direct'`, source key `click:google`.
   3. **AC-04/05.**
      - Type the URL directly and submit the form → `direct`.
-     - `curl "$BASE/go/call/?ref=%3Cscript%3E&us=$(printf 'a%.0s' {1..400})&cn=bing&lp=https://x.io/"` → `302`; the row has `referrer` null, `utm_source` 150 bytes, `landing_path` null.
+     - `curl "$BASE/go/call/?ref=%3Cscript%3E&us=$(printf 'a%.0s' {1..400})&cn=bing&lp=https://x.io/&cap=1"` → `302`; the row has `referrer` null, `utm_source` 100 characters, `landing_path` null.
      - `curl "$BASE/go/zalo/"` → basis `none`, `entry_source_key = 'unknown'`.
   4. **AC-06.** `curl -A 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Zalo iOS/24.10' "$BASE/go/zalo/?cap=1"` → `in_app = 'zalo'`, `entry_source_key = 'app:zalo'`. Repeat with `… [FBAN/FBIOS;FBAV/450.0]`, `… Instagram 300.0`, `… musical_ly_32.0`, `… Line/13.0`, and a desktop Chrome user agent → null.
   5. **AC-07.** Run the parity `SELECT` over a `VALUES` list of all 16 rows; run `pnpm tsx scripts/print-source-keys.ts` (a throwaway script, not committed) for the same rows; compare the two outputs line by line.
