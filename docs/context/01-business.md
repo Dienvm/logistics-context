@@ -107,7 +107,8 @@ A separate legal entity in the group. Facts are confirmed per site (rule 1). Unt
 | Email | avlogistics.danang@gmail.com | Confirmed (owner `info.txt`) |
 | Routes and retail rate cards | The same as 43 Logistics (shared tables) | Confirmed (owner 2026-10-30: "giống") |
 | Hours | — | `NEEDS CONFIRMATION` (43's T2–T7 08:00–18:00 shown only in preview) |
-| Facebook, Zalo OA, GTM, new-customer offer | Exist; the owner will send them | `NEEDS CONFIRMATION` (owner: "cập nhật sau") |
+| Facebook | `https://www.facebook.com/share/1Dn2tGvRJ3/?mibextid=wwXIfr` | **Confirmed** by the owner, 2026-11-12 |
+| Zalo OA, GTM, new-customer offer | Exist; the owner will send them | `NEEDS CONFIRMATION` (owner: "cập nhật sau") |
 | Domain / DNS | `avlogistics.vn` | DNS details pending (owner: "gửi sau") |
 | Brand colours | Forest green #04563C, yellow #F5D30A (from the logo) | Confirmed (logo) |
 
