@@ -121,7 +121,7 @@ Deliberate deviations, each closed by its owning task:
 11. Related routes (4, same direction first, then the two hub links) + related guides.
 12. Final CTA band.
 
-**As built (S-04):** one template, `app/[locale]/(site)/[slug]/page.tsx`. The H1 is "Gửi hàng đi {country}" until an editor writes one (the seed stores only the route name). The order follows the list above:
+**As built (S-04):** one template, `app/[locale]/(site)/[slug]/page.tsx`. The H1 is "Gửi hàng đi {country}" until an editor writes one (the seed stores only the route name); AV and GT route pages carry their own region-led H1 from `copy-seo.json` (G-06), which also replaces the "– từ {price}" suffix there. The order follows the list above:
 - the hero facts use the S-01 fact rule; flight schedule and transit note are Vietnamese-only DB text, shown on VI pages only;
 - the mini calculator runs on the S-03 engine with only the shown bands;
 - the rate table is a `<table>` from 768 px and cards below;

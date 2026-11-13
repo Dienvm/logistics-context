@@ -1,7 +1,10 @@
 ---
 title: Differentiate route and home SEO per sister site
 type: feature
-status: approved
+status: in_implementation
+branch: feat/g06-per-site-route-seo
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/94
+implementation_pr_gt: https://github.com/Dienvm/gtlogistics.vn/pull/13
 owner_repo: both
 roadmap: G-06
 priority: must-have

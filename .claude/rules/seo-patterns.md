@@ -5,9 +5,9 @@ paths:
   - "projects/43logistics.vn/modules/content/**/*.{ts,tsx}"
 ---
 
-# SEO patterns (43logistics.vn only)
+# SEO patterns
 
-We optimise **only 43logistics.vn**. Context: `docs/context/05-seo-and-tracking.md`, the proposal's §5, `AGENTS.md` rules 3–4 and 13.
+The same rules apply to 43logistics.vn, avlogistics.vn and gtlogistics.vn (ADR 0012); each site keeps its own route `<h1>`, titles and descriptions in `page_translations` (G-06). Context: `docs/context/05-seo-and-tracking.md`, the proposal's §5, `AGENTS.md` rules 3–4 and 13.
 
 ## Every public page
 
