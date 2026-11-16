@@ -1,7 +1,9 @@
 ---
 title: Prove Chatwoot on the production VPS before building the inbox
 type: feature
-status: approved
+status: in_implementation
+branch: feat/in00-chatwoot-spike
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/98
 owner_repo: both
 roadmap: IN-00
 priority: must-have
@@ -313,6 +315,19 @@ The staff address is `https://inbox.43logistics.vn` (owner confirmed, 2026-11-16
   - read `/proc/meminfo` for `MemAvailable` and `SwapFree`;
   - keep the spike workload PIDs in a file so the abort can kill them.
 - The Caddyfile bind mount is a single file. Editors that replace the file change the inode, and the container then keeps the old content. Always write in place.
+
+### Implementation notes (app PR #98, draft, 2026-11-16)
+
+- **Caddy block deviation from AC-01.** The block lives in `deploy/chatwoot/Caddyfile.inbox-block`, not in `deploy/Caddyfile`. Every 43 deploy copies `deploy/Caddyfile` from the release, so merging the block there would put `inbox.*` on the live edge permanently. The runbook appends it in place to the VPS copy during the window, validates and reloads, and rolls back from `Caddyfile.pre-in00`. The block moves into `deploy/Caddyfile` at IN-01.
+- **Phase (e) deviation.** `deploy-remote.sh` rolls only 43's `app`. AV is therefore rolled the way `deploy-from-mac.sh av` does it, with `--force-recreate` to the running tag. During phase (e) the watchdog lets the redeployed site miss 6 consecutive samples (instead of 3) and skips its TTFB check.
+- **Phase (d)** builds to a local-only name `43l-in00:in00-<date>`, so nothing can be pushed.
+- **Pinned images (2026-11-16):**
+  - `chatwoot/chatwoot:v4.19.1-ce@sha256:04895c7b…`
+  - `pgvector/pgvector:0.8.7-pg16@sha256:484e8380…`
+  - `redis:7.4.12-alpine@sha256:7f7d30b7…`
+
+  The full digests are in `compose.chatwoot.yaml`. IN-01 inherits them.
+- **Existing deploy issue found (not changed here).** `deploy-from-mac.sh` `push_file` replaces VPS files with `mv`, which gives the Caddyfile a new inode. The single-file bind mount keeps a running Caddy on the old content, so a later `caddy reload` may serve the old config until Caddy is recreated. Runbook activation step 1 checks the inode and content first. The fix needs its own `fix/` PR.
 
 ### Spike results
 

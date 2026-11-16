@@ -1,7 +1,9 @@
 ---
 title: Limit sales staff to their assigned companies' leads
 type: feature
-status: approved
+status: in_implementation
+branch: feat/ms04-sales-site-scope
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/97
 owner_repo: app
 roadmap: MS-04
 priority: must-have
