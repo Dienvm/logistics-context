@@ -1,16 +1,16 @@
 ---
-title: Multi-site — one database and one admin for 43logistics.vn, avlogistics.vn and gtlogistic.vn
+title: Multi-site — one database and one admin for 43logistics.vn, avlogistics.vn and gtlogistics.vn
 status: draft
 owner_repo: both
 roadmap: []
 updated: 2026-10-30
 ---
 
-# Multi-site — one database and one admin for 43logistics.vn, avlogistics.vn and gtlogistic.vn
+# Multi-site — one database and one admin for 43logistics.vn, avlogistics.vn and gtlogistics.vn
 
 ## Problem
 
-43 Logistics, AV Logistics and GT Logistic are separate legal entities run as one group. What is actually recorded:
+43 Logistics, AV Logistics and GT Logistics are separate legal entities run as one group. What is actually recorded:
 
 - **Confirmed for AV (2026-10-30):**
   - company facts from its business registration (0402317649, 20 Tú Quỳ, Hòa Khánh);
@@ -224,7 +224,7 @@ All are in `docs/context/11-open-questions.md`.
 - **Q-34:** Should AV/GT route copy be made unique, or `noindex`/canonical to 43 until it is? Are cross-brand footer links wanted?
 - **Q-35:** Per-site lead notifications: which recipients and Zalo OA accounts (S-08b, Q-28)?
 - **Q-36:** Staff scope: all sites, or one company each? Shared goods-rule approval across entities? **Launch gate for AV** if scoping is needed.
-- **Q-37:** GT: domain `gtlogistic.vn`, company facts, brand assets, and whether its prices equal 43's.
+- **Q-37:** GT: domain `gtlogistics.vn`, company facts, brand assets, and whether its prices equal 43's.
 - AV facts still open: hours; social, GTM and offer (owner: "cập nhật sau"); DNS (owner: "gửi sau"). These move into `01-business.md` once the ADR settles where per-site facts live.
 
 ## Related

@@ -97,7 +97,7 @@
 
 ## Phase 5c — Multi-site (ADR 0012)
 
-One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and gtlogistic.vn. Each task gets a spec through `/feature-bug`; owner_repo: app unless noted.
+One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and gtlogistics.vn. Each task gets a spec through `/feature-bug`; owner_repo: app unless noted.
 
 - [ ] **MS-01 Expand migration:** `site` enum and columns (default `43l`), composite unique indexes and `(parent_id, site)` foreign keys **beside** the old constraints; `oauth_tokens (provider, account)`. *Accept:* rehearsed on `pnpm db:local`; 43logistics.vn unchanged after apply; old upserts still work. — **done 2026-10-30** (app PR #70, `0014` applied on Supabase).
 - [ ] **MS-02 Site-aware app:** — **done 2026-10-30** (app PR #71, no spec on owner instruction).

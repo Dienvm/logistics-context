@@ -15,7 +15,7 @@ updated: 2026-10-30
 
 ### Problem Statement
 
-ADR 0012 puts 43logistics.vn, avlogistics.vn and later gtlogistic.vn on one Supabase database. Site-owned rows (settings, pages, menus, posts, testimonials, redirects, leads, contact events) need a `site` dimension before any site-aware code (MS-02) can exist.
+ADR 0012 puts 43logistics.vn, avlogistics.vn and later gtlogistics.vn on one Supabase database. Site-owned rows (settings, pages, menus, posts, testimonials, redirects, leads, contact events) need a `site` dimension before any site-aware code (MS-02) can exist.
 
 Roadmap MS-01 is the **expand** step of ADR 0012 Decision 2. It is additive only: new columns default to `43l` and new constraints sit **beside** the old ones, so the live 43 app (which never reads `site`) and every existing upsert behave exactly as before. The constraint switch is MS-03, and AV/GT rows come after it.
 

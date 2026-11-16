@@ -15,7 +15,7 @@ The site exists to do three things, in this order:
 
 Languages: **Vietnamese (default, no URL prefix)** and **English (`/en/…`)**, built so more locales can be added.
 
-**Sister sites (ADR 0012, 2026-10-30):** the same app also serves **avlogistics.vn** (AV Logistics) and later **gtlogistic.vn** (GT Logistic), separate legal entities in the same group:
+**Sister sites (ADR 0012, 2026-10-30):** the same app also serves **avlogistics.vn** (AV Logistics) and later **gtlogistics.vn** (GT Logistics), separate legal entities in the same group:
 
 - one Supabase database with a `site` dimension (`43l | av | gt`): routes, rate cards and goods rules are shared, and facts, pages, menus, posts and leads are per site;
 - one admin at 43logistics.vn/admin with a target-site switcher;
