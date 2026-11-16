@@ -92,6 +92,7 @@ export const profiles = pgTable('profiles', {
   email: text('email'),                                      // optional: username-only accounts have none
   displayName: text('display_name'),
   role: staffRole('role'),                                   // null = no role (F-05); access uses the session claim
+  // planned (ADR 0014, MS-04): sites: siteCode('sites').array() — mirror of the Clerk `sites` claim, for assignee checks only
   deletedAt: timestamp('deleted_at', { withTimezone: true }), // Clerk user.deleted → soft delete, FKs kept
   ...timestamps,
 }).enableRLS()

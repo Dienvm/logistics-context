@@ -1,6 +1,6 @@
-# ADR 0012 — Multi-site: one database, one admin and one codebase for 43logistics.vn, avlogistics.vn and gtlogistic.vn
+# ADR 0012 — Multi-site: one database, one admin and one codebase for 43logistics.vn, avlogistics.vn and gtlogistics.vn
 
-- Status: Accepted (2026-10-30)
+- Status: Accepted (2026-10-30) · Amended by ADR 0014 (2026-11-16): `sales` staff see only the sites they are assigned to (Clerk `sites` claim); `admin` keeps all sites
 - Amends:
   - ADR 0003 Decision 1: one app repo serves every site; no per-brand app forks.
   - ADR 0006: tag invalidation is per process plus an HMAC fan-out to the other sites' processes.
@@ -11,7 +11,7 @@
 - Roadmap: MS-01 … MS-09 (new)
 - Source: `docs/proposals/multi-site-shared-database-admin.md` (Codex-reviewed 2026-10-30, all 13 review points applied by the owner)
 - Context:
-  - 43 Logistics, AV Logistics and GT Logistic are separate legal entities run as one group. On 2026-10-30 the owner forked the app for AV (`Dienvm/avlogistics.vn`, from app `9f03153`) with an AV rebrand and a redesigned public UI.
+  - 43 Logistics, AV Logistics and GT Logistics are separate legal entities run as one group. On 2026-10-30 the owner forked the app for AV (`Dienvm/avlogistics.vn`, from app `9f03153`) with an AV rebrand and a redesigned public UI.
   - The owner confirmed that AV uses the same routes and retail rate cards as 43 ("giống"). The owner then asked that AV and GT share 43's Supabase and Clerk, because "sử dụng chung thông tin, ngay cả trang admin, cũng sẽ tương tự". That reverses the "separate Supabase/Clerk for AV" choice made earlier the same day.
   - The app is single-site:
     - `site_settings.key` is the primary key; pages, menus, posts and categories have site-less unique slugs/keys;
