@@ -138,7 +138,12 @@ All channels are official APIs. No unofficial bridges.
   - what the phone keeps.
 - **Fallback:** a dedicated sales SIM per company on the Cloud API only (Q-41). That number replaces the director's number in that site's `whatsapp` target, which *is* a site change: verified `site_settings` plus the usual fact confirmation.
 - **Per-company Meta setup:** a WhatsApp Business Account under the company's Business Portfolio, one per company or one group portfolio (Q-42).
-- **Pricing:** free-form replies inside the 24-hour customer-service window are free under Meta's current per-message pricing. Template messages that open a conversation are charged per message, and phase 1 sends none.
+- **Pricing (checked 2026-11-16, to re-check in IN-00):**
+  - The Business app and Cloud API onboarding have no fee.
+  - Messages from customers are free. Messages sent from the phone app stay free under coexistence.
+  - Replies sent through the API: third-party sources report that from 2026-10-01 service messages are charged beyond **1,000 free per number per month**, at roughly **USD 0.011–0.015 per message for Vietnam**. Meta's own pricing page still says service messages are free.
+  - Template messages that open a conversation are charged per message, and phase 1 sends none.
+  - At current volumes this is close to zero per number.
 
 **Quote form (S-08b) → inbox, as callback work items**
 - **What it is.** A form submission becomes a conversation in that company's **API-channel inbox**. An API-channel conversation has **no outbound path to the customer**: a reply typed there reaches nobody. So the imported item is a **"cần gọi" work item**:
@@ -240,7 +245,17 @@ Company-scoped go-live for telesales needs **MS-04 (sales part) and IN-01** toge
    - For: no ops, no capacity or backup risk.
    - Against: a per-seat monthly fee and another processor holding customer conversations (to disclose). For a Vietnamese SaaS, harder bot integration with our price engine.
    - Chatwoot Cloud is the fallback only if the VPS can't carry it even after a plan upgrade (the owner prefers one VPS).
-4. **Better alerts to the director's phone only.** Solves neither shared handling nor the language barrier. Rejected.
+4. **tawk.to (hosted live chat; evaluated 2026-11-16).**
+   - For: free core chat, unlimited agents, per-property (per-site) agent access that could separate the companies, and zero ops.
+   - Against:
+     - it is mainly a **website chat widget**, and its WhatsApp/Telegram support is unconfirmed (sources disagree; not in its own documentation);
+     - it has no API-channel equivalent for importing our form leads;
+     - its AI Assist answers from an uploaded knowledge base, a second copy of prices that drifts from the rate tables (rule 2);
+     - the widget sets cookies and loads third-party JS on the public pages, so it would have to wait for consent (rule 14) and count against the JS budget (rule 8), and most visitors would never see it;
+     - customer data sits with a third party;
+     - paid add-ons: AI Assist about USD 29–399/month, branding removal about USD 29–39/month, voice agents from USD 49/month.
+   - Rejected: the need is one inbox for messaging apps. Vietnamese customers don't use web chat (the old form produced 12 leads in about 3 years).
+5. **Better alerts to the director's phone only.** Solves neither shared handling nor the language barrier. Rejected.
 
 ## Consequences
 
@@ -270,7 +285,10 @@ What still applies from the golden rules:
 
 **Cost (bounded assumptions, to be priced in IN-00)**
 - Licence: Chatwoot community edition, 0.
-- Channels: Telegram and Messenger are free. WhatsApp replies inside the 24-hour window are free; templates are charged per message, with none planned.
+- Channels:
+  - Telegram and Messenger: free.
+  - WhatsApp: see §3 pricing. Near zero at current volume, but possibly charged beyond 1,000 service messages per number per month from 2026-10-01.
+  - Zalo OA, if Q-40 chooses it: the API/chatbot tier ("Tăng trưởng") is 2,500,000 đ/year per OA (VAT included, zalo.solutions price list from 2026-06-01), about 7,500,000 đ/year for three companies. Proactive messages outside the 48-hour window and ZNS are charged per message.
 - Hosting: the same VPS (owner). If IN-00 shows a shortfall, a Hostinger plan upgrade (RAM/vCPU, then disk), plus off-host backup storage that grows with attachments.
 - Possible SIMs if the WhatsApp fallback is used (Q-41).
 - SMTP: within Gmail sending limits for staff notifications; otherwise a transactional provider.
@@ -316,7 +334,7 @@ What still applies from the golden rules:
 
 New owner questions in `docs/context/11-open-questions.md`:
 
-- **Q-40:** Zalo: unofficial bridge (ban risk), Zalo OA, or a dedicated sales SIM. Not before the director decides.
+- **Q-40:** Zalo: unofficial bridge on the personal numbers (free, ban risk), or Zalo OA per company (official; API tier about 2.5 million đ/year each), or a dedicated sales SIM. Not before the director decides.
 - **Q-41:** WhatsApp: the three numbers are personal accounts (owner, 2026-11-16). Still open: may they move to the Business app with coexistence, which IN-00 tests on a test number first? If not, is a dedicated sales SIM per company acceptable, published instead?
 - **Q-42:** Meta and Telegram ownership:
   - the Facebook Page of each company;
