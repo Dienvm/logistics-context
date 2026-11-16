@@ -1,6 +1,6 @@
 # ADR 0012 — Multi-site: one database, one admin and one codebase for 43logistics.vn, avlogistics.vn and gtlogistics.vn
 
-- Status: Accepted (2026-10-30)
+- Status: Accepted (2026-10-30) · Amended by ADR 0014 (2026-11-16): `sales` staff see only the sites they are assigned to (Clerk `sites` claim); `admin` keeps all sites
 - Amends:
   - ADR 0003 Decision 1: one app repo serves every site; no per-brand app forks.
   - ADR 0006: tag invalidation is per process plus an HMAC fan-out to the other sites' processes.

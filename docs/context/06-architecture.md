@@ -154,6 +154,9 @@ Clerk's middleware never runs on a public request: the planner decides first, so
   | Cài đặt | `/admin/settings/` | A-09 | ✓ | — | — |
 - Session reads (`auth()`, `currentUser()`) happen only in request-time admin code, never inside `"use cache"` (ADR 0006).
 
+- **Site scope (ADR 0014, MS-04 `sales` part; planned):** Clerk `publicMetadata.sites` (`43l | av | gt` list) is copied into the session token beside `role` and validated in `modules/auth`. `admin` ignores it (all sites); `sales` needs a non-empty list. `staffSiteScope()` → `'all' | SiteCode[]` filters every lead and analytics read, write, ID lookup, filter option, export (scope logged in `lead_exports`) and the new-lead badge; out-of-scope leads return 404. The webhook mirrors `sites` into `profiles.sites` only for assignee lists. Rollout: missing claim = all sites (warning), then admin sets `sites`, then strict (missing/empty = no access).
+- **Customer inbox boundary (ADR 0014; planned):** Chatwoot runs on the VPS with its own database; the app talks to it only server-side over its HTTP API (`CHATWOOT_*` env, server-only), posting saved leads to the company's API-channel inbox. Chatwoot logins are separate from Clerk; a telesale's Chatwoot accounts must match their Clerk `sites`.
+
 ## Database access (Drizzle + Supabase)
 
 - Driver: `postgres` (postgres.js) with the Supabase **transaction pooler** connection string; `prepare: false` (required for transaction pooling).

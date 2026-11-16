@@ -1,6 +1,6 @@
 ---
 title: Unified customer inbox — WhatsApp, Telegram, Messenger and quote forms for 43 / AV / GT, with per-company sales access
-status: draft
+status: accepted (ADR 0014, 2026-11-16)
 owner_repo: both
 roadmap: [MS-04]
 updated: 2026-11-16

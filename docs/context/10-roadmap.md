@@ -112,7 +112,7 @@ One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and 
 - [ ] **MS-04 Admin target site:** — **partial 2026-10-30**: leads inbox Website column (staff see every site's leads, owner Q-33/Q-36 answer); AV pages/settings editable only by `db:clone-site` until the switcher.
   - a switcher for the site-owned sections;
   - target-site validation on every read, write, ID lookup and export;
-  - site-scoped roles (Q-36);
+  - site-scoped roles (Q-36; the `sales` part is decided by ADR 0014: `sites` claim, `staffSiteScope()`, rollout without lock-out);
   - site column and filter in leads and analytics;
   - leads and consent records store the site and its privacy-policy version.
 - [ ] **MS-05 Revalidate fan-out:** `POST /api/revalidate` (HMAC, tag allowlist from the inventory), `after()` fan-out with one retry, an admin notice on failure, never proxied by Caddy. *Accept:* an admin edit on 43 shows on AV by the second request. — **partial**: the signed `POST /api/revalidate` handler exists and is used after script writes; the automatic admin fan-out is not done: AV picks up shared rate edits within `cacheLife('hours')`; menu/route-name edits need an AV redeploy.
@@ -127,6 +127,18 @@ One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and 
   - AV DNS and Cloudflare zone (L-00b settings), Search Console, ADR 0009 field data per domain;
   - retire `Dienvm/avlogistics.vn`.
 - [ ] **MS-09 GT:** after Q-37, seed, token set, assets and DNS, like MS-07/MS-08. — **in progress 2026-10-31**: on owner instruction GT is its own repo `projects/gtlogistics.vn/` (`Dienvm/gtlogistics.vn`, private, forked from app with the `gt` site key as default; reverses ADR 0012 Decision 3 "no per-brand forks" for GT, ADR amendment pending): navy/amber skin, assets, `data/seed/sites/gt`, `db:clone-site gt`, compose `app-gt` + Caddy block. Waiting: production clone, VPS build, DNS, Q-37 hotline.
+
+## Phase 7 — Customer inbox (ADR 0014)
+
+Self-hosted Chatwoot on the same VPS, one account per company; owner questions Q-40–Q-43. Each task gets a spec through `/feature-bug`.
+
+- [ ] **IN-00 Inbox spike** (owner_repo: both) — throwaway Compose on the VPS: account isolation of contacts, real RAM/CPU/disk next to the three site containers (deploy, VPS build and backup peaks), WhatsApp coexistence on a test number, Telegram and API-channel flows, Chatwoot IP capture. Owner starts Meta Business verification and App Review (Q-42). *Accept:* a written result with the capacity numbers and a go / plan-upgrade decision.
+- [ ] **IN-01 Chatwoot host** (owner_repo: app) — Compose services, Caddy subdomain (`noindex`, WebSocket), encrypted off-host backups, restore rehearsal, upgrade runbook; three accounts, users with 2FA (Q-43). *Accept:* restore rehearsed; a telesale sees only their company's contacts and conversations.
+- [ ] **IN-02 Telegram** — one bot per company, `/go/telegram` targets in verified `site_settings` (Q-42).
+- [ ] **IN-03 Lead import** — saved quote-form leads posted to the company's API-channel inbox as callback items (allowed fields only, switched off until env is set), ported to the GT repo.
+- [ ] **IN-04 Messenger** — each company's Page, after App Review.
+- [ ] **IN-05 WhatsApp** — coexistence per company, or a dedicated sales SIM (Q-41).
+- [ ] **IN-06 Translation + AI assistant** (owner_repo: both) — own ADR first (provider, privacy-policy line); draft mode, then auto for routine questions, answering only through the price engine, approved goods rules and published FAQs.
 
 ## Phase 6 — Later
 

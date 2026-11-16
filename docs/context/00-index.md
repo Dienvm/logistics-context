@@ -20,7 +20,7 @@ This folder is the project memory for the 43logistics.vn rebuild. It was produce
 | `11-open-questions.md` | Facts the owner must confirm (Q-IDs) | Before writing any business fact |
 | `12-glossary.md` | VI ↔ EN terms | Copy, translations, UI strings |
 | `legacy-copy/*.md` | Verbatim old page text (unverified raw material) | Rewriting content |
-| `../adr/*.md` | Architecture decisions (0001 initial, 0002 template stack, 0003 workspace & workflow, 0004 code-only delivery, no automated tests, 0005 feature modules + clean architecture, 0006 Next 16 Cache Components + JS budget, 0007 rate cards and currencies, 0008 VPS deployment, 0009 field Core Web Vitals gate, 0010 Cloudflare edge + Web Analytics, 0011 GEO for AI assistants, 0012 multi-site: one database, admin and codebase for 43 / AV / GT, 0013 cookieless first-party source attribution) | Before changing stack/architecture |
+| `../adr/*.md` | Architecture decisions (0001 initial, 0002 template stack, 0003 workspace & workflow, 0004 code-only delivery, no automated tests, 0005 feature modules + clean architecture, 0006 Next 16 Cache Components + JS budget, 0007 rate cards and currencies, 0008 VPS deployment, 0009 field Core Web Vitals gate, 0010 Cloudflare edge + Web Analytics, 0011 GEO for AI assistants, 0012 multi-site: one database, admin and codebase for 43 / AV / GT, 0013 cookieless first-party source attribution, 0014 unified customer inbox: self-hosted Chatwoot, one account per company) | Before changing stack/architecture |
 | `../proposals/*.md` | Undecided options (front matter `status`) — see table below | Before proposing something similar |
 | `../../specs/INDEX.md` | Implementation specs tied to roadmap IDs | Before implementing / picking work |
 | `../../lessons/INDEX.md` | Lessons with follow-ups | Before implementing (watch-outs) |
@@ -36,7 +36,7 @@ This folder is the project memory for the 43logistics.vn rebuild. It was produce
 | docs/proposals/nextjs-rebuild-quynam-pattern.md | draft | quynam.vn (sister co.) as the structure reference only; 43L's own facts, brand and media; SEO + off-page/backlinks for 43logistics.vn only; better UX, motion, security; code-only delivery |
 | docs/proposals/geo-ai-assistant-visibility.md | draft | GEO: make ChatGPT/Gemini/Perplexity/Copilot recommend 43L — live-site audit, on-site entity/FAQ/summary work (G-04), content, off-site mentions, prompt-panel measurement |
 | docs/proposals/multi-site-shared-database-admin.md | draft | One Supabase + one Clerk/admin for 43 / AV / GT: `site` column on per-brand tables (settings, pages, menus, posts, testimonials, redirects, leads, contact events), shared routes/rates/rules, one codebase built once per site, admin target site + site-scoped roles, expand/contract migration, HMAC revalidate fan-out over the Docker network, AV fork ported |
-| docs/proposals/unified-inbox-chatwoot.md | draft | Self-hosted Chatwoot on the VPS: one account per company (43 / AV / GT) for WhatsApp (coexistence), Telegram, Messenger and web-form leads; admin sees all, telesales only their company (plus MS-04 `sites` claim in the website admin); Zalo, AI assistant and voice later |
+| docs/proposals/unified-inbox-chatwoot.md | accepted (ADR 0014) | Self-hosted Chatwoot on the VPS: one account per company (43 / AV / GT) for WhatsApp (coexistence), Telegram, Messenger and web-form leads; admin sees all, telesales only their company (plus MS-04 `sites` claim in the website admin); Zalo, AI assistant and voice later |
 
 ## Prompt starters
 
