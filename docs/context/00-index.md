@@ -36,6 +36,7 @@ This folder is the project memory for the 43logistics.vn rebuild. It was produce
 | docs/proposals/nextjs-rebuild-quynam-pattern.md | draft | quynam.vn (sister co.) as the structure reference only; 43L's own facts, brand and media; SEO + off-page/backlinks for 43logistics.vn only; better UX, motion, security; code-only delivery |
 | docs/proposals/geo-ai-assistant-visibility.md | draft | GEO: make ChatGPT/Gemini/Perplexity/Copilot recommend 43L — live-site audit, on-site entity/FAQ/summary work (G-04), content, off-site mentions, prompt-panel measurement |
 | docs/proposals/multi-site-shared-database-admin.md | draft | One Supabase + one Clerk/admin for 43 / AV / GT: `site` column on per-brand tables (settings, pages, menus, posts, testimonials, redirects, leads, contact events), shared routes/rates/rules, one codebase built once per site, admin target site + site-scoped roles, expand/contract migration, HMAC revalidate fan-out over the Docker network, AV fork ported |
+| docs/proposals/unified-inbox-chatwoot.md | draft | Self-hosted Chatwoot on the VPS: one account per company (43 / AV / GT) for WhatsApp (coexistence), Telegram, Messenger and web-form leads; admin sees all, telesales only their company (plus MS-04 `sites` claim in the website admin); Zalo, AI assistant and voice later |
 
 ## Prompt starters
 
