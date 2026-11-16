@@ -1,7 +1,7 @@
 ---
 title: Limit sales staff to their assigned companies' leads
 type: feature
-status: draft
+status: approved
 owner_repo: app
 roadmap: MS-04
 priority: must-have
@@ -30,7 +30,8 @@ This spec delivers the `sales` part of MS-04's "site-scoped roles" bullet. The `
 - One server env switch decides what a **missing** claim means:
   - **lenient** (default): missing means all sites, as today, and a warning is logged with the user ID only;
   - **strict**: missing or empty means no lead access.
-- The admin sets `sites` on every sales user (Clerk dashboard runbook; Q-43 gives the list), then flips the switch to strict with a restart and no new build.
+- The admin sets `sites` on every sales user (Clerk dashboard runbook; Q-43 gives the list), and the mirror is reconciled (AC-11b).
+- Then the switch is flipped to strict. That needs no new build, but it does need a container **recreate**: `docker compose --env-file .deploy.env up -d --force-recreate app`. A plain restart keeps the old env (`deploy/README.md`).
 
 ### Acceptance Criteria
 
@@ -53,12 +54,16 @@ This spec delivers the `sales` part of MS-04's "site-scoped roles" bullet. The `
   - the source and owner filter options are derived only from in-scope data;
   - the Website filter (new, see AC-09) offers only `av`.
 - [ ] **AC-04** Given the same user, when they open `/admin/leads/{id}/` for a `43l` or `gt` lead, then the response is a 404 and no lead field, event or note is rendered.
+  - `findAdminLead(id, scope)` and `listLeadEvents(leadId, scope)` both carry the site predicate.
+  - The timeline query never runs for an out-of-scope ID; a direct call with an out-of-scope `leadId` returns no rows.
 - [ ] **AC-05** Given the same user, when they post any lead action (`setLeadStatusAction`, `assignLeadAction`, `addLeadNoteAction`, `setLeadSourceAction`) with the ID of an out-of-scope lead, then:
   - the action returns the existing not-found result;
   - nothing is written: no `leads` update, no `lead_events` row.
 
-  The check runs inside the same transaction, after `lockLead`.
+  The check runs inside the same transaction, right after `lockLead`. It **returns** the use case's existing `{ kind: "notFound" }` result, which `runLeadEdit()` maps. It does not throw, because `lead-action-runner.ts` turns thrown errors into generic failures.
 - [ ] **AC-06** Given the same user, when they open `/admin/leads/new/`, then the site choice offers only their scope (pre-selected when it has one entry). A posted `site` outside their scope is rejected with a field error and nothing is inserted.
+  - **Existing gate stays.** Staff-created leads and source edits are still behind `NEXT_PUBLIC_SESSION_ATTRIBUTION` (`lead-actions.ts`, Q-39). With the flag off, they keep returning 404 / not found as today, and this spec only adds the scope checks inside them.
+  - **Verification** of the enabled path is by logic review unless an isolated setup with the flag on is available.
 - [ ] **AC-07** Given the same user, when they download `/admin/leads/export/`, then:
   - the CSV contains only in-scope rows;
   - the `lead_exports` row records the scope used (`site_scope`: the list, or null for `"all"`) before any byte is sent.
@@ -70,8 +75,16 @@ This spec delivers the `sales` part of MS-04's "site-scoped roles" bullet. The `
   - `admin` profiles;
   - `sales` profiles whose mirrored `profiles.sites` includes `av`.
 
-  Assigning anyone else returns the existing "not assignable" result and writes nothing. A `sales` profile with no mirrored `sites` is assignable only in lenient mode, matching AC-02.
-- [ ] **AC-11** Given an admin edits a user's `publicMetadata.sites` in Clerk, when the `user.updated` webhook arrives, then `profiles.sites` mirrors it (null when missing or invalid). The mirror is used only for assignee lists and checks, never for the caller's own access (06 "Auth & roles").
+  Assigning anyone else returns the existing "not assignable" result and writes nothing. For a `sales` profile, by its mirrored `profiles.sites`:
+  - `null` (claim missing): assignable to any site in lenient mode, never in strict mode;
+  - `[]` (claim invalid or empty): **never** assignable, in either mode.
+- [ ] **AC-11** Given an admin edits a user's `publicMetadata.sites` in Clerk, when the `user.updated` webhook arrives, then `profiles.sites` mirrors it:
+  - the valid list → that list;
+  - missing → `null`;
+  - invalid or empty → `[]`, which keeps the distinction AC-10 needs.
+
+  The mirror is used only for assignee lists and checks, never for the caller's own access (06 "Auth & roles").
+- [ ] **AC-11b Reconciliation before strict.** After the build with the new webhook is deployed, the admin re-saves `publicMetadata.sites` on every `sales` user in Clerk, which fires `user.updated`. Then a read-only SQL check on Supabase (`select username, role, sites from profiles where role = 'sales' and deleted_at is null`) shows a non-null list for each of them. Strict mode is switched on only after this check is clean.
 
 **Analytics (A-07)**
 - [ ] **AC-12** Given a `sales` user with scope `["av"]`, when they open `/admin/analytics/` or its CSV export with any `?site=` value, then:
@@ -123,6 +136,18 @@ This spec delivers the `sales` part of MS-04's "site-scoped roles" bullet. The `
   - The `app-av` service is built from this same repo, so it gets the code but serves no admin either.
 - **Changing what `admin` sees.**
 
+### MS-04 coverage
+
+MS-04 **stays open** after this spec.
+
+| MS-04 roadmap bullet | This spec |
+|----------------------|-----------|
+| A switcher for the site-owned sections | Deferred (Q-36, editor/content) |
+| Target-site validation on every read, write, ID lookup and export | Covered **for leads and analytics**: AC-03–AC-09, AC-12. Content sections are deferred. |
+| Site-scoped roles (Q-36) | Covered for `sales` (AC-01, AC-02, AC-10, AC-11, AC-11b, AC-14). `editor` is deferred. |
+| Site column and filter in leads and analytics | Column already exists (2026-10-30). Filter covered by AC-09 and AC-12. |
+| Leads and consent records store the site and its privacy-policy version | Already satisfied for leads: `leads.site` from `currentSite` (`modules/leads/infrastructure/leads.ts`), and `leads.consent_policy_version` (07 "Privacy policy version"). No change. |
+
 ### Affected Areas
 
 | Repo | Layer | File / Path |
@@ -140,6 +165,9 @@ This spec delivers the `sales` part of MS-04's "site-scoped roles" bullet. The `
 | app | leads actions/routes | `modules/leads/lead-actions.ts`, `lead-action-runner.ts`, `lead-export-route.ts` (pass the scope from `requireSection`) |
 | app | leads UI | `modules/leads/ui/admin/lead-filters.tsx` (Website filter), `new-staff-lead.tsx` (site options), `admin-lead-list.tsx`, `admin-lead-detail.tsx` (picker by site), empty-scope state |
 | app | shell | `app/admin/(shell)/layout.tsx` (badge with scope) |
+| app | lead pages | `app/admin/(shell)/leads/page.tsx`, `leads/[id]/page.tsx`, `leads/new/page.tsx`: keep the `requireSection` result and pass its scope down (they discard it today); `leads/export/route.ts` → `lead-export-route.ts` |
+| app | analytics pages | `app/admin/(shell)/analytics/page.tsx`, `analytics/export/route.ts`; `modules/analytics/ui/admin/analytics-report.tsx`, `ui/admin/weekly-report.tsx`; `modules/analytics/application/weekly-tables.ts`. The scope reaches both the page branch and the CSV branch of every view |
+| app | db helper | `db/site-condition.ts` (new, server-only): `siteCondition(column, scope)`. It lives in `db/` so `leads`, `contact` and `tracking` import it via `@/db/…` with no cross-module deep import (`check:boundaries`) |
 | app | analytics | `modules/analytics/application/report-params.ts` (clamp `site` to scope), `load-report.ts`, `load-source-report.ts`, `view-tables.ts`, `export-report.ts`, `ui/admin/report-nav.tsx` (links in scope) |
 | app | stats queries | `modules/leads/infrastructure/lead-stats.ts`, `modules/contact/infrastructure/contact-stats.ts`, `modules/tracking/infrastructure/visit-stats.ts` (`site: "all" \| SiteCode[]` via `inArray`) |
 | app | DB | `db/migrations/0019_staff_site_scope.sql` + journal/snapshot; `modules/leads/infrastructure/schema.ts` (`lead_exports.site_scope`) |
@@ -165,7 +193,9 @@ This spec delivers the `sales` part of MS-04's "site-scoped roles" bullet. The `
 - **Owner/operator steps:**
   1. Update the Clerk session-token template (dev and production) **before** deploying. Without it the claim is always missing, so lenient mode keeps today's behaviour; harmless but unscoped.
   2. Set `publicMetadata.sites` for each sales user (Q-43 list).
-  3. Set `STAFF_SITE_SCOPE=strict` and restart `app`.
+  3. Reconcile `profiles.sites` (AC-11b).
+  4. Set `STAFF_SITE_SCOPE=strict` and recreate `app` (`up -d --force-recreate app`, not `restart`).
+  5. Verify that a test `sales` account with no `sites` now sees the empty-scope state.
 - **Blocked by questions:** Q-43 (which telesale covers which company). Not a code blocker (ADR 0004): until answered, lenient mode keeps every sales user on all sites.
 - **Risk: a missed call site leaks another site's lead.** Mitigation:
   - the scope is a **required** parameter on every admin lead and stats function, with no optional default;
@@ -192,6 +222,22 @@ Admin-only change: static checks plus a logic review. No CI wait, Lighthouse or 
 | sales | `[]` / `["xx"]` / `"av"` | any | `[]` |
 | editor | any | any | not used (no lead access) |
 
+- **Isolation matrix (in the PR body).**
+  - **How it is verified:** by documented logic review. For each row, the reviewer names the function and line where the scope or role check stops the request, and the expected result. Rows the production smoke executes are marked "executed". Rows also run end to end on `pnpm db:local` (only if Clerk dev keys are available; memory: local keys are live) are marked "e2e". Anything not executed stays "logic review only", never "verified".
+  - **Who:** `sales` users with `["av"]`, with `["43l","gt"]` (multi-site), with a missing claim (lenient and strict) and with an invalid claim; one `admin`; one `editor`.
+  - **Leads:**
+    - list, count and pagination;
+    - every filter option, including `?site=` with an in-scope value, an out-of-scope value and a garbage value;
+    - detail and timeline of an out-of-scope ID;
+    - each of `setLeadStatusAction`, `assignLeadAction`, `addLeadNoteAction` and `setLeadSourceAction` with an out-of-scope ID: no `leads` or `lead_events` change (counted before and after in the review of the transaction path);
+    - `assignLeadAction` to an assignee who doesn't cover the lead's site;
+    - `createStaffLeadAction` with an out-of-scope `site` (flag on and flag off);
+    - the export and its `lead_exports.site_scope`;
+    - the badge.
+  - **Analytics:** `/admin/analytics/` and `/admin/analytics/export/?view=…` for **every** view (`ANALYTICS_VIEWS`), each with `?site=all`, an in-scope site and an out-of-scope site.
+  - **Regressions:**
+    - `admin` sees every site with no warning;
+    - `editor` still gets 403 on leads and analytics, and no lead count is queried for them.
 - **Call-site audit (in the PR body):** `rg -n "from\\((leads|leadEvents|contactEvents|siteVisits)\\)" modules` lists every hit with the scope argument that reaches it, or why it's public (public insert, `/go` logging).
 - **Smoke test on production after deploy (owner or dev, one test account):**
   1. Create a Clerk user `test-sales-av` with role `sales`, `sites: ["av"]`.
@@ -210,7 +256,7 @@ Admin-only change: static checks plus a logic review. No CI wait, Lighthouse or 
 - Put the pure logic in `modules/auth/domain/site-scope.ts` and keep `require-role.ts` thin. Return `AuthorizedStaff & { scope: SiteScope }` from `requireSection` so callers can't forget it, or add `requireSectionScope(key)`. Pick one and use it everywhere.
 - `SiteScope = "all" | readonly SiteCode[]`. Write one helper, `siteCondition(column, scope)`: `undefined` for `"all"`, `sql\`false\`` for `[]`, `inArray(column, scope)` otherwise. Reuse it in leads, contact and visit stats.
 - **Analytics:** today `"all" | SiteKey` becomes the requested site intersected with the scope. Compute it once in `report-params.ts` and pass the effective list down.
-- `lockLead` already selects `site`. Check scope right after it and throw the runner's not-found so the transaction rolls back.
+- `lockLead` already selects `site`. Check scope right after it and **return** `{ kind: "notFound" }` before any write. The runner maps returned results, and a throw would become a generic failure.
 - `STAFF_LEAD_SITES` becomes `SITE_CODES`. Filter the options by scope in the page (server), and re-validate in the action.
 - **Webhook:** copy `roleOf` into `sitesOf`. Keep the "soft-deleted row is never revived" rule.
 - **Lesson 2026-10-23 (s08):** list every touched file in the PR, and run `biome check` on changed files only, not a repo-wide `lint:fix`.
