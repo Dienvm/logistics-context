@@ -1,11 +1,12 @@
 ---
 title: Stop AV and GT pages duplicating 43 in search
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: G-07
 priority: must-have
 blocked_by_questions: [Q-03, Q-22]
+codex_review: 2026-11-17, 12 findings, all applied after debate
 updated: 2026-11-17
 ---
 
@@ -24,7 +25,7 @@ The audit compared the `<main>` text of every AV page with the same path on 43. 
 | Every EN page | 0.46–0.98 |
 | Blog posts | < 0.30 (already rewritten) |
 
-G-06 made only the head of each page unique: `<h1>`, title, description and intro. The body is still shared, including the FAQs, the notes and the goods lists. GT is cloned from the same rows. Google therefore indexes 43's copy and leaves AV and GT under "Crawled – currently not indexed" or "Duplicate, Google chose different canonical". The GEO panel of 2026-11-11 shows the same gap: ChatGPT named AV or GT only on brand prompts and on none of the regional prompts (Huế, Quảng Trị, Quảng Bình, dry and frozen goods).
+G-06 made only the head of each page unique: `<h1>`, title, description and intro. The body is still shared, including the FAQs, the notes and the goods lists. GT is cloned from the same rows. **Hypothesis (not yet proven):** Google indexes 43's copy and leaves AV and GT under "Crawled – currently not indexed" or "Duplicate, Google chose different canonical". The URL-level Search Console report was not available to the audit. The owner's screenshots of the "Why pages aren't indexed" table go into the PR when received, and AC-17's measurement makes the overlap reproducible. The GEO panel of 2026-11-11 shows the same gap: ChatGPT named AV or GT only on brand prompts and on none of the regional prompts (Huế, Quảng Trị, Quảng Bình, dry and frozen goods).
 
 Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/feature-g06-per-site-route-seo.md`), which put FAQs and body copy out of its own scope.
 
@@ -60,8 +61,11 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 
   This covers the home, hubs, route pages, info and policy pages, the calculator, the goods page, the blog index and blog posts.
 - [ ] **AC-02** Given the same sites, when a VI page renders, then:
-  - it keeps `index, follow` and its self canonical;
+  - its indexability is the existing rule unchanged (production-origin gate, `page_translations.noindex`, landing-page and draft rules) AND the indexed-locale rule; an eligible VI page keeps `index, follow` and its self canonical;
   - it emits no `hreflang` alternates, so no `en` and no `x-default`.
+  - **Negative cases:**
+    - a VI translation with `noindex = true` stays `noindex` and out of the sitemap;
+    - a build with a non-production `NEXT_PUBLIC_SITE_URL` stays `noindex` everywhere.
 - [ ] **AC-03** On AV and GT:
   - `/sitemap.xml` lists only VI URLs and no `xhtml:link` alternates;
   - `/llms.txt` has no `## English` section and no `/en/` URL;
@@ -76,15 +80,25 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 - [ ] **AC-07** A new optional route block type `pickup` with a `text` field (lead sentence) is accepted by `route-blocks.ts`. It can be edited in the admin route page editor like the other blocks, and at most one is allowed per page.
 - [ ] **AC-08** Given an outbound route page whose translation has a `pickup` block, when it renders, then a section with an `<h2>` ("Nơi nhận hàng" in VI, "Where we receive goods" in EN, from `messages/*`) shows:
   - the lead text;
-  - a list of every office in that site's `offices` setting that is verified and marked `isWarehouse`, each with its display name and street address.
-- [ ] **AC-09** Given `offices` unverified, or no warehouse in it, the section is not rendered, even when the block exists (rule 1). Inbound routes (`… về Việt Nam`) never render it.
+  - a list of every office in that site's `offices` setting, each with its display name and street address. The setting must be verified (`site_settings.is_verified`), which applies to the setting as a whole. Owner decision 2 makes all six offices shared receiving warehouses, so no per-office `isWarehouse` filter is used. The settings parser strips that field, and it stays unchanged.
+- [ ] **AC-09** Given the `offices` setting unverified, missing, or an empty list, the section is not rendered, even when the block exists (rule 1). Inbound routes (`… về Việt Nam`) never render it.
 - [ ] **AC-10** The section adds no client JavaScript and no new JSON-LD node. The `LocalBusiness` nodes stay limited by `ownOfficeKeys`, as in G-06.
 
 **C. Per-site route FAQs**
 
 - [ ] **AC-11** `listRouteFaqs` (`modules/content/infrastructure/route-page-queries.ts`) returns only FAQs whose `site` is the current site. On 43 the result is unchanged, because every existing route FAQ has `site = '43l'`. Check this before the change with `select site, count(*) from faqs where route_id is not null group by site`, and record the result in the PR.
-- [ ] **AC-12** A FAQ created in the admin is stored with `site = currentSite` (`faq-writes.ts`). The admin FAQ list is already filtered by site and still is.
-- [ ] **AC-13** On AV and GT, route pages put the derived price and transit FAQs (`modules/content/domain/route-faq.ts`) first, then the site's written FAQs. When the site has no written FAQ for a route, only the derived ones show, as today. On 43, the existing rule is unchanged: derived FAQs are dropped when written ones exist. The `FAQPage` JSON-LD lists exactly the visible questions.
+- [ ] **AC-12** Each container's own `/admin` (avlogistics.vn/admin, gtlogistics.vn/admin, 43logistics.vn/admin; `currentSite` is fixed per build, as settings writes already are) handles site ownership as follows:
+  - **Writes:** a FAQ created there is stored with `site = currentSite` on the `faqs` row and on every `faq_translations` row, and in the same transaction.
+  - **Lookups:** the page and route target lookups in `faq-writes.ts` resolve within the current site.
+  - **Other sites' ids:** an id belonging to another site is rejected on read, update and delete, and nothing is written.
+  - **List:** the admin FAQ list stays filtered by site.
+  - **Rollback:** a failed translation write rolls back the parent row.
+- [ ] **AC-13** `mergeRouteFaqs` (`modules/content/domain/route-faq.ts`) is unchanged on every site:
+  - derived FAQs come first;
+  - a derived FAQ whose id is in `DERIVED_IDS_COVERED_BY_WRITTEN` is dropped when the route has written FAQs;
+  - the site's written FAQs follow.
+
+  The only change is that "written FAQs" now means the current site's own. The `FAQPage` JSON-LD lists exactly the visible questions.
 
 **D. Loading the copy**
 
@@ -92,7 +106,12 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
   - The file holds, per route key, 3–6 VI question and answer pairs and their EN translations, plus the `pickup` lead text in VI and EN.
   - Without `--apply`, it prints old and new values and writes nothing.
   - `--apply` backs up to `.backups/`, then inserts or updates that site's route FAQs (published) and the `pickup` block of that site's route translations. It never touches other sites' rows, other blocks, or `h1`/`seo_*` columns.
-  - It skips pages with `admin_edited_at` unless `--force`, and lists the skipped pages.
+  - **Import identity:** the importer owns the whole route FAQ set of one site for each route key in the file.
+    - A route's set is unchanged when its published FAQs for that site match the file in `sort`, question and answer for both locales.
+    - Otherwise, after the backup, the set is replaced in one transaction: delete that site's route FAQs, then insert the file's FAQs with `sort` = file order and `created_at = updated_at`.
+    - Questions removed from the file disappear, and changed wording replaces the row, so no duplicates are created.
+  - **Staff edits:** a route is skipped when any of that site's FAQs for it has `updated_at > created_at`, meaning it was edited in the admin, or was not created by the importer. Pages with `admin_edited_at` are skipped for the `pickup` block. `--force` writes both. Every skip is listed.
+  - **Skips must be resolved:** each skip gets a recorded disposition in the PR before acceptance, as in G-06 AC-09c: the current content already meets AC-15, or staff update it, or the owner approves `--force`.
   - A second `--apply` reports no change.
   - `43l` is rejected with a non-zero exit.
 - [ ] **AC-15** The copy names only facts that are confirmed:
@@ -107,10 +126,24 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 
 **E. Outcome**
 
-- [ ] **AC-17** After apply and deploy, measure `<main>` text for every active route's VI page, for each pair 43–AV, 43–GT and AV–GT. Method: 8-word shingles, Jaccard, brand names normalised to one token, tags and scripts stripped (the audit method in the Problem Statement). Every pair scores < 0.45, and the PR records the table. A route that misses is listed with the sections that drive the score. It goes to the owner and is not hidden with `noindex`.
+- [ ] **AC-17** A new script `pnpm seo:similarity <originA> <originB>` (`scripts/similarity-report.ts`, app repo; added to AGENTS.md §7) measures every VI route path that is in both sites' sitemaps and prints one row per path. For each page it:
+  1. fetches the page;
+  2. takes the `<main>` element;
+  3. removes `<script>`/`<style>` and tags;
+  4. decodes HTML entities;
+  5. replaces "43 Logistics", "AV Logistics" and "GT Logistics" (case-insensitive) with one token;
+  6. lowercases the text with Unicode NFC;
+  7. splits on non-letter/digit characters;
+  8. builds the set of 8-word shingles;
+  9. reports Jaccard |A∩B| / |A∪B| to two decimals.
+
+  After apply and deploy, every pair (43–AV, 43–GT, AV–GT) scores < 0.45 on every row, and the PR records the three tables. **A row ≥ 0.45 fails acceptance.** The only exception is an owner-approved change to this AC, recorded in the spec with the route and the reason. A miss is never hidden with `noindex`.
 - [ ] **AC-18** GT renders AC-01 to AC-17 from `projects/gtlogistics.vn/` (its own PR), with its own copy file.
 - [ ] **AC-19** Context docs are updated in the same change set:
-  - an ADR 0012 amendment for per-site indexed locales (Decision 7);
+  - an ADR 0012 amendment:
+    - Decision 7: per-site indexed locales;
+    - Decision 1 and its consequences: route-bound FAQs become site-owned instead of shared, and existing route FAQs (all `43l`) stay 43's;
+  - `07-data-model.md` (faqs ownership), and the MS-01 comment in `modules/content/infrastructure/schema/editorial.ts` corrected;
   - `05-seo-and-tracking.md` sister-site rules;
   - `01-business.md`: GT warehouses (shared, Confirmed 2026-11-17), GT nationwide receiving, and frozen goods for AV/GT per the approved rules, replacing the stale "Hours, warehouses NEEDS CONFIRMATION" line for warehouses only;
   - `11-open-questions.md` Q-22, with the owner's 2026-11-17 answer for AV/GT.
@@ -126,13 +159,13 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 - The docs listed in AC-19.
 
 **Out of scope:**
-- Policy, terms and claims pages. Identical legal text is expected, and Google does not penalise it.
+- Rewriting the body copy of policy, terms and claims pages. Identical legal text is expected. Their EN indexing behaviour (AC-01 to AC-03) is in scope.
 - The shared rate tables and goods lists. They are one source of truth (rule 2, ADR 0007).
-- Blog posts, which are already unique.
+- Rewriting blog post copy, which is already unique. Their EN indexing and the EN RSS (AC-01 to AC-03) are in scope.
 - New pages or URLs, and redirects.
 - Changing 43's content.
 - Google Business Profile and `sameAs` data. That is admin data entry (`/admin/settings` `social.googleBusiness`, `zaloOa`; G-01).
-- Schema migrations. `faqs.site` and the `blocks` jsonb already exist.
+- Schema migrations. `faqs.site`, `faq_translations.site` and the `blocks` jsonb already exist. Also out of scope: changes to the `offices` settings parser.
 - Removing the EN pages. That is decision 1, rejected.
 
 ### Affected Areas
@@ -148,7 +181,9 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 | app + GT | i18n | `shared/i18n/ui/locale-switcher.tsx`, `shared/i18n/alternates.ts` (AC-04: switcher target without hreflang) |
 | app + GT | content | `modules/content/application/route-blocks.ts`, `modules/content/ui/admin/block-fields.tsx`, `editable-block.ts`, `modules/content/ui/route/route-content-sections.tsx` (+ new `pickup-section.tsx`), `app/[locale]/(site)/[slug]/route-view.tsx`, `load-route-page.ts` |
 | app + GT | content | `modules/content/infrastructure/route-page-queries.ts` (`listRouteFaqs`), `faq-writes.ts`, `modules/content/domain/route-faq.ts` |
-| app + GT | settings | `modules/settings` `offices` (read only) |
+| app + GT | settings | `modules/settings` `getSiteSettings(["offices"])` (read only; parser unchanged) |
+| app + GT | admin | `modules/content/infrastructure/admin-faq-queries.ts`, `faq-writes.ts` (parent and translation `site`, site-scoped target lookup), `modules/content/application/save-faq.ts` |
+| app | scripts | `scripts/similarity-report.ts` + `package.json` `seo:similarity` |
 | app + GT | messages | `messages/vi.json`, `messages/en.json` (`routePage.pickup.*`) |
 | app + GT | scripts | `scripts/site-copy.ts` + new `scripts/site-copy/faqs.ts` |
 | app | data | `data/seed/sites/av/copy-faqs.json` |
@@ -181,42 +216,64 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
   - Watch the Search Console "Excluded by 'noindex'" count rise, which is expected.
 - **Risk: shared goods list.** It may keep some routes above the AC-17 threshold. AC-17 reports such routes instead of hiding them.
 - **Risk: FAQ ownership on 43.** A route FAQ stored with `site` NULL or `av` would disappear from 43. AC-11 checks this first.
-- **Risk: cache.**
-  - Script writes do not clear the site caches.
-  - After `--apply`, POST the signed `posts`/`pages` and `settings` tags to `/api/revalidate` in each container, as with `db:add-posts`.
-  - Local dev writes to the production database. Run the first `--apply` dry on `db:local`.
+- **Risk: cache and deploy order.**
+  - **Order:** deploy the site-filtered FAQ readers on all three containers **before** applying any AV/GT FAQ rows. Otherwise the old reader on 43 would show them.
+  - **Revalidation:** script writes do not clear caches. After `--apply`, POST the signed tags `faqs`, `settings` and each affected `page:<key>` to `/api/revalidate` in each container, and assert HTTP 204. Then confirm that a second request shows fresh output.
+  - **Local dev:** local dev writes to the production database, so the first `--apply` runs on `db:local`.
 - **Risk: two repos drift.** GT's `site.ts` and `list-discovery-pages.ts` already differ from 43's. List every threaded file in both PRs (lesson `s08-lead-form`).
 
 ### Manual Verification Plan
 
 - **Seed needs:**
-  - `pnpm db:local` with AV and GT clones for the script checks;
-  - the production database read-only for the AC-11 count.
+  - **Local database:** `pnpm db:local`, then `pnpm db:clone-site av` against it.
+    - Every script and build in steps 2–6 runs with both `DATABASE_URL` and `DATABASE_URL_DIRECT` explicitly set to `postgres://…@localhost:54329/…`, the URL `db:local` prints, never `.env`.
+    - Then run `pnpm db:confirm` against the same local database, so pages are published and `offices` is verified.
+  - **GT:** the same steps from `projects/gtlogistics.vn/` with `gt`.
+  - **Production database:** read-only, for the AC-11 count only.
 - **Steps:**
   1. **Before the change:** record the 43 outputs for AC-05 with `curl` of production. Record the `faqs` site count for AC-11.
   2. **Build per site** with the production origin, so the indexability gate is on:
      - `NEXT_PUBLIC_SITE=av NEXT_PUBLIC_SITE_URL=https://avlogistics.vn pnpm build && pnpm start -p 3100`;
      - the same for `43l` with `https://43logistics.vn`;
      - GT from its repo.
-  3. **On each build, `curl`:** `/`, `/en/`, `/gui-hang-di-singapore/`, `/en/shipping-to-singapore/`, `/gui-hang-tu-singapore-ve-viet-nam/`, one blog post VI and EN, `/sitemap.xml`, `/llms.txt`, `/en/guides/rss.xml`.
-     - AV/GT: check AC-01 to AC-03.
-     - 43: diff against step 1 for AC-05.
+  3. **On each build, `curl` one URL per page family:**
+     - home `/`, `/en/`;
+     - hub `/dich-vu/`, `/en/services/`;
+     - route `/gui-hang-di-singapore/`, `/en/shipping-to-singapore/`, `/gui-hang-tu-singapore-ve-viet-nam/`;
+     - info and policy `/gioi-thieu/`, `/en/about/`, `/chinh-sach-bao-mat/`, `/en/privacy-policy/`;
+     - calculator `/tinh-cuoc/`, `/en/shipping-calculator/`;
+     - goods `/hang-cam-gui/`, `/en/prohibited-items/`;
+     - blog `/kinh-nghiem/`, `/en/guides/`, the first post listed in each;
+     - `/sitemap.xml`, `/llms.txt`, `/en/guides/rss.xml`.
+
+     **Expected:**
+     - AV/GT: every `/en/` page has `noindex, follow`, a self canonical and no hreflang; every VI page has `index, follow` and no hreflang; the sitemap and llms.txt contain no `/en/`; the RSS returns 404.
+     - 43: identical to step 1 (AC-05).
+     - Also set one VI translation `noindex` locally: it stays `noindex` and leaves the sitemap. A build with `NEXT_PUBLIC_SITE_URL=http://localhost:3100` is `noindex` everywhere (AC-02).
   4. **In a browser on the AV build:** the switcher on `/gui-hang-di-singapore/` goes to `/en/shipping-to-singapore/` and back (AC-04). Check at 360, 768 and 1280. Do a keyboard pass. Run axe at 360 and 1280 on the route page.
-  5. **On `db:local` (AV):**
+  5. **On `db:local` (AV, then GT from its repo):**
      - `db:site-copy av --faqs` dry run prints the diff and writes nothing;
      - `--apply` writes only AV FAQ rows and AV `pickup` blocks (row diff of `faqs` and `page_translations` for all sites);
      - a second `--apply` reports no change;
      - an admin-edited page is skipped, and `--force` writes it;
+     - an FAQ edited after import (`updated_at > created_at`) skips its route; `--force` writes it;
+     - after changing one question and removing another in the file, `--apply` replaces the set with no duplicates, and a second run reports no change;
+     - a file with two `pickup` blocks for one page is rejected;
      - `43l` exits non-zero (AC-14).
   6. **On the AV build against `db:local`:**
      - `/gui-hang-di-singapore/` shows the pickup section with the verified warehouses;
-     - with `offices` set unverified, the section disappears (AC-09);
+     - with `offices` set unverified, and again with an empty list, the section disappears (AC-09);
      - `/gui-hang-tu-singapore-ve-viet-nam/` has no section;
      - the FAQ list is derived first, then AV's own, and `FAQPage` matches (AC-13);
      - 43's build shows its old FAQs (AC-11).
-  7. **In the admin (AV target site):** create a route FAQ and confirm `site = 'av'`. Edit a `pickup` block (AC-07, AC-12). Revert the test edits.
-  8. **Owner review:** the owner reviews both dry runs and approves (AC-15). Then `--apply` on production per site, revalidate the tags, and deploy.
-  9. **After deploy:** run the AC-17 similarity script over all active routes and record the table. Grep the copy files for digits followed by `đ`, `SGD`, `USD`, `ngày`, `days`, `24/7` (AC-15).
+  7. **In the AV build's `/admin` against `db:local`:**
+     - create a route FAQ and confirm `site = 'av'` on `faqs` and on both `faq_translations` rows;
+     - open, update and delete an id belonging to `43l` by URL: each is rejected and nothing changes;
+     - edit a `pickup` block, and confirm a second `pickup` block cannot be added (AC-07, AC-12).
+
+     Repeat the FAQ check on the GT build.
+  8. **Production:** deploy all three containers with the new readers first. Then the owner reviews both dry runs and approves (AC-15). Then `--apply` on production per site, then revalidate `faqs`, `settings` and each `page:<key>` (204 each), and confirm fresh output.
+  9. **After apply:** `pnpm seo:similarity https://43logistics.vn https://avlogistics.vn`, the same for 43–GT and AV–GT (GT from the VPS if the office network blocks it). Record the three tables (AC-17). Grep the copy files for digits followed by `đ`, `SGD`, `USD`, `ngày`, `days`, `24/7` (AC-15).
 - **Validation commands, both repos:** `pnpm lint`, `typecheck`, `check:boundaries`, `i18n:check`, `build`, `check:redirects`, plus `pnpm perf:report` on a route page (label `lighthouse`). No automated tests (ADR 0004).
 
 ### Implementation Hints
@@ -227,7 +284,6 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
   - `pageRobots`, which the home metadata does not call today, so add it there.
 - The switcher reads hreflang links from the DOM. Without them it needs the EN path from page data, for example a `data-locale-href` the server renders. Keep it inside the existing island's budget.
 - The `pickup` block follows the `tips`/`notes` pattern in `route-blocks.ts`. The renderer takes the warehouses as props from the page loader (`getSiteSettings(["offices"])`), not from the block.
-- Derived FAQs on AV/GT: gate the ordering change on a per-site constant, not on `currentSite === "43l"` scattered in code.
 - `db:site-copy --faqs` reuses the backup, admin-edited skip and idempotency helpers of `--seo` (G-06).
 - Lesson `s08-lead-form`: don't run repo-wide `lint:fix`. List every threaded file in both PRs.
 
