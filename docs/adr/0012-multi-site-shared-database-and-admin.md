@@ -1,6 +1,6 @@
 # ADR 0012 — Multi-site: one database, one admin and one codebase for 43logistics.vn, avlogistics.vn and gtlogistics.vn
 
-- Status: Accepted (2026-10-30) · Amended by ADR 0014 (2026-11-16): `sales` staff see only the sites they are assigned to (Clerk `sites` claim); `admin` keeps all sites · Amended by G-07 (2026-11-17, owner): route-bound FAQs are site-owned (Decision 1), and each site indexes only its own locales (Decision 7); see `specs/feature-g07-sister-site-dedup.md`
+- Status: Accepted (2026-10-30) · Amended by ADR 0014 (2026-11-16): `sales` staff see only the sites they are assigned to (Clerk `sites` claim); `admin` keeps all sites · Amended by G-07 (2026-11-17, owner): route-bound FAQs are site-owned (Decision 1), and each site declares the locales it indexes (Decision 7; all sites index vi and en, 2026-11-18); see `specs/feature-g07-sister-site-dedup.md`
 - Amends:
   - ADR 0003 Decision 1: one app repo serves every site; no per-brand app forks.
   - ADR 0006: tag invalidation is per process plus an HMAC fan-out to the other sites' processes.
@@ -60,9 +60,9 @@
 7. **Per-site SEO.**
    - Canonical, hreflang (published translations only), sitemap, robots, `llms.txt`, RSS and the `Organization` JSON-LD (no cross-brand `sameAs`) come from each site's URL and rows.
    - Each site has its own redirect map and legacy-ID map (43 keeps the WordPress map; AV and GT start empty), a `check:redirects` run, slug locks and an IndexNow key/host.
-   - **Amendment (G-07, 2026-11-17):** each site indexes only its own locales (`INDEXED_LOCALES` in `shared/config/site.ts`).
-     - 43 indexes `vi` and `en`. AV and GT index `vi` only, because their English pages repeated 43's.
-     - A locale a site doesn't index stays reachable, but it is `noindex, follow` and out of the sitemap, `llms.txt`, IndexNow and RSS.
+   - **Amendment (G-07, 2026-11-17, revised 2026-11-18):** each site declares the locales it indexes (`INDEXED_LOCALES` in `shared/config/site.ts`).
+     - On 2026-11-18 the owner set every site to `vi` and `en`. The AV/GT English `noindex` of 2026-11-17 was dropped; their English pages differ from 43's through their own FAQs and copy.
+     - If a site ever leaves a locale out, that locale stays reachable, but it is `noindex, follow` and out of the sitemap, `llms.txt`, IndexNow and RSS.
      - Hreflang is emitted only when a site indexes every locale. Otherwise a page's translations move to `<meta name="locale-alternate:{locale}">`, which the language switcher reads.
 8. **Launch gates for AV (and GT):**
    - Q-33 (controller and shared processing) and Q-36 (staff scope) are answered and enforced.
