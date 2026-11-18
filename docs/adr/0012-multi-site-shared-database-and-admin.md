@@ -1,6 +1,6 @@
 # ADR 0012 — Multi-site: one database, one admin and one codebase for 43logistics.vn, avlogistics.vn and gtlogistics.vn
 
-- Status: Accepted (2026-10-30) · Amended by ADR 0014 (2026-11-16): `sales` staff see only the sites they are assigned to (Clerk `sites` claim); `admin` keeps all sites
+- Status: Accepted (2026-10-30) · Amended by ADR 0014 (2026-11-16): `sales` staff see only the sites they are assigned to (Clerk `sites` claim); `admin` keeps all sites · Amended by G-07 (2026-11-17, owner): route-bound FAQs are site-owned (Decision 1), and each site declares the locales it indexes (Decision 7; all sites index vi and en, 2026-11-18); see `specs/feature-g07-sister-site-dedup.md`
 - Amends:
   - ADR 0003 Decision 1: one app repo serves every site; no per-brand app forks.
   - ADR 0006: tag invalidation is per process plus an HMAC fan-out to the other sites' processes.
@@ -27,7 +27,8 @@
 1. **One Supabase database for all sites, with a `site` dimension** (`site` enum `43l | av | gt`).
    - **Site-owned tables** carry `site NOT NULL DEFAULT '43l'` with site-inclusive uniqueness: `site_settings` (primary key `(site, key)`), `pages` and translations, `menu_items` and translations, `posts`/`categories` and translations, `post_categories`, page-bound `faqs`, `testimonials`, `redirects`, `leads`, `lead_events`, `contact_events`.
    - Composite foreign keys `(parent_id, site)` keep every parent and child on the same site.
-   - **Shared tables** stay site-less: `routes`, every rate-card/rate/surcharge table (one price source, rule 2), `goods_rules`, route-bound `faqs`, `media`, `profiles`.
+   - **Shared tables** stay site-less: `routes`, every rate-card/rate/surcharge table (one price source, rule 2), `goods_rules`, `media`, `profiles`.
+   - **Amendment (G-07, 2026-11-17):** route-bound `faqs` are site-owned too, like page-bound ones. Each site writes its own route FAQs (`faqs.site` and `faq_translations.site`), so AV and GT don't repeat 43's answers. The 38 route FAQs that existed on that day are all `43l` and stay 43's. The FAQs derived from the shared rate cards still render on every site.
    - **`oauth_tokens`** is keyed by `(provider, account)`, and each site names its OA account.
 2. **Migrations are expand → compatible app → constraint switch → contract, never one step.**
    - New columns and composite indexes are added beside the old ones, with every existing row `43l`.
@@ -59,6 +60,10 @@
 7. **Per-site SEO.**
    - Canonical, hreflang (published translations only), sitemap, robots, `llms.txt`, RSS and the `Organization` JSON-LD (no cross-brand `sameAs`) come from each site's URL and rows.
    - Each site has its own redirect map and legacy-ID map (43 keeps the WordPress map; AV and GT start empty), a `check:redirects` run, slug locks and an IndexNow key/host.
+   - **Amendment (G-07, 2026-11-17, revised 2026-11-18):** each site declares the locales it indexes (`INDEXED_LOCALES` in `shared/config/site.ts`).
+     - On 2026-11-18 the owner set every site to `vi` and `en`. The AV/GT English `noindex` of 2026-11-17 was dropped; their English pages differ from 43's through their own FAQs and copy.
+     - If a site ever leaves a locale out, that locale stays reachable, but it is `noindex, follow` and out of the sitemap, `llms.txt`, IndexNow and RSS.
+     - Hreflang is emitted only when a site indexes every locale. Otherwise a page's translations move to `<meta name="locale-alternate:{locale}">`, which the language switcher reads.
 8. **Launch gates for AV (and GT):**
    - Q-33 (controller and shared processing) and Q-36 (staff scope) are answered and enforced.
    - Each lead and consent record stores its site and that site's privacy-policy version, and the consent matrix (ADR 0004) passes per site.

@@ -1,13 +1,15 @@
 ---
 title: Stop AV and GT pages duplicating 43 in search
 type: feature
-status: approved
+status: in_implementation
+branch: feat/g07-sister-site-dedup (43logistics.vn, gtlogistics.vn)
 owner_repo: both
 roadmap: G-07
 priority: must-have
 blocked_by_questions: [Q-03, Q-22]
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/105, https://github.com/Dienvm/gtlogistics.vn/pull/17
 codex_review: 2026-11-17, 12 findings, all applied after debate
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 ## Feature: Stop AV and GT pages duplicating 43 in search
@@ -31,10 +33,15 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 
 ### Owner decisions (2026-11-17)
 
-1. **English on AV and GT.** Keep the pages reachable, set them `noindex`, and remove them from the sitemap, hreflang, `/llms.txt` and IndexNow. 43 keeps its English pages indexed.
+1. **English on AV and GT.** ~~Keep the pages reachable, set them `noindex`, and remove them from the sitemap, hreflang, `/llms.txt` and IndexNow.~~ **Reversed by the owner on 2026-11-18: AV and GT index their English pages too.**
+   - `INDEXED_LOCALES` stays as the per-site switch, with every site set to `vi` + `en`.
+   - The English pages lose their overlap through the sites' own EN FAQs and pickup copy, which AC-17 now measures.
 2. **Warehouses.** The six receiving warehouses are shared by 43, AV and GT: Đà Nẵng, TP.HCM, Hà Nội, Huế, Quảng Bình and Quảng Trị (Cửa Việt). AV and GT present them as the group's receiving points, not as their own branches. This is consistent with G-06 AC-05.
 3. **GT nationwide.** GT may say it receives goods nationwide. Customers in other provinces send by domestic courier to the nearest warehouse.
-4. **Frozen goods.** AV and GT accept frozen goods exactly where an approved goods rule allows it. Today that is Singapore, Malaysia and Thailand. Naming frozen goods on another route needs an approved rule first.
+4. **Frozen goods.** AV and GT accept frozen goods where an approved goods rule or an owner-confirmed rate card allows it (owner: "theo quy định hàng hoá hiện tại").
+   - **Approved goods rules:** Singapore, Malaysia and Thailand.
+   - **Rate cards** (implementation finding, 2026-11-17): the confirmed cards also carry "Bay · đông lạnh" tabs on South Korea and Taiwan. Taiwan takes no seafood or meat.
+   - The owner's dry-run review (AC-15) confirms this reading before apply.
 5. **Pickup section.** A "Nơi nhận hàng" section is generated from the site's verified warehouses, with a short lead sentence for each site.
 6. **FAQs.** Each site has its own route FAQs, and a site shows only its own.
 7. **Routes.** All active routes on AV and GT get the new content.
@@ -53,6 +60,11 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 ### Acceptance Criteria
 
 **A. English indexing per site**
+
+> **Amended 2026-11-18 (owner):** every site indexes `vi` and `en`.
+> - AC-01 to AC-04 now describe what happens when a site's constant leaves a locale out. No site does that today, so they are verified by code review only.
+> - AC-05 is extended: AV and GT keep their English pages indexed with hreflang, exactly as before G-07.
+> - AC-06 stands: `INDEXED_LOCALES` exists, set to `["vi","en"]` for `43l`, `av` and `gt`.
 
 - [ ] **AC-01** Given `NEXT_PUBLIC_SITE` is `av` or `gt`, when any `/en/…` page renders, then:
   - its robots meta is `noindex, follow`;
@@ -117,7 +129,7 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 - [ ] **AC-15** The copy names only facts that are confirmed:
   - places from the site's verified warehouses (decision 2);
   - "nationwide" only on GT (decision 3);
-  - "đồ khô" or "đồ đông lạnh" only on routes with an approved goods rule that allows it (decision 4);
+  - "đồ khô" or "đồ đông lạnh" only on routes where an approved goods rule or a confirmed rate-card tab allows it (decision 4);
   - no price, currency amount or transit time (rule 2);
   - no "24/7", insurance or delivery guarantee (§10).
 
@@ -126,10 +138,16 @@ Roadmap row: G-07 in `docs/context/10-roadmap.md`. This follows G-06 (`specs/fea
 
 **E. Outcome**
 
-- [ ] **AC-17** A new script `pnpm seo:similarity <originA> <originB>` (`scripts/similarity-report.ts`, app repo; added to AGENTS.md §7) measures every VI route path that is in both sites' sitemaps and prints one row per path. For each page it:
+- [ ] **AC-17** A new script `pnpm seo:similarity <originA> <originB>` (`scripts/similarity-report.ts`, app repo; added to AGENTS.md §7) measures every VI route path that is in both sites' sitemaps and prints one row per path.
+
+  **Scope (amended 2026-11-17, owner):** only the copy each site writes itself is measured, i.e. the elements marked `data-copy="site"` (h1, intro, notes, methods, the pickup lead, process, why us, tips, written FAQs). The shared rate cards, calculator, goods rules and derived FAQs are one source of truth for every site (rule 2). They made up most of the overlap: about 5,000 of the 5,772 shared shingles on the Europe page.
+
+  It covers both the VI route paths and their EN equivalents (`/en/shipping-to-…/`, `/en/…-to-vietnam-shipping/`), because both locales are indexed (amended 2026-11-18).
+
+  For each page it:
   1. fetches the page;
-  2. takes the `<main>` element;
-  3. removes `<script>`/`<style>` and tags;
+  2. takes the `data-copy="site"` elements;
+  3. removes tags;
   4. decodes HTML entities;
   5. replaces "43 Logistics", "AV Logistics" and "GT Logistics" (case-insensitive) with one token;
   6. lowercases the text with Unicode NFC;
