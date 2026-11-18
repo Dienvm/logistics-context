@@ -8,6 +8,7 @@ In the initial build phase specs carry a **Manual Verification Plan** instead of
 
 | Date | Type | File | Title | Roadmap | Owner | Status |
 |------|------|------|-------|---------|-------|--------|
+| 2026-11-17 | feature | [feature-g07-sister-site-dedup.md](feature-g07-sister-site-dedup.md) | Stop AV and GT pages duplicating 43 in search | G-07 | both | approved |
 | 2026-11-16 | feature | [feature-ms04-sales-site-scope.md](feature-ms04-sales-site-scope.md) | Limit sales staff to their assigned companies' leads | MS-04 | app | in_implementation (app #97) |
 | 2026-11-16 | feature | [feature-in00-chatwoot-spike.md](feature-in00-chatwoot-spike.md) | Prove Chatwoot on the production VPS before building the inbox | IN-00 | both | in_implementation (app #98, draft) |
 | 2026-11-13 | feature | [feature-g06-per-site-route-seo.md](feature-g06-per-site-route-seo.md) | Differentiate route and home SEO per sister site | G-06 | both | in_implementation |
