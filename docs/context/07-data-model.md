@@ -7,8 +7,8 @@
 - Money: an integer in the minor unit of the card's currency (`bigint`, mode `number`): VND and KRW have none, USD and SGD have cents (exponents in `modules/pricing/domain/money.ts`). Prices are never converted between currencies. Weights: `numeric(9,3)` kg on bands and card minimums. Timestamps: `timestamptz` UTC.
 - Legacy traceability: `legacy_wp_id`, `legacy_url` columns for imported rows.
 - **Multi-site (ADR 0012, planned MS-01/MS-03):**
-  - **Site-owned** tables get `site` (`43l | av | gt`, default `43l`) with site-inclusive uniqueness and composite `(parent_id, site)` foreign keys: `site_settings` (primary key `(site, key)`), `pages`/`page_translations`, `menu_items`/translations, `posts`/`categories`/translations/`post_categories`, page-bound `faqs`, `testimonials`, `redirects`, `leads`, `lead_events`, `contact_events`.
-  - **Shared and site-less:** `routes`, every rate-card/rate/surcharge table, `goods_rules`, route-bound `faqs`, `media`, `profiles`.
+  - **Site-owned** tables get `site` (`43l | av | gt`, default `43l`) with site-inclusive uniqueness and composite `(parent_id, site)` foreign keys: `site_settings` (primary key `(site, key)`), `pages`/`page_translations`, `menu_items`/translations, `posts`/`categories`/translations/`post_categories`, `faqs` (page-bound and, since G-07, route-bound) and `faq_translations`, `testimonials`, `redirects`, `leads`, `lead_events`, `contact_events`.
+  - **Shared and site-less:** `routes`, every rate-card/rate/surcharge table, `goods_rules`, `media`, `profiles`. Route-bound `faqs` were planned as shared (MS-03), but G-07 (2026-11-17) made them site-owned, so each site writes its own.
   - `oauth_tokens` is keyed by `(provider, account)`.
   - Migrations go expand → compatible app → constraint switch → contract.
   - **As built (MS-01):** migration `0014_site_expand` adds:

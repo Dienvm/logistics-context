@@ -129,7 +129,10 @@ A separate legal entity in the group. Its site is the separate repo `projects/gt
 | Facebook page | "GT Logistics - Vận Chuyển Hàng Quốc Tế" | URL `NEEDS CONFIRMATION` |
 | Domain | `gtlogistics.vn` | Confirmed (owner 2026-10-31) |
 | Routes and retail rate cards | The same as 43 Logistics (shared tables) | Confirmed (owner 2026-10-31) |
-| Hours, warehouses | — | `NEEDS CONFIRMATION` |
+| Warehouses | The group's six receiving warehouses, shared by 43, AV and GT: Đà Nẵng, TP.HCM, Hà Nội, Huế, Quảng Bình, Quảng Trị (Cửa Việt). Addresses are in the `offices` setting. GT presents them as the group's receiving points, not its own branches. | Confirmed (owner 2026-11-17) |
+| Nationwide receiving | GT accepts goods nationwide: customers in a province without a warehouse send by domestic courier to the nearest warehouse | Confirmed (owner 2026-11-17) |
+| Frozen goods (AV and GT) | Accepted where an approved goods rule or an owner-confirmed rate card allows it (approved goods rules: SG, MY, TH; owner-confirmed rate cards: the KR and TW frozen air tabs, and TW takes no seafood or meat) | Confirmed (owner 2026-11-17, "theo quy định hàng hoá hiện tại") |
+| Hours | — | `NEEDS CONFIRMATION` |
 | Brand colours | Navy #1E3250 (logo); amber #F59E0B accent from the parcel tape in the owner's photos | Navy confirmed (logo); amber is a design choice |
 
 ## Brand voice
