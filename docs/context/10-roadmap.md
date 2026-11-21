@@ -110,7 +110,7 @@ One database, one admin and one codebase for 43logistics.vn, avlogistics.vn and 
 
   *Accept:* a 43 build is unchanged; an `av` build on the local DB renders AV facts and no 43 site-owned row.
 - [ ] **MS-03 Constraint switch:** `site_settings` primary key `(site, key)`, old single-column uniques dropped, after a backup. Applied after MS-02 is deployed. *Accept:* documented rollback; 43 unchanged. — **done 2026-10-30** (`0015` applied after the PR #71 deploy).
-- [ ] **MS-04 Admin target site:** — **partial 2026-10-30**: leads inbox Website column (staff see every site's leads, owner Q-33/Q-36 answer); AV pages/settings editable only by `db:clone-site` until the switcher.
+- [ ] **MS-04 Admin target site:** — **partial 2026-10-30**: leads inbox Website column (staff see every site's leads, owner Q-33/Q-36 answer); AV pages/settings editable only by `db:clone-site` until the switcher. **Posts and categories** (spec `specs/feature-ms04-posts-site-images-preview.md`, 2026-11-21): company filter, "Đăng cho" with "Cả 3 công ty" copies canonicalising to 43, markdown images and preview; pages, menus and settings still to do.
   - a switcher for the site-owned sections;
   - target-site validation on every read, write, ID lookup and export;
   - site-scoped roles (Q-36; the `sales` part is decided by ADR 0014: `sites` claim, `staffSiteScope()`, rollout without lock-out);
