@@ -1,7 +1,10 @@
 ---
 title: Target posts per company, inline images and preview
 type: feature
-status: approved
+status: in_implementation
+branch: feat/ms04-posts-site-images-preview
+implementation_pr: https://github.com/Dienvm/43logistics.vn/pull/107
+gt_pr: https://github.com/Dienvm/gtlogistics.vn/pull/19
 owner_repo: both
 roadmap: MS-04
 priority: must-have

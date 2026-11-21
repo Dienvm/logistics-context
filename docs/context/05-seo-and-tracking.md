@@ -49,6 +49,7 @@ Open Graph images:
 
 - Self-referencing canonical on every indexable page, absolute, with trailing slash, no query string (UTM parameters must never become canonical).
 - `hreflang` pairs only when both translations are `published`. `x-default` → Vietnamese URL.
+- **Sister-site post copies (MS-04, owner 2026-11-21):** a post written for "Cả 3 công ty" is a 43 source plus AV and GT copies (`posts.source_post_id`). In each locale where the source is servable (post published with a date, translation published) and indexable on 43, the copy's canonical is the source's absolute 43logistics.vn URL, and that locale of the copy leaves its site's sitemap, `llms.txt` and IndexNow (it stays in the blog list and RSS). Hreflang uses only published, self-canonical locales and is emitted only when they cover every locale; otherwise the switcher reads `locale-alternate` meta. Every other locale, and a copy whose source was deleted, keeps its self canonical. This is the only cross-domain canonical, between the group's own sites.
 - No automatic locale redirects (no `Accept-Language` / IP redirect); offer a dismissible "View in English?" banner instead.
 - `/lp/*`, `/tra-cuu/*`, `/go/*`, `/admin/*`, `/api/*` are `noindex` or disallowed.
 
