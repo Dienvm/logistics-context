@@ -1,7 +1,7 @@
 ---
 title: Target posts per company, inline images and preview
 type: feature
-status: draft
+status: approved
 owner_repo: both
 roadmap: MS-04
 priority: must-have
