@@ -36,8 +36,8 @@
 | --- | --- | --- |
 | Hotline / Zalo | "0979 222 357" · E.164 `+84979222357` | Primary. `tel:+84979222357`, `https://zalo.me/0979222357` **Confirmed** by the owner, 2026-10-22 (S-05b; `projects/43logistics.vn/data/owner-confirmations.json`). |
 | WhatsApp | `https://wa.me/84979222357` | Old site used `wa.me/0979222357` (broken, missing country code) **Confirmed** by the owner, 2026-10-22 (S-05b; `projects/43logistics.vn/data/owner-confirmations.json`). |
-| Messenger | `https://m.me/43logistics` | **Confirmed** by the owner, 2026-10-22 (S-05b; `projects/43logistics.vn/data/owner-confirmations.json`). |
-| Facebook | `https://www.facebook.com/43logistics` | Only social profile found **Confirmed** by the owner, 2026-10-22 (S-05b; `projects/43logistics.vn/data/owner-confirmations.json`). |
+| Messenger | `https://m.me/43logistics.official` | **Confirmed** by the owner, 2026-11-26 (official page; was `m.me/43logistics`, 2026-10-22). |
+| Facebook | `https://www.facebook.com/43logistics.official` | **Confirmed** by the owner, 2026-11-26 (official page; was `facebook.com/43logistics`, 2026-10-22). |
 | Second number | "0827 575 567" (blog: "Call/Zalo/ Whatsapp") | `NEEDS CONFIRMATION` — still in use? Owner decision 2026-10-22: not published (one primary number, Q-06). |
 | Email | "43logistics.danang@gmail.com" | Recommend a domain mailbox; old form sent from `email@43logistics.vn` (may not exist → deliverability risk) **Confirmed** by the owner, 2026-10-22 (S-05b; `projects/43logistics.vn/data/owner-confirmations.json`). |
 | Opening hours | Header: "T2 - T7: 08:00 - 18:00" · Contact page: "Từ thứ 2 -> Sáng thứ 7" · schema: 09:00–17:00 · route pages: "CSKH 24/7" | **Contradictory** — `NEEDS CONFIRMATION`; store one value in `site_settings` Owner decision 2026-10-22: **T2–T7 08:00–18:00** (the header value) is Confirmed; 24/7 stays unconfirmed (Q-03). S-04b: owner confirmed "CSKH 24/7" may be published (2026-10-22). |
@@ -107,7 +107,7 @@ A separate legal entity in the group. Facts are confirmed per site (rule 1). Unt
 | Email | avlogistics.danang@gmail.com | Confirmed (owner `info.txt`) |
 | Routes and retail rate cards | The same as 43 Logistics (shared tables) | Confirmed (owner 2026-10-30: "giống") |
 | Hours | — | `NEEDS CONFIRMATION` (43's T2–T7 08:00–18:00 shown only in preview) |
-| Facebook | `https://www.facebook.com/share/1Dn2tGvRJ3/?mibextid=wwXIfr` | **Confirmed** by the owner, 2026-11-12 |
+| Facebook | `https://www.facebook.com/people/AV-Logistics-Official/61596062579012/` (Messenger `https://m.me/61596062579012`) | **Confirmed** by the owner, 2026-11-26 (official page; replaces the 2026-11-12 share link) |
 | Zalo OA, GTM, new-customer offer | Exist; the owner will send them | `NEEDS CONFIRMATION` (owner: "cập nhật sau") |
 | Domain / DNS | `avlogistics.vn` | DNS details pending (owner: "gửi sau") |
 | Brand colours | Forest green #04563C, yellow #F5D30A (from the logo) | Confirmed (logo) |
@@ -126,7 +126,7 @@ A separate legal entity in the group. Its site is the separate repo `projects/gt
 | Company phone / Zalo | 0906 579 119 (Zalo is the same number) | Confirmed (owner `info.txt` and 2026-10-31) |
 | Hotline / WhatsApp | 0347 018 779 per the owner's company record, which also lists it as Zalo | `NEEDS CONFIRMATION` (conflicts with "Zalo = 0906 579 119"; not published) |
 | Email | gtlogistics.danang@gmail.com | Confirmed (owner `info.txt`) |
-| Facebook page | "GT Logistics - Vận Chuyển Hàng Quốc Tế" | URL `NEEDS CONFIRMATION` |
+| Facebook page | `https://www.facebook.com/people/GT-Logistics-Official/61595684745443/` (Messenger `https://m.me/61595684745443`) | **Confirmed** by the owner, 2026-11-26 |
 | Domain | `gtlogistics.vn` | Confirmed (owner 2026-10-31) |
 | Routes and retail rate cards | The same as 43 Logistics (shared tables) | Confirmed (owner 2026-10-31) |
 | Warehouses | The group's six receiving warehouses, shared by 43, AV and GT: Đà Nẵng, TP.HCM, Hà Nội, Huế, Quảng Bình, Quảng Trị (Cửa Việt). Addresses are in the `offices` setting. GT presents them as the group's receiving points, not its own branches. | Confirmed (owner 2026-11-17) |
